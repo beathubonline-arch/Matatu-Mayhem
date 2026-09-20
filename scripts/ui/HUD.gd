@@ -5,6 +5,7 @@ extends CanvasLayer
 @export var corridor_service_path: NodePath
 @export var challenge_manager_path: NodePath
 @export var career_manager_path: NodePath
+@export var rival_manager_path: NodePath
 
 @onready var speed_label: Label = $Margin/VBox/TopBar/Speed
 @onready var money_label: Label = $Margin/VBox/TopBar/Money
@@ -28,6 +29,7 @@ var radio: Node
 var corridor_service: Node
 var challenge_manager: Node
 var career_manager: Node
+var rival_manager: Node
 var _fare_notice_time: float = 0.0
 var _corridor_time: float = 0.0
 
@@ -85,6 +87,10 @@ func _ready() -> void:
 		challenge_manager.challenge_changed.connect(_on_challenge_changed)
 		challenge_manager.penalty_applied.connect(_on_penalty_applied)
 		challenge_manager.rival_result.connect(_on_rival_result)
+	if not rival_manager_path.is_empty():
+		rival_manager = get_node_or_null(rival_manager_path)
+	if rival_manager != null and rival_manager.has_signal("rival_pressure"):
+		rival_manager.rival_pressure.connect(_on_rival_pressure)
 	if not career_manager_path.is_empty():
 		career_manager = get_node_or_null(career_manager_path)
 	if career_manager != null:
@@ -420,3 +426,9 @@ func _on_route_unlocked(name: String) -> void:
 	fare_notice.text = "NEW ROUTE UNLOCKED • %s\nNAIROBI JUST GOT BIGGER" % name.to_upper()
 	fare_notice.visible = true
 	_fare_notice_time = 5.0
+
+
+func _on_rival_pressure(message: String) -> void:
+	fare_notice.text = "RIVAL • %s" % message
+	fare_notice.visible = true
+	_fare_notice_time = 2.5
