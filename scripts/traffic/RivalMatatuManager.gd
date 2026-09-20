@@ -8,12 +8,14 @@ extends Node3D
 var network: NairobiRouteNetwork
 var corridor_service: CorridorServiceManager
 var active_corridor := 0
+var _player: Node3D
 
 func _ready() -> void:
 	network = get_node_or_null(network_path) as NairobiRouteNetwork
 	corridor_service = get_node_or_null(corridor_service_path) as CorridorServiceManager
 	if corridor_service != null:
 		corridor_service.corridor_changed.connect(_on_corridor_changed)
+	_player = GameManager.get_player_vehicle() as Node3D
 	_spawn_pack()
 
 func _spawn_pack() -> void:
@@ -132,6 +134,14 @@ func _physics_process(_delta: float) -> void:
 		direction = steer_dir.lerp(desired_direction, corner_weight).normalized()
 		rival.set_meta("steer_dir", direction)
 		var speed: float = float(rival.get_meta("speed", 10.0))
+		if _player == null or not is_instance_valid(_player):
+			_player = GameManager.get_player_vehicle() as Node3D
+		if _player != null:
+			var gap := rival.global_position.distance_to(_player.global_position)
+			if gap < 18.0:
+				speed *= 1.12
+			elif gap > 65.0:
+				speed *= 0.92
 		if to_target.length() < 12.0:
 			speed *= 0.72
 		rival.velocity = direction * speed
