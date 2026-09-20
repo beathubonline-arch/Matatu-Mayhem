@@ -13,6 +13,7 @@ signal reputation_awarded(amount: int, total: int)
 var hype := 0
 var combo := 0
 var reputation := 0
+var street_cred := 0
 var _last_event_msec := 0
 
 func _ready() -> void:
@@ -34,6 +35,7 @@ func _ready() -> void:
 		challenges.challenge_changed.connect(_on_challenge_changed)
 		challenges.rival_result.connect(_on_rival_result)
 	reputation = int(SaveManager.data.get("matatu_reputation", 0))
+	street_cred = int(SaveManager.data.get("street_cred", 0))
 	hype_changed.emit(hype, combo, "NAIROBI SHIFT READY")
 
 func _on_fare_awarded(_amount: int, _balance: int) -> void:
@@ -66,11 +68,14 @@ func _add_hype(amount: int, message: String) -> void:
 	_last_event_msec = now
 	var multiplier := clampi(combo, 1, 5)
 	hype = clampi(hype + amount * multiplier, 0, 999)
-	hype_changed.emit(hype, combo, message)
+	SaveManager.data["best_hype"] = maxi(int(SaveManager.data.get("best_hype", 0)), hype)
+	hype_changed.emit(hype, combo, "%s • CRED %d" % [message, street_cred])
 
 func _add_reputation(amount: int) -> void:
 	reputation += amount
 	SaveManager.data["matatu_reputation"] = reputation
+	street_cred += maxi(1, int(amount / 5))
+	SaveManager.data["street_cred"] = street_cred
 	SaveManager.save_game()
 	reputation_awarded.emit(amount, reputation)
 
