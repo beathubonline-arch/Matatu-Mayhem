@@ -1,0 +1,127 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scripts/gameplay/PassengerStop.gd" id="1_script"]
+
+[sub_resource type="BoxShape3D" id="StopShape"]
+size = Vector3(7.0, 3.0, 9.0)
+
+[sub_resource type="BoxMesh" id="MarkerMesh"]
+size = Vector3(7.0, 0.12, 9.0)
+
+[sub_resource type="StandardMaterial3D" id="MarkerMat"]
+transparency = 1
+albedo_color = Color(0.08, 0.95, 0.38, 0.32)
+emission_enabled = true
+emission = Color(0.02, 0.75, 0.24, 1)
+emission_energy_multiplier = 1.45
+
+[sub_resource type="StandardMaterial3D" id="PoleMat"]
+albedo_color = Color(0.1, 0.13, 0.16, 1)
+metallic = 0.65
+roughness = 0.32
+
+[sub_resource type="BoxMesh" id="PoleMesh"]
+size = Vector3(0.14, 4.4, 0.14)
+
+[sub_resource type="CapsuleMesh" id="PassengerBody"]
+radius = 0.28
+height = 1.25
+radial_segments = 10
+rings = 4
+
+[sub_resource type="SphereMesh" id="PassengerHead"]
+radius = 0.24
+height = 0.48
+radial_segments = 10
+rings = 5
+
+[sub_resource type="StandardMaterial3D" id="SkinMat"]
+albedo_color = Color(0.24, 0.12, 0.07, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="ShirtBlue"]
+albedo_color = Color(0.08, 0.38, 0.75, 1)
+roughness = 0.85
+
+[sub_resource type="StandardMaterial3D" id="ShirtRed"]
+albedo_color = Color(0.78, 0.12, 0.18, 1)
+roughness = 0.85
+
+[node name="PassengerStop" type="Area3D"]
+collision_layer = 4
+collision_mask = 2
+monitoring = true
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 1.5, 0)
+shape = SubResource("StopShape")
+
+[node name="Marker" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.14, 0)
+mesh = SubResource("MarkerMesh")
+material_override = SubResource("MarkerMat")
+
+[node name="Pole" type="MeshInstance3D" parent="."]
+position = Vector3(-3.2, 2.2, 0)
+mesh = SubResource("PoleMesh")
+material_override = SubResource("PoleMat")
+
+[node name="Title" type="Label3D" parent="."]
+position = Vector3(0, 4.2, 0)
+billboard = 1
+text = "PICK UP PASSENGERS"
+font_size = 52
+outline_size = 10
+modulate = Color(0.3, 1, 0.5, 1)
+pixel_size = 0.009
+
+[node name="Progress" type="Label3D" parent="."]
+position = Vector3(0, 3.45, 0)
+billboard = 1
+text = "STOP HERE  0%"
+font_size = 42
+outline_size = 9
+modulate = Color(1, 0.84, 0.2, 1)
+pixel_size = 0.008
+
+[node name="Passengers" type="Node3D" parent="."]
+
+[node name="PassengerA" type="Node3D" parent="Passengers"]
+position = Vector3(-2.0, 0.15, 2.0)
+
+[node name="Body" type="MeshInstance3D" parent="Passengers/PassengerA"]
+position = Vector3(0, 0.9, 0)
+mesh = SubResource("PassengerBody")
+material_override = SubResource("ShirtBlue")
+
+[node name="Head" type="MeshInstance3D" parent="Passengers/PassengerA"]
+position = Vector3(0, 1.68, 0)
+mesh = SubResource("PassengerHead")
+material_override = SubResource("SkinMat")
+
+[node name="PassengerB" type="Node3D" parent="Passengers"]
+position = Vector3(-2.5, 0.15, -0.4)
+
+[node name="Body" type="MeshInstance3D" parent="Passengers/PassengerB"]
+position = Vector3(0, 0.9, 0)
+mesh = SubResource("PassengerBody")
+material_override = SubResource("ShirtRed")
+
+[node name="Head" type="MeshInstance3D" parent="Passengers/PassengerB"]
+position = Vector3(0, 1.68, 0)
+mesh = SubResource("PassengerHead")
+material_override = SubResource("SkinMat")
+
+[node name="PassengerC" type="Node3D" parent="Passengers"]
+position = Vector3(-1.7, 0.15, -2.2)
+
+[node name="Body" type="MeshInstance3D" parent="Passengers/PassengerC"]
+position = Vector3(0, 0.9, 0)
+mesh = SubResource("PassengerBody")
+material_override = SubResource("ShirtBlue")
+
+[node name="Head" type="MeshInstance3D" parent="Passengers/PassengerC"]
+position = Vector3(0, 1.68, 0)
+mesh = SubResource("PassengerHead")
+material_override = SubResource("SkinMat")

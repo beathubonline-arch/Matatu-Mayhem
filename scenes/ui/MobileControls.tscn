@@ -1,0 +1,142 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/MobileControls.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="DriveButton"]
+bg_color = Color(0.025, 0.035, 0.055, 0.72)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.15, 0.82, 1, 0.9)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[sub_resource type="StyleBoxFlat" id="ActionButton"]
+bg_color = Color(0.9, 0.28, 0.035, 0.78)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+
+[node name="MobileControls" type="CanvasLayer"]
+layer = 20
+script = ExtResource("1")
+always_show_in_editor = true
+
+[node name="Controls" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Steering" type="HBoxContainer" parent="Controls"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_top = -152.0
+offset_right = 292.0
+offset_bottom = -28.0
+grow_vertical = 0
+theme_override_constants/separation = 16
+
+[node name="Left" type="Button" parent="Controls/Steering"]
+custom_minimum_size = Vector2(124, 124)
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("DriveButton")
+theme_override_styles/pressed = SubResource("ActionButton")
+text = "◀"
+keep_pressed_outside = true
+
+[node name="Right" type="Button" parent="Controls/Steering"]
+custom_minimum_size = Vector2(124, 124)
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("DriveButton")
+theme_override_styles/pressed = SubResource("ActionButton")
+text = "▶"
+keep_pressed_outside = true
+
+[node name="Pedals" type="HBoxContainer" parent="Controls"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -328.0
+offset_top = -152.0
+offset_right = -28.0
+offset_bottom = -28.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_constants/separation = 16
+
+[node name="Brake" type="Button" parent="Controls/Pedals"]
+custom_minimum_size = Vector2(142, 124)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("DriveButton")
+theme_override_styles/pressed = SubResource("ActionButton")
+text = "BRAKE\nREVERSE"
+keep_pressed_outside = true
+
+[node name="Accelerate" type="Button" parent="Controls/Pedals"]
+custom_minimum_size = Vector2(142, 124)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("DriveButton")
+theme_override_styles/pressed = SubResource("ActionButton")
+text = "FORWARD"
+keep_pressed_outside = true
+
+[node name="Handbrake" type="Button" parent="Controls"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -76.0
+offset_top = -104.0
+offset_right = 76.0
+offset_bottom = -28.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("DriveButton")
+theme_override_styles/pressed = SubResource("ActionButton")
+text = "DRIFT"
+keep_pressed_outside = true
+
+[node name="Reset" type="Button" parent="Controls"]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 118.0
+offset_right = 132.0
+offset_bottom = 174.0
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("DriveButton")
+text = "RESET"
+
+[node name="Pause" type="Button" parent="Controls"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -92.0
+offset_top = 20.0
+offset_right = -28.0
+offset_bottom = 84.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("DriveButton")
+text = "Ⅱ"

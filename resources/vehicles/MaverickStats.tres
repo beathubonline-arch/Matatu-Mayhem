@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="VehicleStats" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vehicle/VehicleStats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+vehicle_name = "The Maverick"
+mass_kg = 2600.0
+center_of_mass_y = -0.72
+engine_force = 5400.0
+reverse_force = 2600.0
+soft_max_speed_kph = 125.0
+hard_max_speed_kph = 145.0
+acceleration_falloff = 1.15
+brake_force = 42.0
+handbrake_force = 68.0
+max_steer_degrees = 29.0
+high_speed_steer_degrees = 10.0
+steering_reduction_speed_kph = 115.0
+steering_speed = 5.8
+steering_return_speed = 7.5
+front_grip = 4.4
+rear_grip = 4.0
+handbrake_rear_grip = 1.65
+drift_activation_speed_kph = 18.0
+suspension_rest_length = 0.28
+suspension_travel = 0.22
+suspension_stiffness = 28.0
+damping_compression = 3.2
+damping_relaxation = 4.4
+suspension_max_force = 11000.0
+wheel_radius = 0.44
+downforce_coefficient = 7.5
+upright_assist = 2.4
+drift_upright_multiplier = 0.45

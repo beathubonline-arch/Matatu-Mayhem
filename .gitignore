@@ -1,0 +1,14 @@
+.godot/
+.import/
+build/
+builds/
+export/
+exports/
+*.tmp
+*.temp
+*.bak
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

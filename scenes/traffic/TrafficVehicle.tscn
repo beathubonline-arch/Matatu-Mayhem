@@ -1,0 +1,89 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/traffic/TrafficVehicle.gd" id="1_script"]
+
+[sub_resource type="BoxShape3D" id="Collision"]
+size = Vector3(1.72, 1.25, 3.7)
+
+[sub_resource type="BoxMesh" id="BodyMesh"]
+size = Vector3(1.7, 0.85, 3.65)
+
+[sub_resource type="BoxMesh" id="CabinMesh"]
+size = Vector3(1.52, 0.72, 1.85)
+
+[sub_resource type="StandardMaterial3D" id="GlassMat"]
+albedo_color = Color(0.025, 0.07, 0.11, 1)
+metallic = 0.2
+roughness = 0.15
+
+[sub_resource type="CylinderMesh" id="WheelMesh"]
+top_radius = 0.34
+bottom_radius = 0.34
+height = 0.2
+radial_segments = 12
+
+[sub_resource type="StandardMaterial3D" id="TireMat"]
+albedo_color = Color(0.015, 0.015, 0.018, 1)
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="LightMat"]
+albedo_color = Color(0.9, 0.88, 0.68, 1)
+emission_enabled = true
+emission = Color(0.7, 0.65, 0.4, 1)
+emission_energy_multiplier = 1.2
+
+[node name="TrafficVehicle" type="CharacterBody3D"]
+collision_layer = 8
+collision_mask = 3
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.62, 0)
+shape = SubResource("Collision")
+
+[node name="Visuals" type="Node3D" parent="."]
+
+[node name="Body" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(0, 0.54, 0)
+mesh = SubResource("BodyMesh")
+
+[node name="Cabin" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(0, 1.18, -0.25)
+mesh = SubResource("CabinMesh")
+material_override = SubResource("GlassMat")
+
+[node name="HeadlightLeft" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(-0.52, 0.56, -1.86)
+scale = Vector3(0.5, 0.25, 0.08)
+mesh = SubResource("BodyMesh")
+material_override = SubResource("LightMat")
+
+[node name="HeadlightRight" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(0.52, 0.56, -1.86)
+scale = Vector3(0.5, 0.25, 0.08)
+mesh = SubResource("BodyMesh")
+material_override = SubResource("LightMat")
+
+[node name="WheelFL" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(-0.88, 0.3, -1.15)
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("WheelMesh")
+material_override = SubResource("TireMat")
+
+[node name="WheelFR" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(0.88, 0.3, -1.15)
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("WheelMesh")
+material_override = SubResource("TireMat")
+
+[node name="WheelRL" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(-0.88, 0.3, 1.15)
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("WheelMesh")
+material_override = SubResource("TireMat")
+
+[node name="WheelRR" type="MeshInstance3D" parent="Visuals"]
+position = Vector3(0.88, 0.3, 1.15)
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("WheelMesh")
+material_override = SubResource("TireMat")

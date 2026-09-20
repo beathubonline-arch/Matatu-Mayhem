@@ -1,0 +1,95 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/vehicle/MatatuController.gd" id="1_controller"]
+[ext_resource type="Resource" path="res://resources/vehicles/MaverickStats.tres" id="2_stats"]
+[ext_resource type="Script" path="res://scripts/vehicle/NganyaVisuals.gd" id="3_visuals"]
+
+[sub_resource type="BoxShape3D" id="BodyShape"]
+size = Vector3(2.15, 1.75, 4.9)
+
+[sub_resource type="CylinderMesh" id="WheelMesh"]
+top_radius = 0.44
+bottom_radius = 0.44
+height = 0.3
+radial_segments = 20
+
+[sub_resource type="StandardMaterial3D" id="TireMat"]
+albedo_color = Color(0.018, 0.018, 0.022, 1)
+roughness = 0.96
+
+[sub_resource type="CylinderMesh" id="HubcapMesh"]
+top_radius = 0.23
+bottom_radius = 0.23
+height = 0.315
+radial_segments = 20
+
+[sub_resource type="StandardMaterial3D" id="HubcapMat"]
+albedo_color = Color(0.62, 0.7, 0.78, 1)
+metallic = 0.9
+roughness = 0.16
+
+[node name="Maverick" type="VehicleBody3D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_controller")
+stats = ExtResource("2_stats")
+continuous_cd = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+position = Vector3(0, 0.88, 0)
+shape = SubResource("BodyShape")
+
+[node name="NganyaVisuals" type="Node3D" parent="."]
+script = ExtResource("3_visuals")
+
+[node name="WheelFrontLeft" type="VehicleWheel3D" parent="."]
+position = Vector3(-1.04, 0.42, -1.55)
+
+[node name="Mesh" type="MeshInstance3D" parent="WheelFrontLeft"]
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("WheelMesh")
+material_override = SubResource("TireMat")
+
+[node name="Hubcap" type="MeshInstance3D" parent="WheelFrontLeft"]
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("HubcapMesh")
+material_override = SubResource("HubcapMat")
+
+[node name="WheelFrontRight" type="VehicleWheel3D" parent="."]
+position = Vector3(1.04, 0.42, -1.55)
+
+[node name="Mesh" type="MeshInstance3D" parent="WheelFrontRight"]
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("WheelMesh")
+material_override = SubResource("TireMat")
+
+[node name="Hubcap" type="MeshInstance3D" parent="WheelFrontRight"]
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("HubcapMesh")
+material_override = SubResource("HubcapMat")
+
+[node name="WheelRearLeft" type="VehicleWheel3D" parent="."]
+position = Vector3(-1.04, 0.42, 1.55)
+
+[node name="Mesh" type="MeshInstance3D" parent="WheelRearLeft"]
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("WheelMesh")
+material_override = SubResource("TireMat")
+
+[node name="Hubcap" type="MeshInstance3D" parent="WheelRearLeft"]
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("HubcapMesh")
+material_override = SubResource("HubcapMat")
+
+[node name="WheelRearRight" type="VehicleWheel3D" parent="."]
+position = Vector3(1.04, 0.42, 1.55)
+
+[node name="Mesh" type="MeshInstance3D" parent="WheelRearRight"]
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("WheelMesh")
+material_override = SubResource("TireMat")
+
+[node name="Hubcap" type="MeshInstance3D" parent="WheelRearRight"]
+rotation_degrees = Vector3(0, 0, 90)
+mesh = SubResource("HubcapMesh")
+material_override = SubResource("HubcapMat")

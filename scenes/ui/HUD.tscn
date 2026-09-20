@@ -1,0 +1,143 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/HUD.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="TopStyle"]
+bg_color = Color(0.02, 0.025, 0.035, 0.86)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="FinishStyle"]
+bg_color = Color(0.02, 0.025, 0.035, 0.95)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 18
+content_margin_left = 28.0
+content_margin_top = 24.0
+content_margin_right = 28.0
+content_margin_bottom = 24.0
+
+[sub_resource type="StyleBoxFlat" id="ButtonStyle"]
+bg_color = Color(0.05, 0.45, 0.85, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1")
+route_manager_path = NodePath("../Gameplay/Route")
+
+[node name="Margin" type="MarginContainer" parent="."]
+offset_left = 20.0
+offset_top = 18.0
+offset_right = 1260.0
+offset_bottom = 700.0
+
+[node name="VBox" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TopBar" type="HBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 22
+
+[node name="Speed" type="Label" parent="Margin/VBox/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "000 km/h"
+
+[node name="Money" type="Label" parent="Margin/VBox/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.15, 1)
+theme_override_font_sizes/font_size = 24
+text = "KSh 0"
+
+[node name="Objective" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.45, 1)
+theme_override_font_sizes/font_size = 24
+text = "CHECKPOINT 1 / 6"
+
+[node name="Timer" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "00:00.00"
+
+[node name="PassengerObjective" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.84, 0.2, 1)
+theme_override_font_sizes/font_size = 19
+text = "PICK UP PASSENGERS AT THE GREEN MATATU STAGE"
+
+[node name="Controls" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.82, 0.84, 0.88, 1)
+theme_override_font_sizes/font_size = 15
+text = "Controls"
+
+[node name="FinishPanel" type="PanelContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -210.0
+offset_top = -145.0
+offset_right = 210.0
+offset_bottom = 145.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("FinishStyle")
+
+[node name="VBox" type="VBoxContainer" parent="FinishPanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="FinishPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 1, 0.45, 1)
+theme_override_font_sizes/font_size = 32
+text = "ROUTE COMPLETE"
+horizontal_alignment = 1
+
+[node name="Summary" type="Label" parent="FinishPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+text = "Time: 00:00.00\nReward: KSh 0"
+horizontal_alignment = 1
+
+[node name="Replay" type="Button" parent="FinishPanel/VBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 19
+theme_override_styles/normal = SubResource("ButtonStyle")
+text = "RUN IT AGAIN"
+
+[node name="FareNotice" type="Label" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -85.0
+offset_right = 250.0
+offset_bottom = 85.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.35, 1, 0.48, 1)
+theme_override_colors/font_outline_color = Color(0.01, 0.02, 0.02, 1)
+theme_override_constants/outline_size = 12
+theme_override_font_sizes/font_size = 32
+text = "+ KSh 5,000  PASSENGER FARE"
+horizontal_alignment = 1
+vertical_alignment = 1
