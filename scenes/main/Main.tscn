@@ -83,7 +83,7 @@ network_path = NodePath("../../World/Environment/NairobiRouteNetwork")
 
 [node name="MatatuCulture" type="Node" parent="Gameplay"]
 script = ExtResource("14_culture")
-passenger_manager_path = NodePath("../PassengerService")
+passenger_manager_path = NodePath("../CorridorService")
 route_manager_path = NodePath("../Route")
 radio_path = NodePath("../../MatatuRadio")
 
