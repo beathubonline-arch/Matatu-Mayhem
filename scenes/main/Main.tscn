@@ -39,9 +39,11 @@ script = ExtResource("17_routes")
 [node name="Gameplay" type="Node3D" parent="."]
 
 [node name="CBDLife" type="Node3D" parent="Gameplay"]
+process_mode = 4
+visible = false
 script = ExtResource("13_cbd_life")
-pedestrian_count = 28
-boda_count = 7
+pedestrian_count = 0
+boda_count = 0
 
 [node name="Vehicles" type="Node3D" parent="Gameplay"]
 [node name="Maverick" parent="Gameplay/Vehicles" instance=ExtResource("2_car")]
@@ -49,8 +51,10 @@ position = Vector3(0, 1.4, 76)
 rotation_degrees = Vector3(0, 0, 0)
 
 [node name="Traffic" type="Node3D" parent="Gameplay"]
+process_mode = 4
+visible = false
 script = ExtResource("9_traffic")
-traffic_count = 12
+traffic_count = 0
 
 [node name="CorridorTraffic" type="Node3D" parent="Gameplay"]
 script = ExtResource("19_corridor_traffic")
