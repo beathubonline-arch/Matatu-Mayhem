@@ -46,6 +46,7 @@ func _ready() -> void:
 	$RouteSelectPanel/VBox/EngineUpgrade.pressed.connect(func(): _buy_upgrade("engine"))
 	$RouteSelectPanel/VBox/BrakeUpgrade.pressed.connect(func(): _buy_upgrade("brakes"))
 	$RouteSelectPanel/VBox/CapacityUpgrade.pressed.connect(func(): _buy_upgrade("capacity"))
+	$RouteSelectPanel/VBox/NganyaSelect.pressed.connect(_cycle_nganya)
 	route_select_panel.visible = true
 	GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
 	objective_label.text = "CHOOSE YOUR NAIROBI ROUTE"
@@ -94,6 +95,7 @@ func _ready() -> void:
 		career_manager.nganya_unlocked.connect(_on_nganya_unlocked)
 	_refresh_route_unlocks()
 	_refresh_garage()
+	_refresh_nganya_selector()
 	_on_hype_changed(0, 0, "NAIROBI SHIFT READY")
 	if OS.has_feature("mobile") or DisplayServer.is_touchscreen_available():
 		controls_label.visible = false
@@ -149,6 +151,7 @@ func _on_replay_pressed() -> void:
 		passenger_load_label.text = "PASSENGERS 0/%d" % _current_capacity()
 		navigation_label.text = "NAV • SELECT ROUTE"
 		_refresh_garage()
+		_refresh_nganya_selector()
 		return
 	if route_manager != null:
 		route_manager.restart_route()
