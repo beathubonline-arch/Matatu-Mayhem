@@ -7,7 +7,7 @@ const TRAFFIC_SCENE := preload("res://scenes/traffic/TrafficVehicle.tscn")
 
 func _ready() -> void:
 	var colors: Array[Color] = [Color("d8d4c5"), Color("306b9b"), Color("a53b32"), Color("3e7d50"), Color("d39a2f"), Color("777c86")]
-	for index in traffic_count:
+	for index in range(traffic_count):
 		var vehicle := TRAFFIC_SCENE.instantiate() as TrafficVehicle
 		if vehicle == null:
 			continue
