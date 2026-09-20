@@ -11,6 +11,8 @@ extends CanvasLayer
 @onready var objective_label: Label = $Margin/VBox/Objective
 @onready var timer_label: Label = $Margin/VBox/Timer
 @onready var passenger_label: Label = $Margin/VBox/PassengerObjective
+@onready var passenger_load_label: Label = $Margin/VBox/PassengerLoad
+@onready var navigation_label: Label = $Margin/VBox/Navigation
 @onready var fare_notice: Label = $FareNotice
 @onready var controls_label: Label = $Margin/VBox/Controls
 @onready var hype_label: Label = $Margin/VBox/Hype
@@ -37,10 +39,15 @@ func _ready() -> void:
 	$RouteSelectPanel/VBox/Thika.pressed.connect(func(): _select_corridor(1))
 	$RouteSelectPanel/VBox/Mombasa.pressed.connect(func(): _select_corridor(2))
 	$RouteSelectPanel/VBox/Ngong.pressed.connect(func(): _select_corridor(3))
+	$RouteSelectPanel/VBox/EngineUpgrade.pressed.connect(func(): _buy_upgrade("engine"))
+	$RouteSelectPanel/VBox/BrakeUpgrade.pressed.connect(func(): _buy_upgrade("brakes"))
+	$RouteSelectPanel/VBox/CapacityUpgrade.pressed.connect(func(): _buy_upgrade("capacity"))
 	route_select_panel.visible = true
 	GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
 	objective_label.text = "CHOOSE YOUR NAIROBI ROUTE"
 	passenger_label.text = "WAIYAKI • THIKA • MOMBASA • NGONG"
+	passenger_load_label.text = "PASSENGERS 0/%d" % _current_capacity()
+	navigation_label.text = "NAV • SELECT ROUTE"
 	timer_label.text = "00:00.00"
 	EconomyManager.money_changed.connect(_on_money_changed)
 	_on_money_changed(EconomyManager.get_money())
@@ -67,7 +74,9 @@ func _ready() -> void:
 		corridor_service.service_progress.connect(_on_service_progress)
 		corridor_service.run_time_changed.connect(_on_corridor_time_changed)
 		corridor_service.passenger_load_changed.connect(_on_passenger_load_changed)
+		corridor_service.navigation_changed.connect(_on_navigation_changed)
 	_refresh_route_unlocks()
+	_refresh_garage()
 	_on_hype_changed(0, 0, "NAIROBI SHIFT READY")
 	if OS.has_feature("mobile") or DisplayServer.is_touchscreen_available():
 		controls_label.visible = false
@@ -120,6 +129,9 @@ func _on_replay_pressed() -> void:
 		GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
 		objective_label.text = "CHOOSE YOUR NEXT ROUTE"
 		passenger_label.text = "WAIYAKI • THIKA • MOMBASA • NGONG"
+		passenger_load_label.text = "PASSENGERS 0/%d" % _current_capacity()
+		navigation_label.text = "NAV • SELECT ROUTE"
+		_refresh_garage()
 		return
 	if route_manager != null:
 		route_manager.restart_route()
@@ -187,7 +199,7 @@ func _on_passenger_load_changed(onboard: int, capacity: int, boarded: int, aligh
 		movement += "  +%d IN" % boarded
 	if alighted > 0:
 		movement += "  -%d OUT" % alighted
-	passenger_label.text = "PASSENGERS %d/%d%s" % [onboard, capacity, movement]
+	passenger_load_label.text = "PASSENGERS %d/%d%s" % [onboard, capacity, movement]
 
 func _refresh_route_unlocks() -> void:
 	var unlocked := int(SaveManager.data.get("unlocked_corridors", 1))
@@ -199,3 +211,65 @@ func _refresh_route_unlocks() -> void:
 	]
 	for i in range(buttons.size()):
 		buttons[i].disabled = i >= unlocked
+
+
+func _on_navigation_changed(distance: float, turn_angle: float) -> void:
+	var degrees := rad_to_deg(turn_angle)
+	var cue := "STRAIGHT"
+	if degrees > 18.0:
+		cue = "LEFT"
+	elif degrees < -18.0:
+		cue = "RIGHT"
+	navigation_label.text = "NAV • %s • %dm TO STAGE" % [cue, int(distance)]
+
+func _current_capacity() -> int:
+	var levels: Dictionary = SaveManager.data.get("upgrade_levels", {})
+	return 14 + clampi(int(levels.get("capacity", 0)), 0, 5) * 2
+
+func _upgrade_cost(kind: String) -> int:
+	var bases := {"engine": 8000, "brakes": 6000, "capacity": 7000}
+	var levels: Dictionary = SaveManager.data.get("upgrade_levels", {})
+	return int(bases[kind]) * (clampi(int(levels.get(kind, 0)), 0, 5) + 1)
+
+func _buy_upgrade(kind: String) -> void:
+	var levels: Dictionary = SaveManager.data.get("upgrade_levels", {})
+	var level := clampi(int(levels.get(kind, 0)), 0, 5)
+	if level >= 5:
+		fare_notice.text = "%s MAX LEVEL" % kind.to_upper()
+		fare_notice.visible = true
+		_fare_notice_time = 2.5
+		return
+	var cost := _upgrade_cost(kind)
+	if not EconomyManager.spend_money(cost):
+		fare_notice.text = "NEED KSh %s FOR %s" % [_format_number(cost), kind.to_upper()]
+		fare_notice.visible = true
+		_fare_notice_time = 2.5
+		return
+	levels[kind] = level + 1
+	SaveManager.data["upgrade_levels"] = levels
+	SaveManager.save_game()
+	var vehicle = GameManager.get_player_vehicle()
+	if vehicle != null and vehicle.has_method("refresh_saved_upgrades"):
+		vehicle.call("refresh_saved_upgrades")
+	if corridor_service != null and corridor_service.has_method("refresh_capacity_upgrade"):
+		corridor_service.call("refresh_capacity_upgrade")
+	fare_notice.text = "%s UPGRADED • LEVEL %d" % [kind.to_upper(), level + 1]
+	fare_notice.visible = true
+	_fare_notice_time = 2.5
+	_refresh_garage()
+
+func _refresh_garage() -> void:
+	var levels: Dictionary = SaveManager.data.get("upgrade_levels", {})
+	var specs := [
+		["engine", $RouteSelectPanel/VBox/EngineUpgrade],
+		["brakes", $RouteSelectPanel/VBox/BrakeUpgrade],
+		["capacity", $RouteSelectPanel/VBox/CapacityUpgrade]
+	]
+	for spec in specs:
+		var kind: String = spec[0]
+		var button: Button = spec[1]
+		var level := clampi(int(levels.get(kind, 0)), 0, 5)
+		if level >= 5:
+			button.text = "%s • LEVEL 5 • MAX" % kind.to_upper()
+		else:
+			button.text = "%s • LEVEL %d → %d • KSh %s" % [kind.to_upper(), level, level + 1, _format_number(_upgrade_cost(kind))]
