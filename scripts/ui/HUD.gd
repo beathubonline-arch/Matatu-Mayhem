@@ -2,6 +2,8 @@ extends CanvasLayer
 
 @export var route_manager_path: NodePath
 @export var passenger_manager_path: NodePath
+@export var culture_manager_path: NodePath
+@export var radio_path: NodePath
 
 @onready var speed_label: Label = $Margin/VBox/TopBar/Speed
 @onready var money_label: Label = $Margin/VBox/TopBar/Money
@@ -10,6 +12,8 @@ extends CanvasLayer
 @onready var passenger_label: Label = $Margin/VBox/PassengerObjective
 @onready var fare_notice: Label = $FareNotice
 @onready var controls_label: Label = $Margin/VBox/Controls
+@onready var hype_label: Label = $Margin/VBox/Hype
+@onready var radio_label: Label = $RadioPanel/RadioText
 @onready var finish_panel: PanelContainer = $FinishPanel
 @onready var finish_title: Label = $FinishPanel/VBox/Title
 @onready var finish_summary: Label = $FinishPanel/VBox/Summary
@@ -17,6 +21,8 @@ extends CanvasLayer
 
 var route_manager: RouteManager
 var passenger_manager: PassengerManager
+var culture_manager: Node
+var radio: Node
 var _fare_notice_time: float = 0.0
 
 func _ready() -> void:
@@ -38,6 +44,16 @@ func _ready() -> void:
 		passenger_manager.fare_awarded.connect(_on_fare_awarded)
 		_on_passenger_status_changed("PICK UP PASSENGERS AT THE GREEN MATATU STAGE")
 	fare_notice.visible = false
+	if not culture_manager_path.is_empty():
+		culture_manager = get_node_or_null(culture_manager_path)
+	if culture_manager != null:
+		culture_manager.hype_changed.connect(_on_hype_changed)
+		culture_manager.reputation_awarded.connect(_on_reputation_awarded)
+	if not radio_path.is_empty():
+		radio = get_node_or_null(radio_path)
+	if radio != null:
+		radio.station_changed.connect(_on_radio_changed)
+	_on_hype_changed(0, 0, "CBD SHIFT STARTED")
 	if OS.has_feature("mobile") or DisplayServer.is_touchscreen_available():
 		controls_label.visible = false
 	else:
@@ -98,3 +114,13 @@ func _format_number(value: int) -> String:
 		out = "," + s.substr(s.length() - 3, 3) + out
 		s = s.substr(0, s.length() - 3)
 	return s + out
+
+func _on_hype_changed(value: int, combo: int, message: String) -> void:
+	var combo_text := "" if combo <= 1 else "  x%d COMBO" % combo
+	hype_label.text = "HYPE %03d%s  •  %s" % [value, combo_text, message]
+
+func _on_reputation_awarded(_amount: int, total: int) -> void:
+	hype_label.text += "  •  REP %d" % total
+
+func _on_radio_changed(station: String, track: String, artist: String) -> void:
+	radio_label.text = "♫ %s\n%s — %s\n[M] RADIO  [N] NEXT" % [station, artist, track]
