@@ -20,7 +20,10 @@ func _ready() -> void:
 		push_error("MatatuController requires VehicleStats.")
 		set_physics_process(false)
 		return
+	# Keep upgrades local to this vehicle instance; never mutate the shared .tres.
+	stats = stats.duplicate(true) as VehicleStats
 	_spawn_transform = global_transform
+	_apply_saved_upgrades()
 	_apply_vehicle_configuration()
 	GameManager.register_player_vehicle(self)
 
@@ -107,6 +110,21 @@ func _apply_arcade_stability() -> void:
 	var correction_axis := global_basis.y.normalized().cross(Vector3.UP)
 	var assist := stats.upright_assist * (stats.drift_upright_multiplier if handbrake_active else 1.0)
 	apply_torque(correction_axis * assist * mass)
+
+func _apply_saved_upgrades() -> void:
+	var levels: Dictionary = SaveManager.data.get("upgrade_levels", {})
+	var engine_level := clampi(int(levels.get("engine", 0)), 0, 5)
+	var brake_level := clampi(int(levels.get("brakes", 0)), 0, 5)
+	stats.engine_force *= 1.0 + 0.07 * engine_level
+	stats.brake_force *= 1.0 + 0.08 * brake_level
+
+func refresh_saved_upgrades() -> void:
+	# Called after a garage purchase. Reload pristine base stats before applying levels.
+	var source := load("res://resources/vehicles/MaverickStats.tres") as VehicleStats
+	if source != null:
+		stats = source.duplicate(true) as VehicleStats
+		_apply_saved_upgrades()
+		_apply_vehicle_configuration()
 
 func _apply_vehicle_configuration() -> void:
 	mass = stats.mass_kg
