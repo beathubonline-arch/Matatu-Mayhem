@@ -12,6 +12,7 @@ const WAIYAKI_POINTS := [
 	Vector3(-92,0,-91), Vector3(-118,0,-98), Vector3(-143,0,-104),
 	Vector3(-170,0,-108), Vector3(-198,0,-111), Vector3(-225,0,-112)
 ]
+const WAIYAKI_DISTRICTS := ["WESTLANDS","WESTLANDS","ABC PLACE","ABC PLACE","KANGEMI","KANGEMI","UTHIRU","UTHIRU"]
 const CORRIDORS := [
 	{"name":"WAIYAKI WAY","color":"4aa3df","points":WAIYAKI_POINTS,
 	 "service_points":[Vector3(-70,0,-82),Vector3(-118,0,-98),Vector3(-170,0,-108),Vector3(-225,0,-112)],
@@ -48,7 +49,7 @@ func _build_corridor(data: Dictionary, corridor_index: int) -> void:
 	for i in range(points.size() - 1):
 		_road_segment(points[i], points[i + 1], color)
 		if corridor_index == 0:
-			_waiyaki_streetscape(points[i], points[i + 1], i)
+				_waiyaki_streetscape(points[i], points[i + 1], i)
 	var service_points: Array = data["service_points"]
 	for i in range(service_points.size()):
 		_stage(service_points[i], String(data["stops"][i]), String(data["name"]), int(data["reward"]))
@@ -131,6 +132,29 @@ func _waiyaki_streetscape(a: Vector3, b: Vector3, segment_index: int) -> void:
 		var height := 8.0 + float((segment_index * 7 + int(side > 0.0) * 5) % 14)
 		var footprint := Vector3(9.0 + float(segment_index % 3) * 2.0, height, 8.0)
 		_building(mid + right * (side * 16.0) + direction * (3.0 if side > 0.0 else -4.0), footprint, segment_index, side)
+	if segment_index % 2 == 0:
+		_roadside_shop(mid + right * (12.2 if segment_index % 4 == 0 else -12.2), WAIYAKI_DISTRICTS[mini(segment_index, WAIYAKI_DISTRICTS.size() - 1)], segment_index)
+
+
+func _roadside_shop(pos: Vector3, district: String, seed: int) -> void:
+	var shop := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(5.5, 3.0, 3.5)
+	shop.mesh = mesh
+	shop.position = pos + Vector3(0, 1.5, 0)
+	var mat := StandardMaterial3D.new()
+	var palette: Array[Color] = [Color("b24c36"), Color("28666e"), Color("c18c3d"), Color("525b76")]
+	mat.albedo_color = palette[seed % palette.size()]
+	shop.material_override = mat
+	add_child(shop)
+	var label := Label3D.new()
+	label.text = ["M-PESA", "KINYOZI", "HOTEL", "DUKA"][seed % 4] + "\n" + district
+	label.position = pos + Vector3(0, 2.1, -1.8)
+	label.font_size = 28
+	label.pixel_size = 0.006
+	label.outline_size = 7
+	label.modulate = Color("f7f4df")
+	add_child(label)
 
 func _streetlight(pos: Vector3) -> void:
 	var pole := MeshInstance3D.new()
