@@ -15,7 +15,9 @@
 [ext_resource type="Script" path="res://scripts/environment/CBDLifeManager.gd" id="13_cbd_life"]
 [ext_resource type="Script" path="res://scripts/gameplay/MatatuCultureManager.gd" id="14_culture"]
 [ext_resource type="Script" path="res://scripts/environment/CBDRouteDistrict.gd" id="15_cbd_district"]
-[ext_resource type="Script" path="res://scripts/traffic/RivalMatatuManager.gd" id="16_rivals"]\n[ext_resource type="Script" path="res://scripts/environment/NairobiRouteNetwork.gd" id="17_routes"]\n[ext_resource type="Script" path="res://scripts/gameplay/CorridorServiceManager.gd" id="18_corridor_service"]
+[ext_resource type="Script" path="res://scripts/traffic/RivalMatatuManager.gd" id="16_rivals"]
+[ext_resource type="Script" path="res://scripts/environment/NairobiRouteNetwork.gd" id="17_routes"]
+[ext_resource type="Script" path="res://scripts/gameplay/CorridorServiceManager.gd" id="18_corridor_service"]
 
 [sub_resource type="SphereShape3D" id="CameraShape"]
 radius = 0.35
@@ -26,7 +28,10 @@ radius = 0.35
 [node name="Environment" type="Node3D" parent="World"]
 [node name="TestMap" parent="World/Environment" instance=ExtResource("1_map")]
 [node name="CBDRouteDistrict" type="Node3D" parent="World/Environment"]
-script = ExtResource("15_cbd_district")\n\n[node name="NairobiRouteNetwork" type="Node3D" parent="World/Environment"]\nscript = ExtResource("17_routes")
+script = ExtResource("15_cbd_district")
+
+[node name="NairobiRouteNetwork" type="Node3D" parent="World/Environment"]
+script = ExtResource("17_routes")
 
 [node name="Gameplay" type="Node3D" parent="."]
 
@@ -131,5 +136,6 @@ fov = 68.0
 passenger_manager_path = NodePath("../Gameplay/PassengerService")
 culture_manager_path = NodePath("../Gameplay/MatatuCulture")
 radio_path = NodePath("../MatatuRadio")
+corridor_service_path = NodePath("../Gameplay/CorridorService")
 [node name="PauseMenu" parent="." instance=ExtResource("7_pause")]
 [node name="MobileControls" parent="." instance=ExtResource("8_mobile")]
