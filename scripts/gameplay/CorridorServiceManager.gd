@@ -2,7 +2,7 @@ class_name CorridorServiceManager
 extends Node
 
 signal corridor_changed(name: String, stop_name: String, current: int, total: int)
-signal corridor_completed(name: String, reward: int, balance: int)
+signal corridor_completed(name: String, reward: int, balance: int, elapsed: float, best: float, new_best: bool)
 signal fare_awarded(amount: int, balance: int)
 signal service_progress(message: String)
 signal run_time_changed(seconds: float)
@@ -108,9 +108,17 @@ func _complete_stop() -> void:
 		EconomyManager.add_money(reward)
 		SaveManager.data["routes_completed"] = int(SaveManager.data.get("routes_completed", 0)) + 1
 		SaveManager.data["last_corridor"] = corridor_index
+		var best_times: Dictionary = SaveManager.data.get("corridor_best_times", {})
+		var key := str(corridor_index)
+		var previous_best := float(best_times.get(key, 0.0))
+		var new_best := previous_best <= 0.0 or elapsed_seconds < previous_best
+		if new_best:
+			best_times[key] = elapsed_seconds
+			SaveManager.data["corridor_best_times"] = best_times
+		var best := elapsed_seconds if new_best else previous_best
 		SaveManager.save_game()
-		corridor_completed.emit(String(data["name"]), reward, EconomyManager.get_money())
 		active = false
+		corridor_completed.emit(String(data["name"]), reward, EconomyManager.get_money(), elapsed_seconds, best, new_best)
 		return
 	_emit_status()
 
