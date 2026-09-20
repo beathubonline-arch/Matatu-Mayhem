@@ -275,7 +275,7 @@ func _on_navigation_changed(distance: float, turn_angle: float) -> void:
 		cue = "LEFT"
 	elif degrees < -18.0:
 		cue = "RIGHT"
-	navigation_label.text = "NAV • %s • %dm TO STAGE" % [cue, int(distance)]
+	navigation_label.text = "NAV • %s • %dm AHEAD" % [cue, int(distance)]
 
 func _current_capacity() -> int:
 	var levels: Dictionary = SaveManager.data.get("upgrade_levels", {})
@@ -378,14 +378,18 @@ func _on_maneuver_changed(message: String) -> void:
 func _on_route_progress_changed(percent: int, off_route: bool) -> void:
 	if off_route:
 		navigation_label.text = "NAV • OFF ROUTE • REJOIN ROAD"
-	elif not navigation_label.text.contains("TURN"):
+	elif not navigation_label.text.contains("TURN") and not navigation_label.text.contains("OFF ROUTE"):
 		navigation_label.text = "NAV • ROUTE %d%% • FOLLOW ROAD" % percent
 
 func _on_career_changed(rank: int, rank_name: String, xp: int, next_xp: int, owned: Array) -> void:
 	var progress := "MAX"
 	if next_xp > xp:
 		progress = "%d/%d XP" % [xp, next_xp]
-	controls_label.text = "CAREER • RANK %d %s • %s • NGANYAS %d" % [rank, rank_name, progress, owned.size()]
+	if OS.has_feature("mobile") or DisplayServer.is_touchscreen_available():
+		controls_label.visible = false
+	else:
+		controls_label.visible = true
+		controls_label.text = "W/S DRIVE • A/D STEER • SPACE HANDBRAKE • R RESET  |  CAREER R%d %s • %s • %d NGANYAS" % [rank, rank_name, progress, owned.size()]
 
 func _on_nganya_unlocked(name: String) -> void:
 	fare_notice.text = "NEW NGANYA UNLOCKED • %s" % name
