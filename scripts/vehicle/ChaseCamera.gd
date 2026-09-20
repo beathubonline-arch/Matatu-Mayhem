@@ -11,11 +11,14 @@ extends Node3D
 @export var base_fov := 68.0
 @export var max_fov := 82.0
 @export var max_speed_reference := 145.0
+@export var lateral_look_strength := 1.6
+@export var lateral_smoothness := 4.0
 
 @onready var spring_arm: SpringArm3D = $SpringArm3D
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
 
 var target: Node3D
+var _lateral_look := 0.0
 
 func _ready() -> void:
 	if not target_path.is_empty():
@@ -47,7 +50,12 @@ func _physics_process(delta: float) -> void:
 	# Keep a horizontal look offset even at rest so the look direction can never
 	# become colinear with Vector3.UP and destabilize the camera basis.
 	var camera_forward_distance: float = maxf(1.5, look_ahead_distance * speed_ratio)
-	var look_target: Vector3 = target.global_position + Vector3.UP + forward * camera_forward_distance
+	var steer_input := Input.get_action_strength("steer_right") - Input.get_action_strength("steer_left")
+	_lateral_look = lerpf(_lateral_look, steer_input * lateral_look_strength * speed_ratio, 1.0 - exp(-lateral_smoothness * delta))
+	var right := target.global_basis.x
+	right.y = 0.0
+	right = right.normalized()
+	var look_target: Vector3 = target.global_position + Vector3.UP + forward * camera_forward_distance + right * _lateral_look
 	var desired_basis := global_transform.looking_at(look_target, Vector3.UP).basis
 	global_basis = global_basis.slerp(desired_basis, 1.0 - exp(-rotation_smoothness * delta))
 
