@@ -68,7 +68,10 @@ func _add_hype(amount: int, message: String) -> void:
 	_last_event_msec = now
 	var multiplier := clampi(combo, 1, 5)
 	hype = clampi(hype + amount * multiplier, 0, 999)
-	SaveManager.data["best_hype"] = maxi(int(SaveManager.data.get("best_hype", 0)), hype)
+	var previous_best := int(SaveManager.data.get("best_hype", 0))
+	if hype > previous_best:
+		SaveManager.data["best_hype"] = hype
+		SaveManager.save_game()
 	hype_changed.emit(hype, combo, "%s • CRED %d" % [message, street_cred])
 
 func _add_reputation(amount: int) -> void:
