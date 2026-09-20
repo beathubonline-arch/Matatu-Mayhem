@@ -288,7 +288,7 @@ func _upgrade_cost(kind: String) -> int:
 
 func _buy_upgrade(kind: String) -> void:
 	var levels: Dictionary = SaveManager.data.get("upgrade_levels", {})
-	var level := clampi(int(levels.get(kind, 0)), 0, 5)
+	var level: int = clampi(int(levels.get(kind, 0)), 0, 5)
 	if level >= 5:
 		fare_notice.text = "%s MAX LEVEL" % kind.to_upper()
 		fare_notice.visible = true
@@ -323,7 +323,7 @@ func _refresh_garage() -> void:
 	for spec in specs:
 		var kind: String = spec[0]
 		var button: Button = spec[1]
-		var level := clampi(int(levels.get(kind, 0)), 0, 5)
+		var level: int = clampi(int(levels.get(kind, 0)), 0, 5)
 		if level >= 5:
 			button.text = "%s • LEVEL 5 • MAX" % kind.to_upper()
 		else:
