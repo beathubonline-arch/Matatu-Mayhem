@@ -48,7 +48,7 @@ func _spawn_rival(index: int) -> void:
 	glow.material_override = glow_mat
 	rival.add_child(glow)
 	var label := Label3D.new()
-	label.text = ["RONG RENDE", "CBD BEAST", "NAIROBI NIGHTS", "STREET KING"][index % 4]
+	label.text = ["ONYX", "MONEYFEST", "OPPOSITE", "MOXIE"][index % 4]
 	label.position = Vector3(0.0, 2.0, -2.28)
 	label.rotation_degrees.y = 180.0
 	label.modulate = neon
