@@ -15,6 +15,7 @@ func _ready() -> void:
 	_build_intersection()
 	_build_roadside_detail()
 	_build_traffic_infrastructure()
+	_build_cbd_identity()
 
 func _mat(color: Color, emission: Color = Color.TRANSPARENT, roughness: float = 0.75, metallic: float = 0.0) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
@@ -282,3 +283,25 @@ func _add_label(name_text: String, text_value: String, position_value: Vector3, 
 	label.pixel_size = pixel_size_value
 	label.font_size = font_size_value
 	add_child(label)
+
+func _build_cbd_identity() -> void:
+	# Street identity is inspired by real CBD names, while geometry remains a
+	# gameplay interpretation until verified GIS/scan geometry is integrated.
+	var sign_green := _mat(Color("176b48"), Color.TRANSPARENT, 0.55, 0.15)
+	var pole := _mat(Color("31363b"), Color.TRANSPARENT, 0.45, 0.65)
+	var signs: Array[Dictionary] = [
+		{"z": 70.0, "text": "TOM MBOYA STREET"},
+		{"z": 28.0, "text": "KENNETH MATIBA ROAD"},
+		{"z": -18.0, "text": "RONALD NGALA STREET"},
+		{"z": -62.0, "text": "LATEMA ROAD"}
+	]
+	for data in signs:
+		var z_value := float(data["z"])
+		var post := Node3D.new()
+		post.name = "CBDStreetSign"
+		post.position = Vector3(10.2, 0.3, z_value)
+		add_child(post)
+		_mesh_box("Post", Vector3(0.12, 3.3, 0.12), Vector3(0.0, 1.65, 0.0), pole, post)
+		_mesh_box("Board", Vector3(0.18, 0.72, 4.9), Vector3(0.0, 3.1, 0.0), sign_green, post)
+		_add_label("StreetName", str(data["text"]), Vector3(10.08, 3.4, z_value), Vector3(0.0, 90.0, 0.0), Color.WHITE, 0.005, 34)
+	_add_label("CBDMarker", "NAIROBI CBD • MATATU MAYHEM", Vector3(-9.1, 5.4, 86.0), Vector3(0.0, -90.0, 0.0), Color("ffd34d"), 0.006, 42)
