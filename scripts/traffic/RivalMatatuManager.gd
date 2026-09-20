@@ -39,7 +39,7 @@ func _spawn_rival(index: int) -> void:
 		points = network.get_corridor(active_corridor)["points"]
 	if points.size() < 2:
 		points = [Vector3(0,0,80), Vector3(0,0,-80)]
-	var segment_index := index % max(points.size() - 1, 1)
+	var segment_index: int = index % max(points.size() - 1, 1)
 	var a: Vector3 = points[segment_index]
 	var b: Vector3 = points[segment_index + 1]
 	var forward := index % 2 == 0
