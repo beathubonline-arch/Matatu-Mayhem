@@ -25,8 +25,9 @@ func _spawn_vehicle(data: Dictionary, index: int) -> void:
 	var vehicle := CharacterBody3D.new()
 	vehicle.position = a.lerp(b, 0.25 + 0.15 * float(index % 4)) + Vector3(direction.z, 0.55, -direction.x) * (2.6 if index % 2 == 0 else -2.6)
 	vehicle.set_meta("points", points)
-	vehicle.set_meta("point_index", segment_index + 1)
-	vehicle.set_meta("forward", index % 2 == 0)
+	var forward := index % 2 == 0
+	vehicle.set_meta("point_index", segment_index + 1 if forward else segment_index)
+	vehicle.set_meta("forward", forward)
 	vehicle.set_meta("lane_offset", 2.6 if index % 2 == 0 else -2.6)
 	vehicle.set_meta("speed", 7.0 + float(index % 3))
 	vehicle.set_collision_layer_value(1, true)
@@ -66,13 +67,18 @@ func _physics_process(_delta: float) -> void:
 		if to_target.length() < 5.0:
 			var forward: bool = bool(vehicle.get_meta("forward", true))
 			if forward:
-				point_index += 1
-				if point_index >= points.size():
-					point_index = 0
+				if point_index >= points.size() - 1:
+					forward = false
+					point_index = maxi(points.size() - 2, 0)
+				else:
+					point_index += 1
 			else:
-				point_index -= 1
-				if point_index < 0:
-					point_index = points.size() - 1
+				if point_index <= 0:
+					forward = true
+					point_index = mini(1, points.size() - 1)
+				else:
+					point_index -= 1
+			vehicle.set_meta("forward", forward)
 			vehicle.set_meta("point_index", point_index)
 			target = points[point_index]
 			to_target = target - vehicle.global_position
