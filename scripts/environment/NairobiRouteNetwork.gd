@@ -1,17 +1,30 @@
 class_name NairobiRouteNetwork
 extends Node3D
 
-# Gameplay-scale reconstruction of Nairobi's major matatu corridors.
-# Corridor ordering and stop names are grounded in public Nairobi route maps.
-# Distances are compressed for playability; this is not survey-grade GIS geometry.
+# Phase 2 Nairobi Twin Experience foundation.
+# The network uses recognizable public-route ordering and a denser gameplay polyline.
+# Geometry remains deliberately compressed/optimized for gameplay; it is not survey-grade GIS.
 
 const ROAD_Y := 0.04
 const ROAD_W := 15.0
+const WAIYAKI_POINTS := [
+	Vector3(-31,0,-63), Vector3(-49,0,-72), Vector3(-70,0,-82),
+	Vector3(-92,0,-91), Vector3(-118,0,-98), Vector3(-143,0,-104),
+	Vector3(-170,0,-108), Vector3(-198,0,-111), Vector3(-225,0,-112)
+]
 const CORRIDORS := [
-	{"name":"WAIYAKI WAY","color":"4aa3df","points":[Vector3(-31,0,-63),Vector3(-70,0,-82),Vector3(-118,0,-98),Vector3(-170,0,-108),Vector3(-225,0,-112)],"stops":["WESTLANDS","ABC PLACE","KANGEMI","UTHIRU"],"reward":9000},
-	{"name":"THIKA ROAD","color":"e8c547","points":[Vector3(31,0,21),Vector3(62,0,2),Vector3(95,0,-38),Vector3(122,0,-86),Vector3(142,0,-142)],"stops":["NGARA","PANGANI","MUTHAIGA","ROYSAMBU / KASARANI"],"reward":11000},
-	{"name":"MOMBASA ROAD","color":"e36a54","points":[Vector3(0,0,63),Vector3(34,0,102),Vector3(58,0,148),Vector3(72,0,202),Vector3(76,0,258)],"stops":["NYAYO","SOUTH B / C","GENERAL MOTORS","IMARA DAIMA"],"reward":12000},
-	{"name":"NGONG ROAD","color":"69c779","points":[Vector3(-31,0,21),Vector3(-66,0,50),Vector3(-96,0,86),Vector3(-122,0,130),Vector3(-146,0,178)],"stops":["COMMUNITY","PRESTIGE","ADAMS ARCADE","JUNCTION"],"reward":10000}
+	{"name":"WAIYAKI WAY","color":"4aa3df","points":WAIYAKI_POINTS,
+	 "service_points":[Vector3(-70,0,-82),Vector3(-118,0,-98),Vector3(-170,0,-108),Vector3(-225,0,-112)],
+	 "stops":["WESTLANDS","ABC PLACE","KANGEMI","UTHIRU"],"reward":9000},
+	{"name":"THIKA ROAD","color":"e8c547","points":[Vector3(31,0,21),Vector3(62,0,2),Vector3(95,0,-38),Vector3(122,0,-86),Vector3(142,0,-142)],
+	 "service_points":[Vector3(62,0,2),Vector3(95,0,-38),Vector3(122,0,-86),Vector3(142,0,-142)],
+	 "stops":["NGARA","PANGANI","MUTHAIGA","ROYSAMBU / KASARANI"],"reward":11000},
+	{"name":"MOMBASA ROAD","color":"e36a54","points":[Vector3(0,0,63),Vector3(34,0,102),Vector3(58,0,148),Vector3(72,0,202),Vector3(76,0,258)],
+	 "service_points":[Vector3(34,0,102),Vector3(58,0,148),Vector3(72,0,202),Vector3(76,0,258)],
+	 "stops":["NYAYO","SOUTH B / C","GENERAL MOTORS","IMARA DAIMA"],"reward":12000},
+	{"name":"NGONG ROAD","color":"69c779","points":[Vector3(-31,0,21),Vector3(-66,0,50),Vector3(-96,0,86),Vector3(-122,0,130),Vector3(-146,0,178)],
+	 "service_points":[Vector3(-66,0,50),Vector3(-96,0,86),Vector3(-122,0,130),Vector3(-146,0,178)],
+	 "stops":["COMMUNITY","PRESTIGE","ADAMS ARCADE","JUNCTION"],"reward":10000}
 ]
 
 func corridor_count() -> int:
@@ -22,41 +35,46 @@ func get_corridor(index: int) -> Dictionary:
 
 func get_service_stop(corridor: int, stop: int) -> Vector3:
 	var data: Dictionary = get_corridor(corridor)
-	var points: Array = data["points"]
-	return points[clampi(stop + 1, 1, points.size() - 1)]
+	var service_points: Array = data["service_points"]
+	return service_points[clampi(stop, 0, service_points.size() - 1)]
 
 func _ready() -> void:
-	for corridor in CORRIDORS:
-		_build_corridor(corridor)
+	for corridor_index in range(CORRIDORS.size()):
+		_build_corridor(CORRIDORS[corridor_index], corridor_index)
 
-func _build_corridor(data: Dictionary) -> void:
+func _build_corridor(data: Dictionary, corridor_index: int) -> void:
 	var points: Array = data["points"]
 	var color: Color = Color(String(data["color"]))
 	for i in range(points.size() - 1):
 		_road_segment(points[i], points[i + 1], color)
-	for i in range(1, points.size()):
-		_stage(points[i], String(data["stops"][i - 1]), String(data["name"]), int(data["reward"]))
+		if corridor_index == 0:
+			_waiyaki_streetscape(points[i], points[i + 1], i)
+	var service_points: Array = data["service_points"]
+	for i in range(service_points.size()):
+		_stage(service_points[i], String(data["stops"][i]), String(data["name"]), int(data["reward"]))
+	if corridor_index == 0:
+		_waiyaki_landmarks()
 
 func _road_segment(a: Vector3, b: Vector3, accent: Color) -> void:
 	var delta: Vector3 = b - a
 	var length: float = Vector2(delta.x, delta.z).length()
 	var mid: Vector3 = (a + b) * 0.5
+	var yaw := atan2(delta.x, delta.z)
 	var road := MeshInstance3D.new()
 	var mesh := BoxMesh.new()
 	mesh.size = Vector3(ROAD_W, 0.08, length)
 	road.mesh = mesh
 	road.position = Vector3(mid.x, ROAD_Y, mid.z)
-	road.rotation.y = atan2(delta.x, delta.z)
+	road.rotation.y = yaw
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = Color("25282d")
 	mat.roughness = 0.96
 	road.material_override = mat
 	add_child(road)
-	# Physical road deck: extended corridors must support the VehicleBody3D,
-	# not just look like roads beyond the original CBD ground.
+
 	var body := StaticBody3D.new()
 	body.position = Vector3(mid.x, ROAD_Y - 0.10, mid.z)
-	body.rotation.y = road.rotation.y
+	body.rotation.y = yaw
 	body.collision_layer = 1
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
@@ -64,21 +82,123 @@ func _road_segment(a: Vector3, b: Vector3, accent: Color) -> void:
 	collision.shape = shape
 	body.add_child(collision)
 	add_child(body)
+
+	# Kenyan urban arterial treatment: centre divider plus lane/edge markings.
+	_marking(mid, yaw, length, 0.0, 0.18, accent)
+	_marking(mid, yaw, length, -3.7, 0.10, Color("d9d9d9"))
+	_marking(mid, yaw, length, 3.7, 0.10, Color("d9d9d9"))
+	_marking(mid, yaw, length, -7.15, 0.14, Color("f2f2f2"))
+	_marking(mid, yaw, length, 7.15, 0.14, Color("f2f2f2"))
+
+func _marking(mid: Vector3, yaw: float, length: float, lateral: float, width: float, color: Color) -> void:
 	var stripe := MeshInstance3D.new()
 	var stripe_mesh := BoxMesh.new()
-	stripe_mesh.size = Vector3(0.18, 0.02, length * 0.92)
+	stripe_mesh.size = Vector3(width, 0.02, length * 0.94)
 	stripe.mesh = stripe_mesh
-	stripe.position = Vector3(mid.x, ROAD_Y + 0.06, mid.z)
-	stripe.rotation.y = road.rotation.y
+	var right := Vector3(cos(yaw), 0.0, -sin(yaw))
+	stripe.position = Vector3(mid.x, ROAD_Y + 0.06, mid.z) + right * lateral
+	stripe.rotation.y = yaw
 	var stripe_mat := StandardMaterial3D.new()
-	stripe_mat.albedo_color = accent
+	stripe_mat.albedo_color = color
 	stripe.material_override = stripe_mat
 	add_child(stripe)
+
+func _waiyaki_streetscape(a: Vector3, b: Vector3, segment_index: int) -> void:
+	var delta := b - a
+	var length := Vector2(delta.x, delta.z).length()
+	if length < 2.0:
+		return
+	var direction := delta.normalized()
+	var right := Vector3(direction.z, 0.0, -direction.x)
+	var mid := (a + b) * 0.5
+	# Pavements and drainage shoulders keep the corridor visually grounded.
+	for side in [-1.0, 1.0]:
+		var walk := MeshInstance3D.new()
+		var walk_mesh := BoxMesh.new()
+		walk_mesh.size = Vector3(2.2, 0.16, length)
+		walk.mesh = walk_mesh
+		walk.position = mid + right * (side * 8.6) + Vector3(0, 0.05, 0)
+		walk.rotation.y = atan2(delta.x, delta.z)
+		var walk_mat := StandardMaterial3D.new()
+		walk_mat.albedo_color = Color("7a756d")
+		walk.material_override = walk_mat
+		add_child(walk)
+	# Lightweight streetlights; alternate sides to control node count on mobile.
+	var light_pos := mid + right * (9.6 if segment_index % 2 == 0 else -9.6)
+	_streetlight(light_pos)
+	# Low-cost roadside massing creates the Westlands -> Kangemi -> Uthiru transition.
+	for side in [-1.0, 1.0]:
+		var height := 8.0 + float((segment_index * 7 + int(side > 0.0) * 5) % 14)
+		var footprint := Vector3(9.0 + float(segment_index % 3) * 2.0, height, 8.0)
+		_building(mid + right * (side * 16.0) + direction * (3.0 if side > 0.0 else -4.0), footprint, segment_index, side)
+
+func _streetlight(pos: Vector3) -> void:
+	var pole := MeshInstance3D.new()
+	var pole_mesh := CylinderMesh.new()
+	pole_mesh.top_radius = 0.08
+	pole_mesh.bottom_radius = 0.11
+	pole_mesh.height = 6.0
+	pole.mesh = pole_mesh
+	pole.position = pos + Vector3(0, 3.0, 0)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color("42474d")
+	pole.material_override = mat
+	add_child(pole)
+
+func _building(pos: Vector3, size: Vector3, seed: int, side: float) -> void:
+	var building := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	building.mesh = mesh
+	building.position = pos + Vector3(0, size.y * 0.5, 0)
+	var mat := StandardMaterial3D.new()
+	var palette: Array[Color] = [Color("b9b3a6"), Color("8f969b"), Color("c6b99d"), Color("777d82")]
+	mat.albedo_color = palette[(seed + (1 if side > 0.0 else 0)) % palette.size()]
+	mat.roughness = 0.9
+	building.material_override = mat
+	add_child(building)
+
+func _waiyaki_landmarks() -> void:
+	_landmark_sign(Vector3(-70, 5.4, -70), "WESTLANDS\nWAIYAKI WAY")
+	_landmark_sign(Vector3(-118, 5.4, -86), "ABC PLACE")
+	_landmark_sign(Vector3(-170, 5.4, -96), "KANGEMI")
+	_landmark_sign(Vector3(-225, 5.4, -100), "UTHIRU")
+	_billboard(Vector3(-95, 4.5, -78), "MATATU MAYHEM\n254 STREET RADIO")
+	_billboard(Vector3(-190, 4.5, -96), "BEATHUB\nNAIROBI SOUNDS")
+
+func _landmark_sign(pos: Vector3, text: String) -> void:
+	var sign := Label3D.new()
+	sign.text = text
+	sign.position = pos
+	sign.font_size = 42
+	sign.pixel_size = 0.008
+	sign.outline_size = 10
+	sign.modulate = Color("f7f4df")
+	add_child(sign)
+
+func _billboard(pos: Vector3, text: String) -> void:
+	var board := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(7.0, 3.2, 0.25)
+	board.mesh = mesh
+	board.position = pos
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color("181b22")
+	board.material_override = mat
+	add_child(board)
+	var label := Label3D.new()
+	label.text = text
+	label.position = pos + Vector3(0, 0, -0.16)
+	label.font_size = 34
+	label.pixel_size = 0.006
+	label.outline_size = 8
+	label.modulate = Color("ffe15a")
+	add_child(label)
 
 func _stage(pos: Vector3, stop_name: String, corridor: String, reward: int) -> void:
 	var root := Node3D.new()
 	root.position = pos
-	root.name = stop_name.replace(" ", "_") + "_Stage"
+	root.name = stop_name.replace(" ", "_").replace("/", "_") + "_Stage"
 	add_child(root)
 	var shelter := MeshInstance3D.new()
 	var shelter_mesh := BoxMesh.new()
@@ -97,7 +217,7 @@ func _stage(pos: Vector3, stop_name: String, corridor: String, reward: int) -> v
 		post.position = Vector3(x, 1.5, 0)
 		root.add_child(post)
 	var sign := Label3D.new()
-	sign.text = "%s\\n%s\\nROUTE BONUS KSh %d" % [stop_name, corridor, reward]
+	sign.text = "%s\n%s\nROUTE BONUS KSh %d" % [stop_name, corridor, reward]
 	sign.position = Vector3(0, 3.45, 0)
 	sign.font_size = 30
 	sign.pixel_size = 0.006
