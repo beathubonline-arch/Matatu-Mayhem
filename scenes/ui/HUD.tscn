@@ -169,3 +169,58 @@ theme_override_font_sizes/font_size = 16
 text = "♫ 254 STREET RADIO\nMATATU MAYHEM × BEATHUB\n[M] RADIO  [N] NEXT"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="RouteSelectPanel" type="PanelContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = -245.0
+offset_right = 280.0
+offset_bottom = 245.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("FinishStyle")
+
+[node name="VBox" type="VBoxContainer" parent="RouteSelectPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="RouteSelectPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.78, 0.15, 1)
+theme_override_font_sizes/font_size = 30
+text = "CHOOSE YOUR NAIROBI ROUTE"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="RouteSelectPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 17
+text = "Pick a corridor. Work the stages. Earn KSh. Build your reputation."
+horizontal_alignment = 1
+
+[node name="Waiyaki" type="Button" parent="RouteSelectPanel/VBox"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_styles/normal = SubResource("ButtonStyle")
+text = "WAIYAKI WAY  •  WESTLANDS → UTHIRU  •  KSh 9,000 BONUS"
+
+[node name="Thika" type="Button" parent="RouteSelectPanel/VBox"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_styles/normal = SubResource("ButtonStyle")
+text = "THIKA ROAD  •  NGARA → KASARANI  •  KSh 11,000 BONUS"
+
+[node name="Mombasa" type="Button" parent="RouteSelectPanel/VBox"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_styles/normal = SubResource("ButtonStyle")
+text = "MOMBASA ROAD  •  NYAYO → IMARA DAIMA  •  KSh 12,000 BONUS"
+
+[node name="Ngong" type="Button" parent="RouteSelectPanel/VBox"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_styles/normal = SubResource("ButtonStyle")
+text = "NGONG ROAD  •  COMMUNITY → JUNCTION  •  KSh 10,000 BONUS"
