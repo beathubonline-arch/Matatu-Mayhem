@@ -25,6 +25,7 @@ var passengers_onboard := 0
 var total_fares_this_run := 0
 var total_passengers_this_run := 0
 var route_point_index := 1
+var next_stage_route_index := 1
 
 func _ready() -> void:
 	player = get_node_or_null(player_path) as Node3D
@@ -58,6 +59,7 @@ func select_corridor(index: int) -> void:
 	total_fares_this_run = 0
 	total_passengers_this_run = 0
 	route_point_index = 1
+	next_stage_route_index = _find_route_index_for_service(0)
 	active = true
 	var data: Dictionary = network.get_corridor(corridor_index)
 	var points: Array = data["points"]
@@ -82,7 +84,7 @@ func _physics_process(delta: float) -> void:
 	var route_points: Array = data["points"]
 	var stage_target: Vector3 = network.get_service_stop(corridor_index, stop_index)
 	var distance: float = player.global_position.distance_to(stage_target)
-	while route_point_index < route_points.size() - 1 and player.global_position.distance_to(route_points[route_point_index]) < 9.0:
+	while route_point_index < next_stage_route_index and player.global_position.distance_to(route_points[route_point_index]) < 9.0:
 		route_point_index += 1
 	var nav_target: Vector3 = route_points[clampi(route_point_index, 0, route_points.size() - 1)]
 	var to_target := nav_target - player.global_position
@@ -134,6 +136,9 @@ func _complete_stop() -> void:
 	SaveManager.data["passenger_trips_completed"] = int(SaveManager.data.get("passenger_trips_completed", 0)) + boarded
 	SaveManager.save_game()
 	stop_index += 1
+	if not is_terminal:
+		next_stage_route_index = _find_route_index_for_service(stop_index)
+		route_point_index = mini(route_point_index + 1, next_stage_route_index)
 	if is_terminal:
 		var reward: int = int(data["reward"])
 		EconomyManager.add_money(reward)
@@ -166,3 +171,17 @@ func _emit_status() -> void:
 	var data: Dictionary = network.get_corridor(corridor_index)
 	var stops: Array = data["stops"]
 	corridor_changed.emit(String(data["name"]), String(stops[stop_index]), stop_index + 1, stops.size())
+
+func _find_route_index_for_service(service_index: int) -> int:
+	var data: Dictionary = network.get_corridor(corridor_index)
+	var route_points: Array = data["points"]
+	var service_points: Array = data["service_points"]
+	var target: Vector3 = service_points[clampi(service_index, 0, service_points.size() - 1)]
+	var best_index := 0
+	var best_distance := INF
+	for i in range(route_points.size()):
+		var d := target.distance_squared_to(route_points[i])
+		if d < best_distance:
+			best_distance = d
+			best_index = i
+	return best_index
