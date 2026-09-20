@@ -185,7 +185,8 @@ func _apply_selected_nganya() -> void:
 		"MAVERICK": [Color("00d9ff"), Color("ff2e88")],
 		"ONYX": [Color("a855f7"), Color("22d3ee")],
 		"MOXIE": [Color("ff8a00"), Color("f7ff00")],
-		"MONEYFEST": [Color("22c55e"), Color("facc15")]
+		"MONEYFEST": [Color("22c55e"), Color("facc15")],
+		"STREET LEGEND": [Color("f7ff00"), Color("ff2e88")]
 	}
 	var palette: Array = palettes.get(selected, palettes["MAVERICK"])
 	for child in get_children():
