@@ -68,16 +68,16 @@ func _spawn_bodas() -> void:
 		_movers.append(boda)
 
 func _physics_process(_delta: float) -> void:
-	for boda in _movers:
-		var points: Array = boda.get_meta("points", [])
+	for mover in _movers:
+		var points: Array = mover.get_meta("points", [])
 		if points.size() < 2:
 			continue
-		var index := clampi(int(boda.get_meta("point_index", 1)), 0, points.size() - 1)
+		var index := clampi(int(mover.get_meta("point_index", 1)), 0, points.size() - 1)
 		var target: Vector3 = points[index]
-		var to_target := target - boda.global_position
+		var to_target := target - mover.global_position
 		to_target.y = 0.0
 		if to_target.length() < 3.0:
-			var forward := bool(boda.get_meta("forward", true))
+			var forward := bool(mover.get_meta("forward", true))
 			if forward and index >= points.size() - 1:
 				forward = false
 				index = maxi(points.size() - 2, 0)
@@ -86,16 +86,21 @@ func _physics_process(_delta: float) -> void:
 				index = mini(1, points.size() - 1)
 			else:
 				index += 1 if forward else -1
-			boda.set_meta("forward", forward)
-			boda.set_meta("point_index", index)
+			mover.set_meta("forward", forward)
+			mover.set_meta("point_index", index)
 			target = points[index]
-			to_target = target - boda.global_position
+			to_target = target - mover.global_position
 			to_target.y = 0.0
 		var direction := to_target.normalized()
-		boda.velocity = direction * float(boda.get_meta("speed", 6.0))
+		var lane_offset := float(mover.get_meta("lane_offset", 0.0))
+		if absf(lane_offset) > 0.01:
+			var lateral := Vector3(direction.z, 0.0, -direction.x) * lane_offset
+			direction = (target + lateral - mover.global_position).normalized()
+			direction.y = 0.0
+		mover.velocity = direction * float(mover.get_meta("speed", 6.0))
 		if direction.length_squared() > 0.01:
-			boda.rotation.y = atan2(-direction.x, -direction.z)
-		boda.move_and_slide()
+			mover.rotation.y = atan2(-direction.x, -direction.z)
+		mover.move_and_slide()
 
 func _spawn_route_minibuses() -> void:
 	var data := network.get_corridor(0)
