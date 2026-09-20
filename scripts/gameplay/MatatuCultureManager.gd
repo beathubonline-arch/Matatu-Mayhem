@@ -29,6 +29,7 @@ func _ready() -> void:
 	if challenges != null:
 		challenges.challenge_changed.connect(_on_challenge_changed)
 		challenges.rival_result.connect(_on_rival_result)
+		challenges.driving_skill.connect(_on_driving_skill)
 	reputation = int(SaveManager.data.get("matatu_reputation", 0))
 	street_cred = int(SaveManager.data.get("street_cred", 0))
 	hype_changed.emit(hype, combo, "NAIROBI SHIFT READY")
@@ -80,3 +81,7 @@ func _on_rival_result(won: bool, _player_time: float, _rival_time: float, _rewar
 		combo = 0
 		hype = maxi(hype - 20, 0)
 		hype_changed.emit(hype, combo, "RIVAL GOT THERE FIRST • RUN IT BACK")
+
+
+func _on_driving_skill(message: String, points: int) -> void:
+	_add_hype(points, message)
