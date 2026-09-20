@@ -87,8 +87,20 @@ func _physics_process(delta: float) -> void:
 	var route_points: Array = data["points"]
 	var stage_target: Vector3 = network.get_service_stop(corridor_index, stop_index)
 	var distance: float = player.global_position.distance_to(stage_target)
-	while route_point_index < next_stage_route_index and player.global_position.distance_to(route_points[route_point_index]) < 9.0:
-		route_point_index += 1
+	while route_point_index < next_stage_route_index:
+		var waypoint: Vector3 = route_points[route_point_index]
+		var waypoint_distance := player.global_position.distance_to(waypoint)
+		var passed_waypoint := false
+		if route_point_index > 0:
+			var segment_dir: Vector3 = route_points[route_point_index] - route_points[route_point_index - 1]
+			segment_dir.y = 0.0
+			var beyond: Vector3 = player.global_position - waypoint
+			beyond.y = 0.0
+			passed_waypoint = segment_dir.length_squared() > 0.01 and beyond.dot(segment_dir.normalized()) > 2.0
+		if waypoint_distance < 11.0 or passed_waypoint:
+			route_point_index += 1
+		else:
+			break
 	var nav_target: Vector3 = route_points[clampi(route_point_index, 0, route_points.size() - 1)]
 	var to_target := nav_target - player.global_position
 	to_target.y = 0.0
@@ -97,7 +109,7 @@ func _physics_process(delta: float) -> void:
 	var turn_angle := 0.0
 	if to_target.length_squared() > 0.01 and forward.length_squared() > 0.01:
 		turn_angle = forward.normalized().signed_angle_to(to_target.normalized(), Vector3.UP)
-	navigation_changed.emit(player.global_position.distance_to(nav_target), turn_angle)
+	navigation_changed.emit(distance if route_point_index >= next_stage_route_index else player.global_position.distance_to(nav_target), turn_angle)
 	var nearest_distance := _nearest_route_distance(player.global_position, route_points)
 	var off_route := nearest_distance > 18.0
 	if off_route:
