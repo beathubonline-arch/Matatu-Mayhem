@@ -7,6 +7,7 @@ signal fare_awarded(amount: int, balance: int)
 signal service_progress(message: String)
 signal run_time_changed(seconds: float)
 signal passenger_load_changed(onboard: int, capacity: int, boarded: int, alighted: int)
+signal navigation_changed(distance: float, turn_angle: float)
 
 @export var player_path: NodePath
 @export var network_path: NodePath
@@ -29,6 +30,8 @@ func _ready() -> void:
 	if player == null or network == null:
 		push_error("CorridorServiceManager requires player and NairobiRouteNetwork.")
 		return
+	var levels: Dictionary = SaveManager.data.get("upgrade_levels", {})
+	passenger_capacity = 14 + clampi(int(levels.get("capacity", 0)), 0, 5) * 2
 	# Wait for the player to choose a Nairobi route from the HUD.
 	active = false
 
@@ -74,6 +77,14 @@ func _physics_process(delta: float) -> void:
 	run_time_changed.emit(elapsed_seconds)
 	var target: Vector3 = network.get_service_stop(corridor_index, stop_index)
 	var distance: float = player.global_position.distance_to(target)
+	var to_target := target - player.global_position
+	to_target.y = 0.0
+	var forward := -player.global_basis.z
+	forward.y = 0.0
+	var turn_angle := 0.0
+	if to_target.length_squared() > 0.01 and forward.length_squared() > 0.01:
+		turn_angle = forward.normalized().signed_angle_to(to_target.normalized(), Vector3.UP)
+	navigation_changed.emit(distance, turn_angle)
 	if distance > 7.0:
 		dwell = 0.0
 		if distance < 28.0:
@@ -134,6 +145,12 @@ func _complete_stop() -> void:
 		corridor_completed.emit(String(data["name"]), reward, EconomyManager.get_money(), elapsed_seconds, best, new_best, total_fares_this_run, total_passengers_this_run)
 		return
 	_emit_status()
+
+func refresh_capacity_upgrade() -> void:
+	var levels: Dictionary = SaveManager.data.get("upgrade_levels", {})
+	passenger_capacity = 14 + clampi(int(levels.get("capacity", 0)), 0, 5) * 2
+	passengers_onboard = mini(passengers_onboard, passenger_capacity)
+	passenger_load_changed.emit(passengers_onboard, passenger_capacity, 0, 0)
 
 func _emit_status() -> void:
 	var data: Dictionary = network.get_corridor(corridor_index)
