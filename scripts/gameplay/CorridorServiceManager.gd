@@ -18,9 +18,11 @@ signal route_unlocked(name: String)
 
 @export var player_path: NodePath
 @export var network_path: NodePath
+@export var corridor_life_path: NodePath
 
 var player: Node3D
 var network: NairobiRouteNetwork
+var corridor_life: Node
 var corridor_index := 0
 var stop_index := 0
 var dwell := 0.0
@@ -43,6 +45,7 @@ var _event_triggered_stage := -1
 func _ready() -> void:
 	player = get_node_or_null(player_path) as Node3D
 	network = get_node_or_null(network_path) as NairobiRouteNetwork
+	corridor_life = get_node_or_null(corridor_life_path)
 	if player == null or network == null:
 		push_error("CorridorServiceManager requires player and NairobiRouteNetwork.")
 		return
@@ -205,6 +208,11 @@ func _complete_stop() -> void:
 		_stage_rush_time = 24.0 + float(corridor_index * 2)
 		_stage_rush_bonus = 900 + corridor_index * 250
 		stage_rush_changed.emit(_stage_rush_time, _stage_rush_bonus)
+	if corridor_life != null:
+		if alighted > 0 and corridor_life.has_method("alight_passengers"):
+			corridor_life.call("alight_passengers", corridor_index, stop_index, alighted, player)
+		if boarded > 0 and corridor_life.has_method("board_passengers"):
+			corridor_life.call("board_passengers", corridor_index, stop_index, boarded, player)
 	passenger_load_changed.emit(passengers_onboard, passenger_capacity, boarded, alighted)
 	SaveManager.data["passenger_trips_completed"] = int(SaveManager.data.get("passenger_trips_completed", 0)) + boarded
 	SaveManager.save_game()
