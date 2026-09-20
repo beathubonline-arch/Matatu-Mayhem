@@ -67,7 +67,7 @@ func get_stage_direction(corridor: int, stop: int) -> Vector3:
 
 func _route_direction_at(route_points: Array, service_point: Vector3) -> Vector3:
 	var best_index := 0
-	var best_distance := INF
+	var best_distance: float = INF
 	for i in range(route_points.size()):
 		var d := service_point.distance_squared_to(route_points[i])
 		if d < best_distance:
@@ -75,8 +75,8 @@ func _route_direction_at(route_points: Array, service_point: Vector3) -> Vector3
 			best_index = i
 	# Stages sit on the outgoing road segment at junctions instead of using
 	# an averaged diagonal between incoming and outgoing roads.
-	var next_index := mini(best_index + 1, route_points.size() - 1)
-	var prev_index := maxi(best_index - 1, 0)
+	var next_index: int = mini(best_index + 1, route_points.size() - 1)
+	var prev_index: int = maxi(best_index - 1, 0)
 	var direction: Vector3
 	if next_index != best_index:
 		direction = route_points[next_index] - route_points[best_index]
@@ -113,14 +113,14 @@ func _build_corridor(data: Dictionary, corridor_index: int) -> void:
 
 func _stage_visual_position(route_points: Array, service_point: Vector3) -> Vector3:
 	var best_index := 0
-	var best_distance := INF
+	var best_distance: float = INF
 	for i in range(route_points.size()):
 		var d := service_point.distance_squared_to(route_points[i])
 		if d < best_distance:
 			best_distance = d
 			best_index = i
-	var next_index := mini(best_index + 1, route_points.size() - 1)
-	var prev_index := maxi(best_index - 1, 0)
+	var next_index: int = mini(best_index + 1, route_points.size() - 1)
+	var prev_index: int = maxi(best_index - 1, 0)
 	var direction: Vector3 = route_points[next_index] - route_points[prev_index]
 	direction.y = 0.0
 	if direction.length_squared() < 0.01:
