@@ -220,7 +220,7 @@ func _refresh_route_unlocks() -> void:
 		var locked := i >= unlocked
 		buttons[i].disabled = locked
 		if locked:
-			buttons[i].text = "🔒 %s" % base_texts[i]
+			buttons[i].text = "LOCKED • %s" % base_texts[i]
 		else:
 			var best := float(best_times.get(str(i), 0.0))
 			var pb := "" if best <= 0.0 else "  •  PB %s" % _format_time(best)
