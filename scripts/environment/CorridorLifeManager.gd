@@ -21,6 +21,7 @@ func _ready() -> void:
 	_spawn_bodas()
 	_spawn_route_minibuses()
 	_spawn_other_corridor_minibuses()
+	_spawn_stage_conductors()
 
 func _spawn_waiyaki_people() -> void:
 	var data := network.get_corridor(0)
@@ -205,7 +206,7 @@ func _spawn_other_corridor_minibuses() -> void:
 			bus.set_meta("forward", forward)
 			bus.set_meta("speed", 6.6 + float(corridor_index) * 0.35)
 			bus.set_meta("lane_offset", lane_offset)
-		bus.set_meta("steer_dir", direction)
+			bus.set_meta("steer_dir", direction)
 			var body := MeshInstance3D.new()
 			var mesh := BoxMesh.new()
 			mesh.size = Vector3(2.0, 2.1, 4.4)
@@ -227,3 +228,34 @@ func _spawn_other_corridor_minibuses() -> void:
 			bus.add_child(route)
 			add_child(bus)
 			_movers.append(bus)
+
+
+func _spawn_stage_conductors() -> void:
+	for corridor_index in range(network.corridor_count()):
+		var data: Dictionary = network.get_corridor(corridor_index)
+		var stops: Array = data["stops"]
+		for stop_index in range(stops.size()):
+			var root := Node3D.new()
+			var direction: Vector3 = network.get_stage_direction(corridor_index, stop_index)
+			var right := Vector3(direction.z, 0.0, -direction.x)
+			root.position = network.get_stage_waiting_position(corridor_index, stop_index) + right * 2.4
+			root.rotation.y = atan2(direction.x, direction.z)
+			var body := MeshInstance3D.new()
+			var mesh := CapsuleMesh.new()
+			mesh.radius = 0.28
+			mesh.height = 1.7
+			body.mesh = mesh
+			body.position.y = 0.85
+			var mat := StandardMaterial3D.new()
+			mat.albedo_color = Color("f59e0b") if (stop_index + corridor_index) % 2 == 0 else Color("22c55e")
+			body.material_override = mat
+			root.add_child(body)
+			var call := Label3D.new()
+			call.text = "%s! PANDA!" % String(stops[-1])
+			call.position = Vector3(0, 2.25, 0)
+			call.font_size = 22
+			call.pixel_size = 0.005
+			call.outline_size = 6
+			call.modulate = Color("ffe15a")
+			root.add_child(call)
+			add_child(root)
