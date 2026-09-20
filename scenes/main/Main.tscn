@@ -31,7 +31,8 @@ radius = 0.35
 [node name="Environment" type="Node3D" parent="World"]
 [node name="TestMap" parent="World/Environment" instance=ExtResource("1_map")]
 [node name="CBDRouteDistrict" type="Node3D" parent="World/Environment"]
-script = ExtResource("15_cbd_district")
+process_mode = 4
+visible = false
 
 [node name="NairobiRouteNetwork" type="Node3D" parent="World/Environment"]
 script = ExtResource("17_routes")
@@ -74,6 +75,7 @@ route_minibuses_per_other_corridor = 2
 script = ExtResource("16_rivals")
 rival_count = 4
 network_path = NodePath("../../World/Environment/NairobiRouteNetwork")
+corridor_service_path = NodePath("../CorridorService")
 
 [node name="PassengerStops" type="Node3D" parent="Gameplay"]
 
