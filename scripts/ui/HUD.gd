@@ -67,7 +67,7 @@ func _ready() -> void:
 		corridor_service.service_progress.connect(_on_service_progress)
 		corridor_service.run_time_changed.connect(_on_corridor_time_changed)
 		corridor_service.passenger_load_changed.connect(_on_passenger_load_changed)
-	_on_hype_changed(0, 0, "CBD SHIFT STARTED")
+	_on_hype_changed(0, 0, "NAIROBI SHIFT READY")
 	if OS.has_feature("mobile") or DisplayServer.is_touchscreen_available():
 		controls_label.visible = false
 	else:
