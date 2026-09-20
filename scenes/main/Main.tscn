@@ -88,6 +88,7 @@ radio_path = NodePath("../../MatatuRadio")
 
 [node name="Route" type="Node3D" parent="Gameplay"]
 script = ExtResource("5_route")
+auto_start = false
 
 [node name="Checkpoint01" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
 position = Vector3(0, 0, 63)
