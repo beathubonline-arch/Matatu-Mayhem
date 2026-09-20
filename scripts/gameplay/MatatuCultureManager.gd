@@ -4,7 +4,6 @@ extends Node
 signal hype_changed(value: int, combo: int, message: String)
 signal reputation_awarded(amount: int, total: int)
 
-@export var passenger_manager_path: NodePath
 @export var radio_path: NodePath
 @export var corridor_service_path: NodePath
 @export var challenge_manager_path: NodePath
@@ -17,11 +16,9 @@ var _last_event_msec := 0
 var _last_decay_msec := 0
 
 func _ready() -> void:
-	var passengers := get_node_or_null(passenger_manager_path)
-	if passengers != null:
-		passengers.fare_awarded.connect(_on_fare_awarded)
 	var corridor := get_node_or_null(corridor_service_path)
 	if corridor != null:
+		corridor.fare_awarded.connect(_on_fare_awarded)
 		corridor.corridor_completed.connect(_on_corridor_completed)
 	var radio := get_node_or_null(radio_path)
 	if radio != null:
