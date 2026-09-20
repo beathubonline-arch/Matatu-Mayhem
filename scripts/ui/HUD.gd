@@ -77,6 +77,7 @@ func _ready() -> void:
 		corridor_service.run_time_changed.connect(_on_corridor_time_changed)
 		corridor_service.passenger_load_changed.connect(_on_passenger_load_changed)
 		corridor_service.navigation_changed.connect(_on_navigation_changed)
+		corridor_service.maneuver_changed.connect(_on_maneuver_changed)
 	if not challenge_manager_path.is_empty():
 		challenge_manager = get_node_or_null(challenge_manager_path)
 	if challenge_manager != null:
@@ -314,3 +315,6 @@ func _on_rival_result(won: bool, player_time: float, rival_time: float, reward: 
 		fare_notice.text = "RIVAL WINS THIS RUN\nYOU %s • RIVAL %s • RUN IT AGAIN" % [_format_time(player_time), _format_time(rival_time)]
 	fare_notice.visible = true
 	_fare_notice_time = 5.0
+
+func _on_maneuver_changed(message: String) -> void:
+	navigation_label.text = "NAV • %s" % message
