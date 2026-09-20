@@ -102,14 +102,11 @@ func _physics_process(delta: float) -> void:
 		else:
 			break
 	var nav_target: Vector3 = route_points[clampi(route_point_index, 0, route_points.size() - 1)]
-	var to_target := nav_target - player.global_position
-	to_target.y = 0.0
-	var forward := -player.global_basis.z
-	forward.y = 0.0
-	var turn_angle := 0.0
-	if to_target.length_squared() > 0.01 and forward.length_squared() > 0.01:
-		turn_angle = forward.normalized().signed_angle_to(to_target.normalized(), Vector3.UP)
-	navigation_changed.emit(distance if route_point_index >= next_stage_route_index else player.global_position.distance_to(nav_target), turn_angle)
+	var nav_distance: float = distance if route_point_index >= next_stage_route_index else player.global_position.distance_to(nav_target)
+	# Turn cues come from the route geometry, not the player's current heading.
+	# This keeps LEFT/RIGHT stable even if the matatu is recovering from a skid.
+	var turn_angle := _route_turn_angle(route_points, route_point_index)
+	navigation_changed.emit(nav_distance, turn_angle)
 	var nearest_distance := _nearest_route_distance(player.global_position, route_points)
 	var off_route := nearest_distance > 18.0
 	if off_route:
@@ -120,7 +117,7 @@ func _physics_process(delta: float) -> void:
 	route_progress_changed.emit(progress, off_route)
 	if _off_route_time > 1.0:
 		maneuver_changed.emit("OFF ROUTE • RETURN TO THE MARKED ROAD")
-	elif absf(rad_to_deg(turn_angle)) > 22.0 and player.global_position.distance_to(nav_target) < 32.0:
+	elif route_point_index < next_stage_route_index and absf(rad_to_deg(turn_angle)) > 22.0 and nav_distance < 32.0:
 		maneuver_changed.emit(("TURN LEFT" if turn_angle > 0.0 else "TURN RIGHT") + " • %dm" % int(player.global_position.distance_to(nav_target)))
 	else:
 		maneuver_changed.emit("FOLLOW ROUTE • STAGE %dm" % int(distance))
@@ -227,3 +224,15 @@ func _nearest_route_distance(position: Vector3, route_points: Array) -> float:
 		var closest := a + ab * t
 		best = minf(best, position.distance_to(closest))
 	return best
+
+
+func _route_turn_angle(route_points: Array, index: int) -> float:
+	if index <= 0 or index >= route_points.size() - 1:
+		return 0.0
+	var incoming: Vector3 = route_points[index] - route_points[index - 1]
+	var outgoing: Vector3 = route_points[index + 1] - route_points[index]
+	incoming.y = 0.0
+	outgoing.y = 0.0
+	if incoming.length_squared() < 0.01 or outgoing.length_squared() < 0.01:
+		return 0.0
+	return incoming.normalized().signed_angle_to(outgoing.normalized(), Vector3.UP)
