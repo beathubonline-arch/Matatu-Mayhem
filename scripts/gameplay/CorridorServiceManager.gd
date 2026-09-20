@@ -114,14 +114,16 @@ func _physics_process(delta: float) -> void:
 	var off_route := nearest_distance > 18.0
 	if off_route:
 		_off_route_time += delta
-		if _off_route_time > 1.0:
-			service_progress.emit("OFF ROUTE • RETURN TO THE MARKED ROAD")
 	else:
 		_off_route_time = 0.0
 	var progress := int(clampf(float(route_point_index) / float(maxi(route_points.size() - 1, 1)), 0.0, 1.0) * 100.0)
 	route_progress_changed.emit(progress, off_route)
-	if absf(rad_to_deg(turn_angle)) > 22.0 and player.global_position.distance_to(nav_target) < 32.0:
+	if _off_route_time > 1.0:
+		maneuver_changed.emit("OFF ROUTE • RETURN TO THE MARKED ROAD")
+	elif absf(rad_to_deg(turn_angle)) > 22.0 and player.global_position.distance_to(nav_target) < 32.0:
 		maneuver_changed.emit(("TURN LEFT" if turn_angle > 0.0 else "TURN RIGHT") + " • %dm" % int(player.global_position.distance_to(nav_target)))
+	else:
+		maneuver_changed.emit("FOLLOW ROUTE • STAGE %dm" % int(distance))
 	if distance > 7.0:
 		dwell = 0.0
 		if distance < 28.0:
