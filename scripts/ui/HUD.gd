@@ -67,6 +67,7 @@ func _ready() -> void:
 		corridor_service.service_progress.connect(_on_service_progress)
 		corridor_service.run_time_changed.connect(_on_corridor_time_changed)
 		corridor_service.passenger_load_changed.connect(_on_passenger_load_changed)
+	_refresh_route_unlocks()
 	_on_hype_changed(0, 0, "NAIROBI SHIFT READY")
 	if OS.has_feature("mobile") or DisplayServer.is_touchscreen_available():
 		controls_label.visible = false
@@ -161,6 +162,7 @@ func _on_corridor_completed(name: String, reward: int, balance: int, elapsed: fl
 	var record_text := "NEW PERSONAL BEST!" if new_best else "Best: %s" % _format_time(best)
 	finish_summary.text = "Time: %s\\n%s\\nPassengers: %d  •  Fares: KSh %s\\nRoute bonus: KSh %s\\nTotal: KSh %s" % [_format_time(elapsed), record_text, passengers, _format_number(fares), _format_number(reward), _format_number(balance)]
 	replay_button.text = "CHOOSE NEXT ROUTE"
+	_refresh_route_unlocks()
 
 func _select_corridor(index: int) -> void:
 	if corridor_service == null:
@@ -184,3 +186,14 @@ func _on_passenger_load_changed(onboard: int, capacity: int, boarded: int, aligh
 	if alighted > 0:
 		movement += "  -%d OUT" % alighted
 	passenger_label.text = "PASSENGERS %d/%d%s" % [onboard, capacity, movement]
+
+func _refresh_route_unlocks() -> void:
+	var unlocked := int(SaveManager.data.get("unlocked_corridors", 1))
+	var buttons: Array[Button] = [
+		$RouteSelectPanel/VBox/Waiyaki,
+		$RouteSelectPanel/VBox/Thika,
+		$RouteSelectPanel/VBox/Mombasa,
+		$RouteSelectPanel/VBox/Ngong
+	]
+	for i in range(buttons.size()):
+		buttons[i].disabled = i >= unlocked
