@@ -9,6 +9,7 @@ var data := {
 	"passenger_trips_completed": 0,
 	"matatu_reputation": 0,
 	"last_corridor": 0,
+	"corridor_best_times": {},
 	"owned_nganyas": ["Maverick"],
 	"upgrade_levels": {}
 }
