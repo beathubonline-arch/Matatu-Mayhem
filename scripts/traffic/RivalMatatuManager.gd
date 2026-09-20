@@ -1,6 +1,8 @@
 class_name RivalMatatuManager
 extends Node3D
 
+signal rival_pressure(message: String)
+
 @export var rival_count := 4
 @export var network_path: NodePath
 @export var corridor_service_path: NodePath
@@ -9,6 +11,7 @@ var network: NairobiRouteNetwork
 var corridor_service: CorridorServiceManager
 var active_corridor := 0
 var _player: Node3D
+var _pressure_cooldown := 0.0
 
 func _ready() -> void:
 	network = get_node_or_null(network_path) as NairobiRouteNetwork
@@ -98,6 +101,7 @@ func _spawn_rival(index: int) -> void:
 	add_child(rival)
 
 func _physics_process(_delta: float) -> void:
+	_pressure_cooldown = maxf(_pressure_cooldown - _delta, 0.0)
 	for child in get_children():
 		var rival := child as CharacterBody3D
 		if rival == null:
@@ -140,6 +144,9 @@ func _physics_process(_delta: float) -> void:
 			var gap := rival.global_position.distance_to(_player.global_position)
 			if gap < 18.0:
 				speed *= 1.12
+				if _pressure_cooldown <= 0.0:
+					_pressure_cooldown = 7.0
+					rival_pressure.emit("%s IS ON YOUR BUMPER!" % String(rival.name).replace("RivalNganya", "NGANYA "))
 			elif gap > 65.0:
 				speed *= 0.92
 		if to_target.length() < 12.0:
