@@ -7,6 +7,8 @@ var data := {
 	"best_time": 0.0,
 	"routes_completed": 0,
 	"passenger_trips_completed": 0,
+	"matatu_reputation": 0,
+	"last_corridor": 0,
 	"owned_nganyas": ["Maverick"],
 	"upgrade_levels": {}
 }
