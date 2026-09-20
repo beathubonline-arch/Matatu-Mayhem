@@ -54,7 +54,7 @@ traffic_count = 12
 [node name="CorridorTraffic" type="Node3D" parent="Gameplay"]
 script = ExtResource("19_corridor_traffic")
 network_path = NodePath("../../World/Environment/NairobiRouteNetwork")
-vehicles_per_corridor = 4
+vehicles_per_corridor = 5
 
 [node name="CorridorLife" type="Node3D" parent="Gameplay"]
 script = ExtResource("20_corridor_life")
@@ -65,6 +65,7 @@ boda_count = 5
 [node name="RivalNganyas" type="Node3D" parent="Gameplay"]
 script = ExtResource("16_rivals")
 rival_count = 4
+network_path = NodePath("../../World/Environment/NairobiRouteNetwork")
 
 [node name="PassengerStops" type="Node3D" parent="Gameplay"]
 
