@@ -127,7 +127,7 @@ func _update_driving_skills(delta: float) -> void:
 	query.shape = shape
 	query.transform = Transform3D(player.global_basis, player.global_position)
 	query.exclude = [player.get_rid()]
-	query.collision_mask = 10
+	query.collision_mask = 3
 	var hits := space.intersect_shape(query, 8)
 	for hit in hits:
 		var body := hit.get("collider") as Node3D
