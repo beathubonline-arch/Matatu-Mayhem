@@ -85,7 +85,9 @@ func _stage(pos: Vector3, stop_name: String, corridor: String, reward: int) -> v
 		post.position = Vector3(x, 1.5, 0)
 		root.add_child(post)
 	var sign := Label3D.new()
-	sign.text = "%s\n%s\nROUTE BONUS KSh %d" % [stop_name, corridor, reward]
+	sign.text = "%s
+%s
+ROUTE BONUS KSh %d" % [stop_name, corridor, reward]
 	sign.position = Vector3(0, 3.45, 0)
 	sign.font_size = 30
 	sign.pixel_size = 0.006
@@ -103,6 +105,7 @@ func _spawn_passengers(parent: Node3D) -> void:
 		person.mesh = mesh
 		person.position = Vector3(-2.5 + float(i), 0.8, 1.7)
 		var mat := StandardMaterial3D.new()
-		var passenger_colors: Array[Color] = [Color("4f86c6"), Color("d25f4b"), Color("59a96a"), Color("d5a33f")]\n\t\tmat.albedo_color = passenger_colors[i % passenger_colors.size()]
+		var passenger_colors: Array[Color] = [Color("4f86c6"), Color("d25f4b"), Color("59a96a"), Color("d5a33f")]
+		mat.albedo_color = passenger_colors[i % passenger_colors.size()]
 		person.material_override = mat
 		parent.add_child(person)
