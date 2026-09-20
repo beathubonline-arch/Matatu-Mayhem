@@ -27,6 +27,11 @@ func _ready() -> void:
 	# Wait for the player to choose a Nairobi route from the HUD.
 	active = false
 
+func restart_corridor() -> void:
+	if network == null or player == null:
+		return
+	select_corridor(corridor_index)
+
 func select_corridor(index: int) -> void:
 	if network == null or player == null:
 		return
