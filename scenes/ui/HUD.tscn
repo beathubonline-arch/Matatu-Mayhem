@@ -245,6 +245,11 @@ theme_override_font_sizes/font_size = 19
 text = "MAVERICK GARAGE"
 horizontal_alignment = 1
 
+[node name="NganyaSelect" type="Button" parent="RouteSelectPanel/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "NGANYA • MAVERICK"
+
 [node name="EngineUpgrade" type="Button" parent="RouteSelectPanel/VBox"]
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
