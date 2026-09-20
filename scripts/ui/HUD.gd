@@ -150,7 +150,7 @@ func _on_radio_changed(station: String, track: String, artist: String) -> void:
 func _on_corridor_changed(name: String, stop_name: String, current: int, total: int) -> void:
 	passenger_label.text = "%s  •  STAGE %d/%d  •  %s" % [name, current, total, stop_name]
 
-func _on_corridor_completed(name: String, reward: int, balance: int) -> void:
+func _on_corridor_completed(name: String, reward: int, balance: int, elapsed: float, best: float, new_best: bool) -> void:
 	GameManager.set_game_state(GameManager.GameState.ROUTE_COMPLETE)
 	objective_label.text = "ROUTE COMPLETE"
 	fare_notice.text = "%s COMPLETE  +KSh %s\\nBALANCE: KSh %s" % [name, _format_number(reward), _format_number(balance)]
@@ -158,7 +158,8 @@ func _on_corridor_completed(name: String, reward: int, balance: int) -> void:
 	_fare_notice_time = 5.0
 	finish_panel.visible = true
 	finish_title.text = "%s COMPLETE" % name
-	finish_summary.text = "Route bonus: KSh %s\\nTotal balance: KSh %s" % [_format_number(reward), _format_number(balance)]
+	var record_text := "NEW PERSONAL BEST!" if new_best else "Best: %s" % _format_time(best)
+	finish_summary.text = "Time: %s\\n%s\\nRoute bonus: KSh %s\\nTotal: KSh %s" % [_format_time(elapsed), record_text, _format_number(reward), _format_number(balance)]
 	replay_button.text = "CHOOSE NEXT ROUTE"
 
 func _select_corridor(index: int) -> void:
