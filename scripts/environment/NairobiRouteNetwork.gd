@@ -13,6 +13,12 @@ const WAIYAKI_POINTS := [
 	Vector3(-170,0,-108), Vector3(-198,0,-111), Vector3(-225,0,-112)
 ]
 const WAIYAKI_DISTRICTS := ["WESTLANDS","WESTLANDS","ABC PLACE","ABC PLACE","KANGEMI","KANGEMI","UTHIRU","UTHIRU"]
+const CORRIDOR_DISTRICTS := [
+	["WESTLANDS","ABC PLACE","KANGEMI","UTHIRU"],
+	["NGARA","PANGANI","MUTHAIGA","KASARANI"],
+	["NYAYO","SOUTH B / C","GENERAL MOTORS","IMARA DAIMA"],
+	["COMMUNITY","PRESTIGE","ADAMS ARCADE","JUNCTION"]
+]
 const CORRIDORS := [
 	{"name":"WAIYAKI WAY","color":"4aa3df","points":WAIYAKI_POINTS,
 	 "service_points":[Vector3(-70,0,-82),Vector3(-118,0,-98),Vector3(-170,0,-108),Vector3(-225,0,-112)],
@@ -55,6 +61,7 @@ func _build_corridor(data: Dictionary, corridor_index: int) -> void:
 		_stage(service_points[i], String(data["stops"][i]), String(data["name"]), int(data["reward"]))
 	if corridor_index == 0:
 		_waiyaki_landmarks()
+	_corridor_gateway(data, corridor_index)
 
 func _road_segment(a: Vector3, b: Vector3, accent: Color) -> void:
 	var delta: Vector3 = b - a
@@ -135,6 +142,44 @@ func _waiyaki_streetscape(a: Vector3, b: Vector3, segment_index: int) -> void:
 	if segment_index % 2 == 0:
 		_roadside_shop(mid + right * (12.2 if segment_index % 4 == 0 else -12.2), WAIYAKI_DISTRICTS[mini(segment_index, WAIYAKI_DISTRICTS.size() - 1)], segment_index)
 
+
+func _corridor_streetscape(a: Vector3, b: Vector3, segment_index: int, corridor_index: int) -> void:
+	var delta := b - a
+	var length := Vector2(delta.x, delta.z).length()
+	if length < 2.0:
+		return
+	var direction := delta.normalized()
+	var right := Vector3(direction.z, 0.0, -direction.x)
+	var mid := (a + b) * 0.5
+	for side in [-1.0, 1.0]:
+		var shoulder := MeshInstance3D.new()
+		var shoulder_mesh := BoxMesh.new()
+		shoulder_mesh.size = Vector3(1.8, 0.12, length)
+		shoulder.mesh = shoulder_mesh
+		shoulder.position = mid + right * (side * 8.4) + Vector3(0, 0.04, 0)
+		shoulder.rotation.y = atan2(delta.x, delta.z)
+		var shoulder_mat := StandardMaterial3D.new()
+		shoulder_mat.albedo_color = Color("77736b")
+		shoulder.material_override = shoulder_mat
+		add_child(shoulder)
+	if segment_index % 2 == 0:
+		var districts: Array = CORRIDOR_DISTRICTS[corridor_index]
+		var district := String(districts[mini(segment_index, districts.size() - 1)])
+		_roadside_shop(mid + right * 12.0, district, segment_index + corridor_index)
+
+func _corridor_gateway(data: Dictionary, corridor_index: int) -> void:
+	var points: Array = data["points"]
+	if points.is_empty():
+		return
+	var start: Vector3 = points[0]
+	var label := Label3D.new()
+	label.text = "%s\nNAIROBI CORRIDOR %d" % [String(data["name"]), corridor_index + 1]
+	label.position = start + Vector3(0, 6.5, 0)
+	label.font_size = 38
+	label.pixel_size = 0.007
+	label.outline_size = 9
+	label.modulate = Color(String(data["color"]))
+	add_child(label)
 
 func _roadside_shop(pos: Vector3, district: String, seed: int) -> void:
 	var shop := MeshInstance3D.new()
