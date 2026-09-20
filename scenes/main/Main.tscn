@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/environment/TestMap.tscn" id="1_map"]
 [ext_resource type="PackedScene" path="res://scenes/vehicle/Matatu.tscn" id="2_car"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://scripts/audio/MatatuRadio.gd" id="12_radio"]
 [ext_resource type="Script" path="res://scripts/environment/CBDLifeManager.gd" id="13_cbd_life"]
 [ext_resource type="Script" path="res://scripts/gameplay/MatatuCultureManager.gd" id="14_culture"]
+[ext_resource type="Script" path="res://scripts/environment/CBDRouteDistrict.gd" id="15_cbd_district"]
 
 [sub_resource type="SphereShape3D" id="CameraShape"]
 radius = 0.35
@@ -23,6 +24,8 @@ radius = 0.35
 [node name="World" type="Node3D" parent="."]
 [node name="Environment" type="Node3D" parent="World"]
 [node name="TestMap" parent="World/Environment" instance=ExtResource("1_map")]
+[node name="CBDRouteDistrict" type="Node3D" parent="World/Environment"]
+script = ExtResource("15_cbd_district")
 
 [node name="Gameplay" type="Node3D" parent="."]
 
