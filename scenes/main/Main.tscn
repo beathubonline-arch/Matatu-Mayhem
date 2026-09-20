@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/environment/TestMap.tscn" id="1_map"]
 [ext_resource type="PackedScene" path="res://scenes/vehicle/Matatu.tscn" id="2_car"]
@@ -20,6 +20,7 @@
 [ext_resource type="Script" path="res://scripts/gameplay/CorridorServiceManager.gd" id="18_corridor_service"]
 [ext_resource type="Script" path="res://scripts/traffic/CorridorTrafficManager.gd" id="19_corridor_traffic"]
 [ext_resource type="Script" path="res://scripts/environment/CorridorLifeManager.gd" id="20_corridor_life"]
+[ext_resource type="Script" path="res://scripts/gameplay/DrivingChallengeManager.gd" id="21_challenges"]
 
 [sub_resource type="SphereShape3D" id="CameraShape"]
 radius = 0.35
@@ -91,6 +92,11 @@ enabled = false
 script = ExtResource("18_corridor_service")
 player_path = NodePath("../Vehicles/Maverick")
 network_path = NodePath("../../World/Environment/NairobiRouteNetwork")
+
+[node name="DrivingChallenges" type="Node" parent="Gameplay"]
+script = ExtResource("21_challenges")
+player_path = NodePath("../Vehicles/Maverick")
+corridor_service_path = NodePath("../CorridorService")
 
 [node name="MatatuCulture" type="Node" parent="Gameplay"]
 script = ExtResource("14_culture")
