@@ -14,6 +14,7 @@ signal conductor_call(message: String)
 signal stage_rush_changed(seconds_left: float, bonus: int)
 signal stage_grade(message: String, reward: int)
 signal event_changed(message: String, seconds_left: float)
+signal route_unlocked(name: String)
 
 @export var player_path: NodePath
 @export var network_path: NodePath
@@ -220,6 +221,8 @@ func _complete_stop() -> void:
 		var unlocked := int(SaveManager.data.get("unlocked_corridors", 1))
 		if corridor_index + 1 >= unlocked and unlocked < network.corridor_count():
 			SaveManager.data["unlocked_corridors"] = unlocked + 1
+			var unlocked_data: Dictionary = network.get_corridor(unlocked)
+			route_unlocked.emit(String(unlocked_data["name"]))
 		var best_times: Dictionary = SaveManager.data.get("corridor_best_times", {})
 		var key := str(corridor_index)
 		var previous_best := float(best_times.get(key, 0.0))
@@ -290,7 +293,7 @@ func _route_turn_angle(route_points: Array, index: int) -> float:
 func _maybe_trigger_route_event() -> void:
 	if stop_index <= 0 or stop_index == _event_triggered_stage or _event_time > 0.0:
 		return
-	var seed := (corridor_index * 11 + stop_index * 7 + int(elapsed_seconds) / 8) % 4
+	var seed: int = (corridor_index * 11 + stop_index * 7 + int(elapsed_seconds) / 8) % 4
 	if seed == 0:
 		_event_message = "PASSENGER LATE • PUSH FOR THE STAGE!"
 		_event_time = 14.0
