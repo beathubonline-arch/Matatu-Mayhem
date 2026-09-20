@@ -15,6 +15,7 @@ signal stage_rush_changed(seconds_left: float, bonus: int)
 signal stage_grade(message: String, reward: int)
 signal event_changed(message: String, seconds_left: float)
 signal route_unlocked(name: String)
+signal direction_changed(label: String)
 
 @export var player_path: NodePath
 @export var network_path: NodePath
@@ -41,6 +42,7 @@ var _stage_entry_speed := 0.0
 var _event_time := 0.0
 var _event_message := ""
 var _event_triggered_stage := -1
+var inbound := false
 
 func _ready() -> void:
 	player = get_node_or_null(player_path) as Node3D
@@ -57,9 +59,9 @@ func _ready() -> void:
 func restart_corridor() -> void:
 	if network == null or player == null:
 		return
-	select_corridor(corridor_index)
+	select_corridor(corridor_index, inbound)
 
-func select_corridor(index: int) -> void:
+func select_corridor(index: int, return_to_cbd: bool = false) -> void:
 	if network == null or player == null:
 		return
 	var requested: int = clampi(index, 0, network.corridor_count() - 1)
@@ -68,6 +70,7 @@ func select_corridor(index: int) -> void:
 		service_progress.emit("ROUTE LOCKED • COMPLETE MORE NAIROBI CORRIDORS")
 		return
 	corridor_index = requested
+	inbound = return_to_cbd
 	stop_index = 0
 	dwell = 0.0
 	elapsed_seconds = 0.0
@@ -83,7 +86,7 @@ func select_corridor(index: int) -> void:
 	_event_time = 0.0
 	_event_message = ""
 	_event_triggered_stage = -1
-	var data: Dictionary = network.get_corridor(corridor_index)
+	var data: Dictionary = _active_corridor_data()
 	var points: Array = data["points"]
 	var start: Vector3 = points[0]
 	var next_point: Vector3 = points[1]
@@ -96,6 +99,7 @@ func select_corridor(index: int) -> void:
 	if player.has_method("reset_to_spawn"):
 		player.call("reset_to_spawn")
 	_emit_status()
+	direction_changed.emit("TO CBD" if inbound else "OUT OF CBD")
 	conductor_call.emit("WATU WA %s! PANDA PANDA!" % String(data["stops"][data["stops"].size() - 1]).to_upper())
 
 func _physics_process(delta: float) -> void:
@@ -109,7 +113,7 @@ func _physics_process(delta: float) -> void:
 	if _event_time > 0.0:
 		_event_time = maxf(_event_time - delta, 0.0)
 		event_changed.emit(_event_message, _event_time)
-	var data: Dictionary = network.get_corridor(corridor_index)
+	var data: Dictionary = _active_corridor_data()
 	var route_points: Array = data["points"]
 	var stage_target: Vector3 = network.get_service_stop(corridor_index, stop_index)
 	_maybe_trigger_route_event()
@@ -181,7 +185,7 @@ func _complete_stop() -> void:
 		EconomyManager.add_money(stage_reward)
 		stage_grade.emit(stage_message, stage_reward)
 	_stage_entry_speed = 0.0
-	var data: Dictionary = network.get_corridor(corridor_index)
+	var data: Dictionary = _active_corridor_data()
 	var stops: Array = data["stops"]
 	var is_terminal := stop_index >= stops.size() - 1
 	var rush_won := _stage_rush_time > 0.0 and stop_index > 0
@@ -252,12 +256,12 @@ func refresh_capacity_upgrade() -> void:
 	passenger_load_changed.emit(passengers_onboard, passenger_capacity, 0, 0)
 
 func _emit_status() -> void:
-	var data: Dictionary = network.get_corridor(corridor_index)
+	var data: Dictionary = _active_corridor_data()
 	var stops: Array = data["stops"]
 	corridor_changed.emit(String(data["name"]), String(stops[stop_index]), stop_index + 1, stops.size())
 
 func _find_route_index_for_service(service_index: int) -> int:
-	var data: Dictionary = network.get_corridor(corridor_index)
+	var data: Dictionary = _active_corridor_data()
 	var route_points: Array = data["points"]
 	var service_points: Array = data["service_points"]
 	var target: Vector3 = service_points[clampi(service_index, 0, service_points.size() - 1)]
@@ -316,3 +320,23 @@ func _maybe_trigger_route_event() -> void:
 	_event_triggered_stage = stop_index
 	event_changed.emit(_event_message, _event_time)
 	conductor_call.emit(_event_message)
+
+
+func _active_corridor_data() -> Dictionary:
+	var base: Dictionary = network.get_corridor(corridor_index)
+	if not inbound:
+		return base
+	var reversed := base.duplicate(true)
+	var points: Array = base["points"].duplicate()
+	var service_points: Array = base["service_points"].duplicate()
+	var stops: Array = base["stops"].duplicate()
+	points.reverse()
+	service_points.reverse()
+	stops.reverse()
+	reversed["points"] = points
+	reversed["service_points"] = service_points
+	reversed["stops"] = stops
+	return reversed
+
+func start_return_to_cbd() -> void:
+	select_corridor(corridor_index, true)
