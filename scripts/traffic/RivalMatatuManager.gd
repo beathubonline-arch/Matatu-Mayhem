@@ -3,20 +3,40 @@ extends Node3D
 
 @export var rival_count := 4
 @export var network_path: NodePath
+@export var corridor_service_path: NodePath
 
 var network: NairobiRouteNetwork
+var corridor_service: CorridorServiceManager
+var active_corridor := 0
 
 func _ready() -> void:
 	network = get_node_or_null(network_path) as NairobiRouteNetwork
+	corridor_service = get_node_or_null(corridor_service_path) as CorridorServiceManager
+	if corridor_service != null:
+		corridor_service.corridor_changed.connect(_on_corridor_changed)
+	_spawn_pack()
+
+func _spawn_pack() -> void:
+	for child in get_children():
+		child.queue_free()
 	for i in range(rival_count):
 		_spawn_rival(i)
+
+func _on_corridor_changed(_name: String, _stop_name: String, current: int, _total: int) -> void:
+	if current != 1 or corridor_service == null:
+		return
+	var selected := corridor_service.corridor_index
+	if selected == active_corridor and get_child_count() > 0:
+		return
+	active_corridor = selected
+	_spawn_pack()
 
 func _spawn_rival(index: int) -> void:
 	var rival := CharacterBody3D.new()
 	rival.name = "RivalNganya%02d" % index
 	var points: Array = []
 	if network != null:
-		points = network.get_corridor(0)["points"]
+		points = network.get_corridor(active_corridor)["points"]
 	if points.size() < 2:
 		points = [Vector3(0,0,80), Vector3(0,0,-80)]
 	var segment_index := index % max(points.size() - 1, 1)
