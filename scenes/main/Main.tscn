@@ -58,6 +58,7 @@ corridor_service_path = NodePath("../CorridorService")
 script = ExtResource("18_corridor_service")
 player_path = NodePath("../Vehicles/Maverick")
 network_path = NodePath("../../World/Environment/NairobiRouteNetwork")
+corridor_life_path = NodePath("../CorridorLife")
 
 [node name="DrivingChallenges" type="Node" parent="Gameplay"]
 script = ExtResource("21_challenges")
