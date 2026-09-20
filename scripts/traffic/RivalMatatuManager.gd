@@ -40,7 +40,7 @@ func _spawn_rival(index: int) -> void:
 	glow.mesh = glow_mesh
 	glow.position = Vector3(0.0, 0.45, 0.0)
 	var glow_mat := StandardMaterial3D.new()
-	var neon := [Color("00d9ff"), Color("ff2e88"), Color("ff9a18"), Color("54ff77")][index % 4]
+	var neon: Color = [Color("00d9ff"), Color("ff2e88"), Color("ff9a18"), Color("54ff77")][index % 4]
 	glow_mat.albedo_color = neon
 	glow_mat.emission_enabled = true
 	glow_mat.emission = neon
