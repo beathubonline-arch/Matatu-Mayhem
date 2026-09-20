@@ -66,7 +66,7 @@ func _add_hype(amount: int, message: String) -> void:
 	else:
 		combo = 1
 	_last_event_msec = now
-	var multiplier := clampi(combo, 1, 5)
+	var multiplier: int = clampi(combo, 1, 5)
 	hype = clampi(hype + amount * multiplier, 0, 999)
 	var previous_best := int(SaveManager.data.get("best_hype", 0))
 	if hype > previous_best:
