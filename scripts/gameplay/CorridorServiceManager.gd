@@ -153,7 +153,7 @@ func _complete_stop() -> void:
 		var waiting: int = 4 + ((corridor_index * 3 + stop_index * 2) % 7)
 		boarded = mini(waiting, passenger_capacity - passengers_onboard)
 		passengers_onboard += boarded
-	var fare := boarded * 500
+	var fare := EconomyManager.PASSENGER_FARE if boarded > 0 else 0
 	if fare > 0:
 		EconomyManager.add_passenger_fare(fare)
 		total_fares_this_run += fare
