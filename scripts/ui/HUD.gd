@@ -19,6 +19,7 @@ extends CanvasLayer
 @onready var finish_title: Label = $FinishPanel/VBox/Title
 @onready var finish_summary: Label = $FinishPanel/VBox/Summary
 @onready var replay_button: Button = $FinishPanel/VBox/Replay
+@onready var route_select_panel: PanelContainer = $RouteSelectPanel
 
 var route_manager: RouteManager
 var passenger_manager: PassengerManager
@@ -31,6 +32,11 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	finish_panel.visible = false
 	replay_button.pressed.connect(_on_replay_pressed)
+	$RouteSelectPanel/VBox/Waiyaki.pressed.connect(func(): _select_corridor(0))
+	$RouteSelectPanel/VBox/Thika.pressed.connect(func(): _select_corridor(1))
+	$RouteSelectPanel/VBox/Mombasa.pressed.connect(func(): _select_corridor(2))
+	$RouteSelectPanel/VBox/Ngong.pressed.connect(func(): _select_corridor(3))
+	route_select_panel.visible = true
 	EconomyManager.money_changed.connect(_on_money_changed)
 	_on_money_changed(EconomyManager.get_money())
 	if not route_manager_path.is_empty():
@@ -145,3 +151,10 @@ func _on_corridor_completed(name: String, reward: int, balance: int) -> void:
 BALANCE: KSh %s" % [name, _format_number(reward), _format_number(balance)]
 	fare_notice.visible = true
 	_fare_notice_time = 5.0
+
+func _select_corridor(index: int) -> void:
+	if corridor_service == null:
+		return
+	corridor_service.call("select_corridor", index)
+	route_select_panel.visible = false
+	finish_panel.visible = false
