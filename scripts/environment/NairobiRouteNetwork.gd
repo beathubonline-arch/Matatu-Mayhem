@@ -9,7 +9,7 @@ const ROAD_Y := 0.04
 const ROAD_W := 15.0
 const CORRIDORS := [
 	{"name":"WAIYAKI WAY","color":"4aa3df","points":[Vector3(-31,0,-63),Vector3(-70,0,-82),Vector3(-118,0,-98),Vector3(-170,0,-108),Vector3(-225,0,-112)],"stops":["WESTLANDS","ABC PLACE","KANGEMI","UTHIRU"],"reward":9000},
-	{"name":"THIKA ROAD","color":"e8c547","points":[Vector3(31,0,21),Vector3(62,0,2),Vector3(95,0,-38),Vector3(122,0,-86),Vector3(142,0,-142)],"stops":["NGARA","PANGANI","MUTHAIGA","ROYSA MBU / KASARANI"],"reward":11000},
+	{"name":"THIKA ROAD","color":"e8c547","points":[Vector3(31,0,21),Vector3(62,0,2),Vector3(95,0,-38),Vector3(122,0,-86),Vector3(142,0,-142)],"stops":["NGARA","PANGANI","MUTHAIGA","ROYSAMBU / KASARANI"],"reward":11000},
 	{"name":"MOMBASA ROAD","color":"e36a54","points":[Vector3(0,0,63),Vector3(34,0,102),Vector3(58,0,148),Vector3(72,0,202),Vector3(76,0,258)],"stops":["NYAYO","SOUTH B / C","GENERAL MOTORS","IMARA DAIMA"],"reward":12000},
 	{"name":"NGONG ROAD","color":"69c779","points":[Vector3(-31,0,21),Vector3(-66,0,50),Vector3(-96,0,86),Vector3(-122,0,130),Vector3(-146,0,178)],"stops":["COMMUNITY","PRESTIGE","ADAMS ARCADE","JUNCTION"],"reward":10000}
 ]
@@ -85,9 +85,7 @@ func _stage(pos: Vector3, stop_name: String, corridor: String, reward: int) -> v
 		post.position = Vector3(x, 1.5, 0)
 		root.add_child(post)
 	var sign := Label3D.new()
-	sign.text = "%s
-%s
-ROUTE BONUS KSh %d" % [stop_name, corridor, reward]
+	sign.text = "%s\\n%s\\nROUTE BONUS KSh %d" % [stop_name, corridor, reward]
 	sign.position = Vector3(0, 3.45, 0)
 	sign.font_size = 30
 	sign.pixel_size = 0.006
