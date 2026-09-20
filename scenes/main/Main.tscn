@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=20 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/environment/TestMap.tscn" id="1_map"]
 [ext_resource type="PackedScene" path="res://scenes/vehicle/Matatu.tscn" id="2_car"]
@@ -15,7 +15,7 @@
 [ext_resource type="Script" path="res://scripts/environment/CBDLifeManager.gd" id="13_cbd_life"]
 [ext_resource type="Script" path="res://scripts/gameplay/MatatuCultureManager.gd" id="14_culture"]
 [ext_resource type="Script" path="res://scripts/environment/CBDRouteDistrict.gd" id="15_cbd_district"]
-[ext_resource type="Script" path="res://scripts/traffic/RivalMatatuManager.gd" id="16_rivals"]\n[ext_resource type="Script" path="res://scripts/environment/NairobiRouteNetwork.gd" id="17_routes"]
+[ext_resource type="Script" path="res://scripts/traffic/RivalMatatuManager.gd" id="16_rivals"]\n[ext_resource type="Script" path="res://scripts/environment/NairobiRouteNetwork.gd" id="17_routes"]\n[ext_resource type="Script" path="res://scripts/gameplay/CorridorServiceManager.gd" id="18_corridor_service"]
 
 [sub_resource type="SphereShape3D" id="CameraShape"]
 radius = 0.35
@@ -63,6 +63,11 @@ script = ExtResource("11_passengers")
 pickup_stop_path = NodePath("../PassengerStops/PickupStage")
 dropoff_stop_path = NodePath("../PassengerStops/DropoffStage")
 fare_amount = 5000
+
+[node name="CorridorService" type="Node" parent="Gameplay"]
+script = ExtResource("18_corridor_service")
+player_path = NodePath("../Vehicles/Maverick")
+network_path = NodePath("../../World/Environment/NairobiRouteNetwork")
 
 [node name="MatatuCulture" type="Node" parent="Gameplay"]
 script = ExtResource("14_culture")
