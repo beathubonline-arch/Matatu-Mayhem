@@ -27,6 +27,7 @@ var culture_manager: Node
 var radio: Node
 var corridor_service: Node
 var _fare_notice_time: float = 0.0
+var _corridor_time: float = 0.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -67,6 +68,8 @@ func _ready() -> void:
 		corridor_service.corridor_changed.connect(_on_corridor_changed)
 		corridor_service.corridor_completed.connect(_on_corridor_completed)
 		corridor_service.fare_awarded.connect(_on_fare_awarded)
+		corridor_service.service_progress.connect(_on_service_progress)
+		corridor_service.run_time_changed.connect(_on_corridor_time_changed)
 	_on_hype_changed(0, 0, "CBD SHIFT STARTED")
 	if OS.has_feature("mobile") or DisplayServer.is_touchscreen_available():
 		controls_label.visible = false
@@ -79,7 +82,9 @@ func _process(_delta: float) -> void:
 		speed_label.text = "%03d km/h" % int(vehicle.call("get_speed_kph"))
 	else:
 		speed_label.text = "000 km/h"
-	if route_manager != null:
+	if corridor_service != null and bool(corridor_service.get("active")):
+		timer_label.text = _format_time(_corridor_time)
+	elif route_manager != null:
 		timer_label.text = _format_time(route_manager.elapsed_seconds)
 	if _fare_notice_time > 0.0:
 		_fare_notice_time -= _delta
@@ -160,3 +165,9 @@ func _select_corridor(index: int) -> void:
 	corridor_service.call("select_corridor", index)
 	route_select_panel.visible = false
 	finish_panel.visible = false
+
+func _on_service_progress(message: String) -> void:
+	objective_label.text = message
+
+func _on_corridor_time_changed(seconds: float) -> void:
+	_corridor_time = seconds
