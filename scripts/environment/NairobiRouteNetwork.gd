@@ -61,6 +61,8 @@ func _build_corridor(data: Dictionary, corridor_index: int) -> void:
 		_stage(service_points[i], String(data["stops"][i]), String(data["name"]), int(data["reward"]))
 	if corridor_index == 0:
 		_waiyaki_landmarks()
+	else:
+		_other_corridor_landmarks(data, corridor_index)
 	_corridor_gateway(data, corridor_index)
 
 func _road_segment(a: Vector3, b: Vector3, accent: Color) -> void:
@@ -234,6 +236,23 @@ func _waiyaki_landmarks() -> void:
 	_landmark_sign(Vector3(-225, 5.4, -100), "UTHIRU")
 	_billboard(Vector3(-95, 4.5, -78), "MATATU MAYHEM\n254 STREET RADIO")
 	_billboard(Vector3(-190, 4.5, -96), "BEATHUB\nNAIROBI SOUNDS")
+
+func _other_corridor_landmarks(data: Dictionary, corridor_index: int) -> void:
+	var points: Array = data["service_points"]
+	var stops: Array = data["stops"]
+	var accent := Color(String(data["color"]))
+	for i in range(points.size()):
+		var pos: Vector3 = points[i]
+		var sign := Label3D.new()
+		sign.text = String(stops[i])
+		sign.position = pos + Vector3(0, 5.2, -5.0)
+		sign.font_size = 34
+		sign.pixel_size = 0.007
+		sign.outline_size = 9
+		sign.modulate = accent
+		add_child(sign)
+	if points.size() >= 2:
+		_billboard(points[1] + Vector3(8.0, 4.5, 5.0), "MATATU MAYHEM\n%s" % String(data["name"]))
 
 func _landmark_sign(pos: Vector3, text: String) -> void:
 	var sign := Label3D.new()
