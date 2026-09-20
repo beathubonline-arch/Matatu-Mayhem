@@ -29,7 +29,7 @@ func _ready() -> void:
 	if radio != null:
 		radio.station_changed.connect(_on_station_changed)
 	reputation = int(SaveManager.data.get("matatu_reputation", 0))
-	hype_changed.emit(hype, combo, "CBD SHIFT STARTED")
+	hype_changed.emit(hype, combo, "NAIROBI SHIFT READY")
 
 func _on_fare_awarded(_amount: int, _balance: int) -> void:
 	_add_hype(18, "STAGE SERVICE +18 HYPE")
