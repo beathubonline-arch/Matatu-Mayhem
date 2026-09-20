@@ -46,11 +46,11 @@ traffic_count = 12
 [node name="PassengerStops" type="Node3D" parent="Gameplay"]
 
 [node name="PickupStage" parent="Gameplay/PassengerStops" instance=ExtResource("10_stop")]
-position = Vector3(-5.7, 0, 55)
+position = Vector3(-5.5, 0, 63)
 stop_kind = "pickup"
 
 [node name="DropoffStage" parent="Gameplay/PassengerStops" instance=ExtResource("10_stop")]
-position = Vector3(-5.7, 0, -55)
+position = Vector3(5.5, 0, -63)
 stop_kind = "dropoff"
 
 [node name="PassengerService" type="Node" parent="Gameplay"]
@@ -69,28 +69,36 @@ radio_path = NodePath("../../MatatuRadio")
 script = ExtResource("5_route")
 
 [node name="Checkpoint01" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
-position = Vector3(0, 0, 52)
+position = Vector3(0, 0, 63)
 checkpoint_index = 0
 
 [node name="Checkpoint02" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
-position = Vector3(-4, 0, 25)
+position = Vector3(0, 0, 21)
 checkpoint_index = 1
 
 [node name="Checkpoint03" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
-position = Vector3(4, 0, -2)
+position = Vector3(31, 0, 21)
 checkpoint_index = 2
 
 [node name="Checkpoint04" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
-position = Vector3(-4, 0, -30)
+position = Vector3(31, 0, -21)
 checkpoint_index = 3
 
 [node name="Checkpoint05" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
-position = Vector3(4, 0, -58)
+position = Vector3(0, 0, -21)
 checkpoint_index = 4
 
 [node name="Checkpoint06" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
-position = Vector3(0, 0, -80)
+position = Vector3(-31, 0, -21)
 checkpoint_index = 5
+
+[node name="Checkpoint07" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
+position = Vector3(-31, 0, -63)
+checkpoint_index = 6
+
+[node name="Checkpoint08" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
+position = Vector3(0, 0, -63)
+checkpoint_index = 7
 
 [node name="MatatuRadio" type="Node" parent="."]
 script = ExtResource("12_radio")
