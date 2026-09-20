@@ -73,7 +73,7 @@ stop_kind = "dropoff"
 script = ExtResource("11_passengers")
 pickup_stop_path = NodePath("../PassengerStops/PickupStage")
 dropoff_stop_path = NodePath("../PassengerStops/DropoffStage")
-fare_amount = 5000
+fare_amount = 5000\nenabled = false
 
 [node name="CorridorService" type="Node" parent="Gameplay"]
 script = ExtResource("18_corridor_service")
