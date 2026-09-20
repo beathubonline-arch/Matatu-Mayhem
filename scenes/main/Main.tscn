@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/environment/TestMap.tscn" id="1_map"]
 [ext_resource type="PackedScene" path="res://scenes/vehicle/Matatu.tscn" id="2_car"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://scenes/gameplay/PassengerStop.tscn" id="10_stop"]
 [ext_resource type="Script" path="res://scripts/gameplay/PassengerManager.gd" id="11_passengers"]
 [ext_resource type="Script" path="res://scripts/audio/MatatuRadio.gd" id="12_radio"]
+[ext_resource type="Script" path="res://scripts/environment/CBDLifeManager.gd" id="13_cbd_life"]
 
 [sub_resource type="SphereShape3D" id="CameraShape"]
 radius = 0.35
@@ -24,6 +25,11 @@ radius = 0.35
 
 [node name="Gameplay" type="Node3D" parent="."]
 
+[node name="CBDLife" type="Node3D" parent="Gameplay"]
+script = ExtResource("13_cbd_life")
+pedestrian_count = 28
+boda_count = 7
+
 [node name="Vehicles" type="Node3D" parent="Gameplay"]
 [node name="Maverick" parent="Gameplay/Vehicles" instance=ExtResource("2_car")]
 position = Vector3(0, 1.4, 76)
@@ -31,7 +37,7 @@ rotation_degrees = Vector3(0, 0, 0)
 
 [node name="Traffic" type="Node3D" parent="Gameplay"]
 script = ExtResource("9_traffic")
-traffic_count = 8
+traffic_count = 12
 
 [node name="PassengerStops" type="Node3D" parent="Gameplay"]
 
