@@ -1,6 +1,6 @@
 extends Node
 
-enum GameState { BOOT, PLAYING, PAUSED, ROUTE_COMPLETE }
+enum GameState { BOOT, ROUTE_SELECT, PLAYING, PAUSED, ROUTE_COMPLETE }
 
 var current_state: GameState = GameState.BOOT
 var player_vehicle: Node = null
