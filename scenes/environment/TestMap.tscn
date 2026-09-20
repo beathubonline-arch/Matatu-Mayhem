@@ -1,30 +1,6 @@
-[gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/environment/NairobiTestMap.gd" id="1_map"]
-
-[sub_resource type="Environment" id="Environment"]
-background_mode = 1
-background_color = Color(0.33, 0.55, 0.76, 1)
-ambient_light_source = 3
-ambient_light_color = Color(0.72, 0.78, 0.86, 1)
-ambient_light_energy = 0.68
-reflected_light_source = 2
-tonemap_mode = 2
-glow_enabled = true
-fog_enabled = true
-fog_light_color = Color(0.65, 0.72, 0.79, 1)
-fog_light_energy = 0.35
-fog_density = 0.0025
-
-[node name="NairobiTestMap" type="Node3D"]
-script = ExtResource("1_map")
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment")
-
-[node name="Sun" type="DirectionalLight3D" parent="."]
-rotation_degrees = Vector3(-52, -28, 0)
-light_color = Color(1, 0.93, 0.8, 1)
-light_energy = 1.15
-shadow_enabled = true
-directional_shadow_max_distance = 95.0
+[node name="Atmosphere" type="Node" parent="."]
+script = ExtResource("2_atmosphere")
+sun_path = NodePath("../Sun")
+environment_path = NodePath("../WorldEnvironment")
+cycle_seconds = 180.0
