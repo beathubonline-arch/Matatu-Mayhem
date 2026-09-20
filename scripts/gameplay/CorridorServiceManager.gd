@@ -10,6 +10,7 @@ signal passenger_load_changed(onboard: int, capacity: int, boarded: int, alighte
 signal navigation_changed(distance: float, turn_angle: float)
 signal maneuver_changed(message: String)
 signal route_progress_changed(percent: int, off_route: bool)
+signal conductor_call(message: String)
 
 @export var player_path: NodePath
 @export var network_path: NodePath
@@ -77,6 +78,7 @@ func select_corridor(index: int) -> void:
 	if player.has_method("reset_to_spawn"):
 		player.call("reset_to_spawn")
 	_emit_status()
+	conductor_call.emit("WATU WA %s! PANDA PANDA!" % String(data["stops"][data["stops"].size() - 1]).to_upper())
 
 func _physics_process(delta: float) -> void:
 	if not active or player == null or network == null:
@@ -156,6 +158,7 @@ func _complete_stop() -> void:
 		total_fares_this_run += fare
 		total_passengers_this_run += boarded
 		fare_awarded.emit(fare, EconomyManager.get_money())
+		conductor_call.emit("TWENDE! %d WAMEPANDA • STAGE INAYOFUATA!" % boarded)
 	passenger_load_changed.emit(passengers_onboard, passenger_capacity, boarded, alighted)
 	SaveManager.data["passenger_trips_completed"] = int(SaveManager.data.get("passenger_trips_completed", 0)) + boarded
 	SaveManager.save_game()
@@ -164,6 +167,7 @@ func _complete_stop() -> void:
 		next_stage_route_index = _find_route_index_for_service(stop_index)
 		route_point_index = mini(route_point_index + 1, next_stage_route_index)
 	if is_terminal:
+		conductor_call.emit("MWISHO! WOTE SHUKA • SAFI SANA!")
 		var reward: int = int(data["reward"])
 		EconomyManager.add_money(reward)
 		SaveManager.data["routes_completed"] = int(SaveManager.data.get("routes_completed", 0)) + 1
