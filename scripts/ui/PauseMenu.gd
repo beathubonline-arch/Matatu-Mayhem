@@ -16,7 +16,7 @@ func _ready() -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
-		if GameManager.current_state == GameManager.GameState.ROUTE_COMPLETE:
+		if GameManager.current_state in [GameManager.GameState.ROUTE_COMPLETE, GameManager.GameState.ROUTE_SELECT]:
 			return
 		GameManager.toggle_pause()
 		panel.visible = GameManager.current_state == GameManager.GameState.PAUSED
