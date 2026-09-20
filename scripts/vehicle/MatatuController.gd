@@ -175,3 +175,8 @@ func reset_to_spawn() -> void:
 
 func get_speed_kph() -> float:
 	return speed_kph
+
+func refresh_selected_nganya() -> void:
+	var visuals := get_node_or_null("NganyaVisuals")
+	if visuals != null and visuals.has_method("_apply_selected_nganya"):
+		visuals.call("_apply_selected_nganya")
