@@ -78,6 +78,7 @@ func _ready() -> void:
 		corridor_service.stage_rush_changed.connect(_on_stage_rush_changed)
 		corridor_service.stage_grade.connect(_on_stage_grade)
 		corridor_service.event_changed.connect(_on_event_changed)
+		corridor_service.route_unlocked.connect(_on_route_unlocked)
 	if not challenge_manager_path.is_empty():
 		challenge_manager = get_node_or_null(challenge_manager_path)
 	if challenge_manager != null:
@@ -413,3 +414,9 @@ func _on_event_changed(message: String, seconds_left: float) -> void:
 	if seconds_left <= 0.0:
 		return
 	objective_label.text = "⚡ %s • %.0fs" % [message, seconds_left]
+
+
+func _on_route_unlocked(name: String) -> void:
+	fare_notice.text = "NEW ROUTE UNLOCKED • %s\nNAIROBI JUST GOT BIGGER" % name.to_upper()
+	fare_notice.visible = true
+	_fare_notice_time = 5.0
