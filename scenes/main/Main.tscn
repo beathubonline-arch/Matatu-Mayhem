@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/environment/TestMap.tscn" id="1_map"]
 [ext_resource type="PackedScene" path="res://scenes/vehicle/Matatu.tscn" id="2_car"]
@@ -19,6 +19,7 @@
 [ext_resource type="Script" path="res://scripts/environment/NairobiRouteNetwork.gd" id="17_routes"]
 [ext_resource type="Script" path="res://scripts/gameplay/CorridorServiceManager.gd" id="18_corridor_service"]
 [ext_resource type="Script" path="res://scripts/traffic/CorridorTrafficManager.gd" id="19_corridor_traffic"]
+[ext_resource type="Script" path="res://scripts/environment/CorridorLifeManager.gd" id="20_corridor_life"]
 
 [sub_resource type="SphereShape3D" id="CameraShape"]
 radius = 0.35
@@ -54,6 +55,12 @@ traffic_count = 12
 script = ExtResource("19_corridor_traffic")
 network_path = NodePath("../../World/Environment/NairobiRouteNetwork")
 vehicles_per_corridor = 4
+
+[node name="CorridorLife" type="Node3D" parent="Gameplay"]
+script = ExtResource("20_corridor_life")
+network_path = NodePath("../../World/Environment/NairobiRouteNetwork")
+pedestrians_per_waiyaki_stage = 5
+boda_count = 5
 
 [node name="RivalNganyas" type="Node3D" parent="Gameplay"]
 script = ExtResource("16_rivals")
