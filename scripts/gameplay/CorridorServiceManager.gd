@@ -40,10 +40,6 @@ func restart_corridor() -> void:
 func select_corridor(index: int) -> void:
 	if network == null or player == null:
 		return
-	var unlocked := int(SaveManager.data.get("unlocked_corridors", 1))
-	if index >= unlocked:
-		service_progress.emit("ROUTE LOCKED • BUILD REPUTATION FIRST")
-		return
 	var requested := clampi(index, 0, network.corridor_count() - 1)
 	var unlocked := clampi(int(SaveManager.data.get("unlocked_corridors", 1)), 1, network.corridor_count())
 	if requested >= unlocked:
