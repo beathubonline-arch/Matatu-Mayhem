@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/environment/TestMap.tscn" id="1_map"]
 [ext_resource type="PackedScene" path="res://scenes/vehicle/Matatu.tscn" id="2_car"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scripts/traffic/TrafficManager.gd" id="9_traffic"]
 [ext_resource type="PackedScene" path="res://scenes/gameplay/PassengerStop.tscn" id="10_stop"]
 [ext_resource type="Script" path="res://scripts/gameplay/PassengerManager.gd" id="11_passengers"]
+[ext_resource type="Script" path="res://scripts/audio/MatatuRadio.gd" id="12_radio"]
 
 [sub_resource type="SphereShape3D" id="CameraShape"]
 radius = 0.35
@@ -74,6 +75,9 @@ checkpoint_index = 4
 [node name="Checkpoint06" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
 position = Vector3(0, 0, -80)
 checkpoint_index = 5
+
+[node name="MatatuRadio" type="Node" parent="."]
+script = ExtResource("12_radio")
 
 [node name="ChaseCamera" type="Node3D" parent="."]
 script = ExtResource("3_camera")
