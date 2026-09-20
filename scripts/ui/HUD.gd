@@ -5,6 +5,7 @@ extends CanvasLayer
 @export var culture_manager_path: NodePath
 @export var radio_path: NodePath
 @export var corridor_service_path: NodePath
+@export var challenge_manager_path: NodePath
 
 @onready var speed_label: Label = $Margin/VBox/TopBar/Speed
 @onready var money_label: Label = $Margin/VBox/TopBar/Money
@@ -28,6 +29,7 @@ var passenger_manager: PassengerManager
 var culture_manager: Node
 var radio: Node
 var corridor_service: Node
+var challenge_manager: Node
 var _fare_notice_time: float = 0.0
 var _corridor_time: float = 0.0
 
@@ -75,6 +77,12 @@ func _ready() -> void:
 		corridor_service.run_time_changed.connect(_on_corridor_time_changed)
 		corridor_service.passenger_load_changed.connect(_on_passenger_load_changed)
 		corridor_service.navigation_changed.connect(_on_navigation_changed)
+	if not challenge_manager_path.is_empty():
+		challenge_manager = get_node_or_null(challenge_manager_path)
+	if challenge_manager != null:
+		challenge_manager.challenge_changed.connect(_on_challenge_changed)
+		challenge_manager.penalty_applied.connect(_on_penalty_applied)
+		challenge_manager.rival_result.connect(_on_rival_result)
 	_refresh_route_unlocks()
 	_refresh_garage()
 	_on_hype_changed(0, 0, "NAIROBI SHIFT READY")
@@ -287,3 +295,22 @@ func _refresh_garage() -> void:
 			button.text = "%s • LEVEL 5 • MAX" % kind.to_upper()
 		else:
 			button.text = "%s • LEVEL %d → %d • KSh %s" % [kind.to_upper(), level, level + 1, _format_number(_upgrade_cost(kind))]
+
+func _on_challenge_changed(message: String, clean_streak: int) -> void:
+	var suffix := "" if clean_streak <= 0 else " • CLEAN x%d" % clean_streak
+	fare_notice.text = "%s%s" % [message, suffix]
+	fare_notice.visible = true
+	_fare_notice_time = 3.0
+
+func _on_penalty_applied(amount: int, balance: int, reason: String) -> void:
+	fare_notice.text = "%s • -KSh %s\nBALANCE: KSh %s" % [reason, _format_number(amount), _format_number(balance)]
+	fare_notice.visible = true
+	_fare_notice_time = 3.0
+
+func _on_rival_result(won: bool, player_time: float, rival_time: float, reward: int) -> void:
+	if won:
+		fare_notice.text = "RIVAL BEATEN • +KSh %s\nYOU %s • RIVAL %s" % [_format_number(reward), _format_time(player_time), _format_time(rival_time)]
+	else:
+		fare_notice.text = "RIVAL WINS THIS RUN\nYOU %s • RIVAL %s • RUN IT AGAIN" % [_format_time(player_time), _format_time(rival_time)]
+	fare_notice.visible = true
+	_fare_notice_time = 5.0
