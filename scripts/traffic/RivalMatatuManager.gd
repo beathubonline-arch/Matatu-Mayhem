@@ -51,6 +51,7 @@ func _spawn_rival(index: int) -> void:
 	rival.set_meta("forward", forward)
 	rival.set_meta("lane_offset", lane_offset)
 	rival.set_meta("speed", 9.0 + float(index) * 0.8)
+	rival.set_meta("steer_dir", direction)
 
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
@@ -124,9 +125,17 @@ func _physics_process(_delta: float) -> void:
 		var direction := to_target.normalized()
 		var lateral := Vector3(direction.z, 0.0, -direction.x) * float(rival.get_meta("lane_offset", 2.8))
 		var desired := target + lateral
-		direction = (desired - rival.global_position).normalized()
-		direction.y = 0.0
-		rival.velocity = direction * float(rival.get_meta("speed", 10.0))
+		var desired_direction: Vector3 = (desired - rival.global_position).normalized()
+		desired_direction.y = 0.0
+		var steer_dir: Vector3 = rival.get_meta("steer_dir", desired_direction)
+		var corner_weight: float = clampf(_delta * (2.0 if to_target.length() < 13.0 else 4.2), 0.0, 1.0)
+		direction = steer_dir.lerp(desired_direction, corner_weight).normalized()
+		rival.set_meta("steer_dir", direction)
+		var speed: float = float(rival.get_meta("speed", 10.0))
+		if to_target.length() < 12.0:
+			speed *= 0.72
+		rival.velocity = direction * speed
 		if direction.length_squared() > 0.01:
-			rival.rotation.y = atan2(-direction.x, -direction.z)
+			var target_yaw: float = atan2(-direction.x, -direction.z)
+			rival.rotation.y = lerp_angle(rival.rotation.y, target_yaw, clampf(_delta * 4.5, 0.0, 1.0))
 		rival.move_and_slide()
