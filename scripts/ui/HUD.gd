@@ -32,6 +32,7 @@ var career_manager: Node
 var rival_manager: Node
 var _fare_notice_time: float = 0.0
 var _corridor_time: float = 0.0
+var _last_completed_corridor := -1
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -81,6 +82,7 @@ func _ready() -> void:
 		corridor_service.stage_grade.connect(_on_stage_grade)
 		corridor_service.event_changed.connect(_on_event_changed)
 		corridor_service.route_unlocked.connect(_on_route_unlocked)
+		corridor_service.direction_changed.connect(_on_direction_changed)
 	if not challenge_manager_path.is_empty():
 		challenge_manager = get_node_or_null(challenge_manager_path)
 	if challenge_manager != null:
@@ -164,16 +166,23 @@ func _on_route_completed(elapsed: float, reward: int) -> void:
 
 func _on_replay_pressed() -> void:
 	finish_panel.visible = false
-	if corridor_service != null:
-		route_select_panel.visible = true
-		GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
-		objective_label.text = "CHOOSE YOUR NEXT ROUTE"
-		passenger_label.text = "WAIYAKI • THIKA • MOMBASA • NGONG"
-		passenger_load_label.text = "PASSENGERS 0/%d" % _current_capacity()
-		navigation_label.text = "NAV • SELECT ROUTE"
-		_refresh_garage()
-		_refresh_nganya_selector()
+	if corridor_service == null:
 		return
+	if not bool(corridor_service.get("inbound")) and _last_completed_corridor >= 0:
+		corridor_service.call("select_corridor", _last_completed_corridor, true)
+		GameManager.set_game_state(GameManager.GameState.PLAYING)
+		_corridor_time = 0.0
+		route_select_panel.visible = false
+		objective_label.text = "RETURN RUN • BACK TO NAIROBI CBD"
+		return
+	route_select_panel.visible = true
+	GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
+	objective_label.text = "CHOOSE YOUR NEXT ROUTE FROM CBD"
+	passenger_label.text = "CBD → WAIYAKI • THIKA • MOMBASA • NGONG"
+	passenger_load_label.text = "PASSENGERS 0/%d" % _current_capacity()
+	navigation_label.text = "NAV • SELECT ROUTE"
+	_refresh_garage()
+	_refresh_nganya_selector()
 
 func _format_time(seconds: float) -> String:
 	var minutes := int(seconds / 60.0)
@@ -212,7 +221,8 @@ func _on_corridor_completed(name: String, reward: int, balance: int, elapsed: fl
 	finish_title.text = "%s COMPLETE" % name
 	var record_text := "NEW PERSONAL BEST!" if new_best else "Best: %s" % _format_time(best)
 	finish_summary.text = "Time: %s\\n%s\\nPassengers: %d  •  Fares: KSh %s\\nRoute bonus: KSh %s\\nTotal: KSh %s" % [_format_time(elapsed), record_text, passengers, _format_number(fares), _format_number(reward), _format_number(balance)]
-	replay_button.text = "CHOOSE NEXT ROUTE"
+	_last_completed_corridor = int(corridor_service.get("corridor_index")) if corridor_service != null else -1
+	replay_button.text = "RETURN TO CBD" if corridor_service != null and not bool(corridor_service.get("inbound")) else "CHOOSE NEXT ROUTE"
 	_refresh_route_unlocks()
 
 func _select_corridor(index: int) -> void:
@@ -252,10 +262,10 @@ func _refresh_route_unlocks() -> void:
 		$RouteSelectPanel/VBox/Ngong
 	]
 	var base_texts := [
-		"WAIYAKI WAY  •  WESTLANDS → UTHIRU  •  KSh 9,000 BONUS",
-		"THIKA ROAD  •  NGARA → KASARANI  •  KSh 11,000 BONUS",
-		"MOMBASA ROAD  •  NYAYO → IMARA DAIMA  •  KSh 12,000 BONUS",
-		"NGONG ROAD  •  COMMUNITY → JUNCTION  •  KSh 10,000 BONUS"
+		"WAIYAKI WAY  •  CBD → UTHIRU  •  KSh 9,000 BONUS",
+		"THIKA ROAD  •  CBD → KASARANI  •  KSh 11,000 BONUS",
+		"MOMBASA ROAD  •  CBD → IMARA DAIMA  •  KSh 12,000 BONUS",
+		"NGONG ROAD  •  CBD → JUNCTION  •  KSh 10,000 BONUS"
 	]
 	var best_times: Dictionary = SaveManager.data.get("corridor_best_times", {})
 	for i in range(buttons.size()):
@@ -430,5 +440,11 @@ func _on_route_unlocked(name: String) -> void:
 
 func _on_rival_pressure(message: String) -> void:
 	fare_notice.text = "RIVAL • %s" % message
+	fare_notice.visible = true
+	_fare_notice_time = 2.5
+
+
+func _on_direction_changed(label: String) -> void:
+	fare_notice.text = "ROUTE DIRECTION • %s" % label
 	fare_notice.visible = true
 	_fare_notice_time = 2.5
