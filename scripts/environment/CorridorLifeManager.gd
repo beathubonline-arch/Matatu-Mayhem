@@ -100,7 +100,7 @@ func _physics_process(_delta: float) -> void:
 		var points: Array = mover.get_meta("points", [])
 		if points.size() < 2:
 			continue
-		var index := clampi(int(mover.get_meta("point_index", 1)), 0, points.size() - 1)
+		var index: int = clampi(int(mover.get_meta("point_index", 1)), 0, points.size() - 1)
 		var target: Vector3 = points[index]
 		var to_target := target - mover.global_position
 		to_target.y = 0.0
