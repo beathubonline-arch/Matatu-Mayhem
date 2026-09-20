@@ -33,7 +33,6 @@ corner_radius_bottom_left = 10
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1")
-route_manager_path = NodePath("../Gameplay/Route")
 
 [node name="Margin" type="MarginContainer" parent="."]
 mouse_filter = 2
