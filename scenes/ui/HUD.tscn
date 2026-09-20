@@ -76,13 +76,25 @@ text = "00:00.00"
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.84, 0.2, 1)
 theme_override_font_sizes/font_size = 19
-text = "PICK UP PASSENGERS AT THE GREEN MATATU STAGE"
+text = "CHOOSE A NAIROBI CORRIDOR"
+
+[node name="PassengerLoad" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.35, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "PASSENGERS 0/14"
+
+[node name="Navigation" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
+theme_override_font_sizes/font_size = 18
+text = "NAV • SELECT ROUTE"
 
 [node name="Hype" type="Label" parent="Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.32, 0.52, 1)
 theme_override_font_sizes/font_size = 18
-text = "HYPE 000 • CBD SHIFT STARTED"
+text = "HYPE 000 • NAIROBI SHIFT READY"
 
 [node name="Controls" type="Label" parent="Margin/VBox"]
 layout_mode = 2
@@ -177,9 +189,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -280.0
-offset_top = -245.0
+offset_top = -330.0
 offset_right = 280.0
-offset_bottom = 245.0
+offset_bottom = 330.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("FinishStyle")
@@ -224,3 +236,26 @@ custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 theme_override_styles/normal = SubResource("ButtonStyle")
 text = "NGONG ROAD  •  COMMUNITY → JUNCTION  •  KSh 10,000 BONUS"
+
+
+[node name="GarageTitle" type="Label" parent="RouteSelectPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 19
+text = "MAVERICK GARAGE"
+horizontal_alignment = 1
+
+[node name="EngineUpgrade" type="Button" parent="RouteSelectPanel/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "ENGINE"
+
+[node name="BrakeUpgrade" type="Button" parent="RouteSelectPanel/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "BRAKES"
+
+[node name="CapacityUpgrade" type="Button" parent="RouteSelectPanel/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "CAPACITY"
