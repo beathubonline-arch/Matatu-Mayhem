@@ -71,7 +71,6 @@ culture_manager_path = NodePath("../MatatuCulture")
 
 [node name="MatatuCulture" type="Node" parent="Gameplay"]
 script = ExtResource("14_culture")
-passenger_manager_path = NodePath("../CorridorService")
 radio_path = NodePath("../../MatatuRadio")
 corridor_service_path = NodePath("../CorridorService")
 challenge_manager_path = NodePath("../DrivingChallenges")
