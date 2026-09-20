@@ -14,6 +14,7 @@ var combo := 0
 var reputation := 0
 var street_cred := 0
 var _last_event_msec := 0
+var _last_decay_msec := 0
 
 func _ready() -> void:
 	var passengers := get_node_or_null(passenger_manager_path)
@@ -32,7 +33,18 @@ func _ready() -> void:
 		challenges.driving_skill.connect(_on_driving_skill)
 	reputation = int(SaveManager.data.get("matatu_reputation", 0))
 	street_cred = int(SaveManager.data.get("street_cred", 0))
+	_last_decay_msec = Time.get_ticks_msec()
 	hype_changed.emit(hype, combo, "NAIROBI SHIFT READY")
+
+func _process(_delta: float) -> void:
+	if combo <= 0:
+		return
+	var now := Time.get_ticks_msec()
+	if now - _last_event_msec > 12000 and now - _last_decay_msec > 2500:
+		_last_decay_msec = now
+		combo = maxi(combo - 1, 0)
+		hype = maxi(hype - 4, 0)
+		hype_changed.emit(hype, combo, "KEEP MOVING • BUILD THE HYPE")
 
 func _on_fare_awarded(_amount: int, _balance: int) -> void:
 	_add_hype(18, "STAGE SERVICE +18 HYPE")
