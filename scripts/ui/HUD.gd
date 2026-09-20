@@ -149,6 +149,10 @@ func _on_corridor_completed(name: String, reward: int, balance: int) -> void:
 	fare_notice.text = "%s COMPLETE  +KSh %s\\nBALANCE: KSh %s" % [name, _format_number(reward), _format_number(balance)]
 	fare_notice.visible = true
 	_fare_notice_time = 5.0
+	finish_panel.visible = true
+	finish_title.text = "%s COMPLETE" % name
+	finish_summary.text = "Route bonus: KSh %s\\nTotal balance: KSh %s" % [_format_number(reward), _format_number(balance)]
+	replay_button.text = "CHOOSE NEXT ROUTE"
 
 func _select_corridor(index: int) -> void:
 	if corridor_service == null:
