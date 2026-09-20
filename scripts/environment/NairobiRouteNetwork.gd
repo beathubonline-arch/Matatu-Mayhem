@@ -61,6 +61,7 @@ func _build_corridor(data: Dictionary, corridor_index: int) -> void:
 		if i > 0:
 			_junction_detail(points[i], color)
 			_branch_road(points[i - 1], points[i], points[i + 1], color, i)
+			_turn_arrow(points[i - 1], points[i], points[i + 1], color)
 	var service_points: Array = data["service_points"]
 	for i in range(service_points.size()):
 		_stage(_stage_visual_position(points, service_points[i]), String(data["stops"][i]), String(data["name"]), int(data["reward"]))
@@ -122,6 +123,39 @@ func _road_segment(a: Vector3, b: Vector3, accent: Color) -> void:
 	_marking(mid, yaw, length, 3.7, 0.10, Color("d9d9d9"))
 	_marking(mid, yaw, length, -7.15, 0.14, Color("f2f2f2"))
 	_marking(mid, yaw, length, 7.15, 0.14, Color("f2f2f2"))
+
+func _turn_arrow(prev: Vector3, junction: Vector3, next: Vector3, accent: Color) -> void:
+	var incoming := junction - prev
+	var outgoing := next - junction
+	incoming.y = 0.0
+	outgoing.y = 0.0
+	if incoming.length_squared() < 0.01 or outgoing.length_squared() < 0.01:
+		return
+	incoming = incoming.normalized()
+	outgoing = outgoing.normalized()
+	var signed_turn := incoming.signed_angle_to(outgoing, Vector3.UP)
+	if absf(rad_to_deg(signed_turn)) < 18.0:
+		return
+	var root := Node3D.new()
+	root.position = junction - incoming * 9.0 + Vector3(0, ROAD_Y + 0.09, 0)
+	root.rotation.y = atan2(incoming.x, incoming.z)
+	add_child(root)
+	var shaft := MeshInstance3D.new()
+	var shaft_mesh := BoxMesh.new()
+	shaft_mesh.size = Vector3(0.45, 0.025, 4.0)
+	shaft.mesh = shaft_mesh
+	shaft.position = Vector3(0, 0, -1.2)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = accent
+	shaft.material_override = mat
+	root.add_child(shaft)
+	var head := MeshInstance3D.new()
+	var head_mesh := BoxMesh.new()
+	head_mesh.size = Vector3(2.6, 0.025, 0.45)
+	head.mesh = head_mesh
+	head.position = Vector3(-1.05 if signed_turn > 0.0 else 1.05, 0, -3.0)
+	head.material_override = mat
+	root.add_child(head)
 
 func _branch_road(prev: Vector3, junction: Vector3, next: Vector3, accent: Color, seed: int) -> void:
 	var incoming := junction - prev
