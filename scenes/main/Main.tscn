@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/environment/TestMap.tscn" id="1_map"]
 [ext_resource type="PackedScene" path="res://scenes/vehicle/Matatu.tscn" id="2_car"]
@@ -15,7 +15,7 @@
 [ext_resource type="Script" path="res://scripts/environment/CBDLifeManager.gd" id="13_cbd_life"]
 [ext_resource type="Script" path="res://scripts/gameplay/MatatuCultureManager.gd" id="14_culture"]
 [ext_resource type="Script" path="res://scripts/environment/CBDRouteDistrict.gd" id="15_cbd_district"]
-[ext_resource type="Script" path="res://scripts/traffic/RivalMatatuManager.gd" id="16_rivals"]
+[ext_resource type="Script" path="res://scripts/traffic/RivalMatatuManager.gd" id="16_rivals"]\n[ext_resource type="Script" path="res://scripts/environment/NairobiRouteNetwork.gd" id="17_routes"]
 
 [sub_resource type="SphereShape3D" id="CameraShape"]
 radius = 0.35
@@ -26,7 +26,7 @@ radius = 0.35
 [node name="Environment" type="Node3D" parent="World"]
 [node name="TestMap" parent="World/Environment" instance=ExtResource("1_map")]
 [node name="CBDRouteDistrict" type="Node3D" parent="World/Environment"]
-script = ExtResource("15_cbd_district")
+script = ExtResource("15_cbd_district")\n\n[node name="NairobiRouteNetwork" type="Node3D" parent="World/Environment"]\nscript = ExtResource("17_routes")
 
 [node name="Gameplay" type="Node3D" parent="."]
 
