@@ -110,6 +110,7 @@ func _build_corridor(data: Dictionary, corridor_index: int) -> void:
 	else:
 		_other_corridor_landmarks(data, corridor_index)
 	_corridor_gateway(data, corridor_index)
+	_add_route_furniture(data, corridor_index)
 
 func _stage_visual_position(route_points: Array, service_point: Vector3) -> Vector3:
 	var best_index := 0
@@ -501,3 +502,43 @@ func _spawn_passengers(parent: Node3D) -> void:
 		mat.albedo_color = passenger_colors[i % passenger_colors.size()]
 		person.material_override = mat
 		parent.add_child(person)
+
+
+func _add_route_furniture(data: Dictionary, corridor_index: int) -> void:
+	var points: Array = data["points"]
+	var accent := Color(String(data["color"]))
+	for i in range(points.size() - 1):
+		var a: Vector3 = points[i]
+		var b: Vector3 = points[i + 1]
+		var direction := b - a
+		direction.y = 0.0
+		if direction.length_squared() < 0.01:
+			continue
+		direction = direction.normalized()
+		var right := Vector3(direction.z, 0.0, -direction.x)
+		var mid := a.lerp(b, 0.5)
+		# Route-number signs make the world readable without staring at HUD text.
+		if i % 2 == 0:
+			var sign := Label3D.new()
+			sign.text = "%s  •  %s" % [String(data["name"]), String(data["stops"][mini(i / 2, data["stops"].size() - 1)])]
+			sign.position = mid + right * 10.8 + Vector3.UP * 3.8
+			sign.font_size = 24
+			sign.pixel_size = 0.006
+			sign.outline_size = 7
+			sign.modulate = accent
+			add_child(sign)
+		# Common Nairobi roadside clutter: barriers, kiosks and utility poles.
+		if i % 3 == 1:
+			_roadside_shop(mid - right * 12.5, String(data["stops"][mini(i / 3, data["stops"].size() - 1)]), i + corridor_index * 7)
+		for side in [-1.0, 1.0]:
+			var pole := MeshInstance3D.new()
+			var pole_mesh := CylinderMesh.new()
+			pole_mesh.top_radius = 0.055
+			pole_mesh.bottom_radius = 0.075
+			pole_mesh.height = 5.2
+			pole.mesh = pole_mesh
+			pole.position = mid + right * side * 10.2 + Vector3.UP * 2.6
+			var pole_mat := StandardMaterial3D.new()
+			pole_mat.albedo_color = Color("34373b")
+			pole.material_override = pole_mat
+			add_child(pole)
