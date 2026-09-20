@@ -41,9 +41,43 @@ func get_corridor(index: int) -> Dictionary:
 	return CORRIDORS[index % CORRIDORS.size()]
 
 func get_service_stop(corridor: int, stop: int) -> Vector3:
+	return get_stage_bay_position(corridor, stop)
+
+func get_stage_bay_position(corridor: int, stop: int) -> Vector3:
 	var data: Dictionary = get_corridor(corridor)
+	var points: Array = data["points"]
 	var service_points: Array = data["service_points"]
-	return service_points[clampi(stop, 0, service_points.size() - 1)]
+	var service_point: Vector3 = service_points[clampi(stop, 0, service_points.size() - 1)]
+	var direction := _route_direction_at(points, service_point)
+	var right := Vector3(direction.z, 0.0, -direction.x)
+	return service_point + right * 5.2
+
+func get_stage_waiting_position(corridor: int, stop: int) -> Vector3:
+	var data: Dictionary = get_corridor(corridor)
+	var points: Array = data["points"]
+	var service_points: Array = data["service_points"]
+	var service_point: Vector3 = service_points[clampi(stop, 0, service_points.size() - 1)]
+	var direction := _route_direction_at(points, service_point)
+	var right := Vector3(direction.z, 0.0, -direction.x)
+	return service_point + right * 9.4
+
+func get_stage_direction(corridor: int, stop: int) -> Vector3:
+	var data: Dictionary = get_corridor(corridor)
+	return _route_direction_at(data["points"], data["service_points"][clampi(stop, 0, data["service_points"].size() - 1)])
+
+func _route_direction_at(route_points: Array, service_point: Vector3) -> Vector3:
+	var best_index := 0
+	var best_distance := INF
+	for i in range(route_points.size()):
+		var d := service_point.distance_squared_to(route_points[i])
+		if d < best_distance:
+			best_distance = d
+			best_index = i
+	var prev_index := maxi(best_index - 1, 0)
+	var next_index := mini(best_index + 1, route_points.size() - 1)
+	var direction: Vector3 = route_points[next_index] - route_points[prev_index]
+	direction.y = 0.0
+	return Vector3.FORWARD if direction.length_squared() < 0.01 else direction.normalized()
 
 func _ready() -> void:
 	for corridor_index in range(CORRIDORS.size()):
@@ -64,7 +98,7 @@ func _build_corridor(data: Dictionary, corridor_index: int) -> void:
 			_turn_arrow(points[i - 1], points[i], points[i + 1], color)
 	var service_points: Array = data["service_points"]
 	for i in range(service_points.size()):
-		_stage(_stage_visual_position(points, service_points[i]), String(data["stops"][i]), String(data["name"]), int(data["reward"]))
+		_stage(get_stage_waiting_position(corridor_index, i), get_stage_direction(corridor_index, i), String(data["stops"][i]), String(data["name"]), int(data["reward"]))
 	if corridor_index == 0:
 		_waiyaki_landmarks()
 	else:
@@ -358,12 +392,13 @@ func _building(pos: Vector3, size: Vector3, seed: int, side: float) -> void:
 	add_child(building)
 
 func _waiyaki_landmarks() -> void:
-	_landmark_sign(Vector3(-70, 5.4, -70), "WESTLANDS\nWAIYAKI WAY")
-	_landmark_sign(Vector3(-118, 5.4, -86), "ABC PLACE")
-	_landmark_sign(Vector3(-170, 5.4, -96), "KANGEMI")
-	_landmark_sign(Vector3(-225, 5.4, -100), "UTHIRU")
-	_billboard(Vector3(-95, 4.5, -78), "MATATU MAYHEM\n254 STREET RADIO")
-	_billboard(Vector3(-190, 4.5, -96), "BEATHUB\nNAIROBI SOUNDS")
+	var data: Dictionary = get_corridor(0)
+	var stops: Array = data["stops"]
+	for i in range(stops.size()):
+		var pos := get_stage_waiting_position(0, i)
+		_landmark_sign(pos + Vector3(0, 5.4, 0), "%s\nWAIYAKI WAY" % String(stops[i]))
+	_billboard(get_stage_waiting_position(0, 1) + Vector3(0, 4.5, 6.0), "MATATU MAYHEM\n254 STREET RADIO")
+	_billboard(get_stage_waiting_position(0, 2) + Vector3(0, 4.5, 6.0), "BEATHUB\nNAIROBI SOUNDS")
 
 func _other_corridor_landmarks(data: Dictionary, corridor_index: int) -> void:
 	var points: Array = data["service_points"]
@@ -411,9 +446,10 @@ func _billboard(pos: Vector3, text: String) -> void:
 	label.modulate = Color("ffe15a")
 	add_child(label)
 
-func _stage(pos: Vector3, stop_name: String, corridor: String, reward: int) -> void:
+func _stage(pos: Vector3, direction: Vector3, stop_name: String, corridor: String, reward: int) -> void:
 	var root := Node3D.new()
 	root.position = pos
+	root.rotation.y = atan2(direction.x, direction.z)
 	root.name = stop_name.replace(" ", "_").replace("/", "_") + "_Stage"
 	add_child(root)
 	var shelter := MeshInstance3D.new()
