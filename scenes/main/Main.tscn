@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/environment/TestMap.tscn" id="1_map"]
 [ext_resource type="PackedScene" path="res://scenes/vehicle/Matatu.tscn" id="2_car"]
@@ -8,13 +8,8 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/HUD.tscn" id="6_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PauseMenu.tscn" id="7_pause"]
 [ext_resource type="PackedScene" path="res://scenes/ui/MobileControls.tscn" id="8_mobile"]
-[ext_resource type="Script" path="res://scripts/traffic/TrafficManager.gd" id="9_traffic"]
-[ext_resource type="PackedScene" path="res://scenes/gameplay/PassengerStop.tscn" id="10_stop"]
-[ext_resource type="Script" path="res://scripts/gameplay/PassengerManager.gd" id="11_passengers"]
 [ext_resource type="Script" path="res://scripts/audio/MatatuRadio.gd" id="12_radio"]
-[ext_resource type="Script" path="res://scripts/environment/CBDLifeManager.gd" id="13_cbd_life"]
 [ext_resource type="Script" path="res://scripts/gameplay/MatatuCultureManager.gd" id="14_culture"]
-[ext_resource type="Script" path="res://scripts/environment/CBDRouteDistrict.gd" id="15_cbd_district"]
 [ext_resource type="Script" path="res://scripts/traffic/RivalMatatuManager.gd" id="16_rivals"]
 [ext_resource type="Script" path="res://scripts/environment/NairobiRouteNetwork.gd" id="17_routes"]
 [ext_resource type="Script" path="res://scripts/gameplay/CorridorServiceManager.gd" id="18_corridor_service"]
@@ -31,32 +26,15 @@ radius = 0.35
 [node name="World" type="Node3D" parent="."]
 [node name="Environment" type="Node3D" parent="World"]
 [node name="TestMap" parent="World/Environment" instance=ExtResource("1_map")]
-[node name="CBDRouteDistrict" type="Node3D" parent="World/Environment"]
-process_mode = 4
-visible = false
-
 [node name="NairobiRouteNetwork" type="Node3D" parent="World/Environment"]
 script = ExtResource("17_routes")
 
 [node name="Gameplay" type="Node3D" parent="."]
 
-[node name="CBDLife" type="Node3D" parent="Gameplay"]
-process_mode = 4
-visible = false
-script = ExtResource("13_cbd_life")
-pedestrian_count = 0
-boda_count = 0
-
 [node name="Vehicles" type="Node3D" parent="Gameplay"]
 [node name="Maverick" parent="Gameplay/Vehicles" instance=ExtResource("2_car")]
 position = Vector3(0, 1.4, 76)
 rotation_degrees = Vector3(0, 0, 0)
-
-[node name="Traffic" type="Node3D" parent="Gameplay"]
-process_mode = 4
-visible = false
-script = ExtResource("9_traffic")
-traffic_count = 0
 
 [node name="CorridorTraffic" type="Node3D" parent="Gameplay"]
 script = ExtResource("19_corridor_traffic")
@@ -77,25 +55,6 @@ script = ExtResource("16_rivals")
 rival_count = 4
 network_path = NodePath("../../World/Environment/NairobiRouteNetwork")
 corridor_service_path = NodePath("../CorridorService")
-
-[node name="PassengerStops" type="Node3D" parent="Gameplay"]
-process_mode = 4
-visible = false
-
-[node name="PickupStage" parent="Gameplay/PassengerStops" instance=ExtResource("10_stop")]
-position = Vector3(-5.5, 0, 63)
-stop_kind = "pickup"
-
-[node name="DropoffStage" parent="Gameplay/PassengerStops" instance=ExtResource("10_stop")]
-position = Vector3(5.5, 0, -63)
-stop_kind = "dropoff"
-
-[node name="PassengerService" type="Node" parent="Gameplay"]
-script = ExtResource("11_passengers")
-pickup_stop_path = NodePath("../PassengerStops/PickupStage")
-dropoff_stop_path = NodePath("../PassengerStops/DropoffStage")
-fare_amount = 5000
-enabled = false
 
 [node name="CorridorService" type="Node" parent="Gameplay"]
 script = ExtResource("18_corridor_service")
