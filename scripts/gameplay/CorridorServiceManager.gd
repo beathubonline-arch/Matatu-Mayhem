@@ -2,7 +2,7 @@ class_name CorridorServiceManager
 extends Node
 
 signal corridor_changed(name: String, stop_name: String, current: int, total: int)
-signal corridor_completed(name: String, reward: int, balance: int, elapsed: float, best: float, new_best: bool)
+signal corridor_completed(name: String, reward: int, balance: int, elapsed: float, best: float, new_best: bool, fares: int, passengers: int)
 signal fare_awarded(amount: int, balance: int)
 signal service_progress(message: String)
 signal run_time_changed(seconds: float)
@@ -20,6 +20,8 @@ var active := false
 var elapsed_seconds := 0.0
 var passenger_capacity := 14
 var passengers_onboard := 0
+var total_fares_this_run := 0
+var total_passengers_this_run := 0
 
 func _ready() -> void:
 	player = get_node_or_null(player_path) as Node3D
@@ -43,6 +45,8 @@ func select_corridor(index: int) -> void:
 	dwell = 0.0
 	elapsed_seconds = 0.0
 	passengers_onboard = 0
+	total_fares_this_run = 0
+	total_passengers_this_run = 0
 	active = true
 	var data: Dictionary = network.get_corridor(corridor_index)
 	var points: Array = data["points"]
@@ -94,6 +98,8 @@ func _complete_stop() -> void:
 	var fare: int = boarded * 500
 	if fare > 0:
 		EconomyManager.add_passenger_fare(fare)
+		total_fares_this_run += fare
+		total_passengers_this_run += boarded
 	if fare > 0:
 		fare_awarded.emit(fare, EconomyManager.get_money())
 	passenger_load_changed.emit(passengers_onboard, passenger_capacity, boarded, alighted)
@@ -118,7 +124,7 @@ func _complete_stop() -> void:
 		var best := elapsed_seconds if new_best else previous_best
 		SaveManager.save_game()
 		active = false
-		corridor_completed.emit(String(data["name"]), reward, EconomyManager.get_money(), elapsed_seconds, best, new_best)
+		corridor_completed.emit(String(data["name"]), reward, EconomyManager.get_money(), elapsed_seconds, best, new_best, total_fares_this_run, total_passengers_this_run)
 		return
 	_emit_status()
 
