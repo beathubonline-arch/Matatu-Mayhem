@@ -29,6 +29,7 @@ var _near_miss_cooldown := 0.0
 var _drift_time := 0.0
 var _speed_hold := 0.0
 var _last_speed_reward := 0.0
+var _proximity_cooldown := 0.0
 
 func _ready() -> void:
 	player = get_node_or_null(player_path) as VehicleBody3D
@@ -46,6 +47,7 @@ func _physics_process(delta: float) -> void:
 	_impact_cooldown = maxf(_impact_cooldown - delta, 0.0)
 	_skill_cooldown = maxf(_skill_cooldown - delta, 0.0)
 	_near_miss_cooldown = maxf(_near_miss_cooldown - delta, 0.0)
+	_proximity_cooldown = maxf(_proximity_cooldown - delta, 0.0)
 	if GameManager.current_state != GameManager.GameState.PLAYING:
 		_last_velocity = player.linear_velocity
 		return
@@ -114,21 +116,30 @@ func _update_driving_skills(delta: float) -> void:
 			driving_skill.emit("MATATU SLIDE +12 HYPE", 12)
 	else:
 		_drift_time = 0.0
-	if speed_kph < 32.0 or _near_miss_cooldown > 0.0:
+	# Near misses must be detected before contact. VehicleBody3D collision lists only
+	# contain bodies after impact, which made the old reward practically impossible.
+	if speed_kph < 32.0 or _near_miss_cooldown > 0.0 or _proximity_cooldown > 0.0:
 		return
-	for body in player.get_colliding_bodies():
-		if body == player:
-			continue
-		var distance := player.global_position.distance_to(body.global_position)
-		if distance > 2.8:
+	var space := player.get_world_3d().direct_space_state
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(5.2, 2.8, 7.0)
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = shape
+	query.transform = Transform3D(player.global_basis, player.global_position)
+	query.exclude = [player.get_rid()]
+	query.collision_mask = 10
+	var hits := space.intersect_shape(query, 8)
+	for hit in hits:
+		var body := hit.get("collider") as Node3D
+		if body == null:
 			continue
 		var relative := body.global_position - player.global_position
 		var local_relative := player.global_basis.inverse() * relative
-		if absf(local_relative.x) > 1.1:
+		if absf(local_relative.x) >= 1.3 and absf(local_relative.x) <= 3.1 and absf(local_relative.z) <= 3.8:
 			_near_miss_cooldown = 2.5
+			_proximity_cooldown = 0.35
 			driving_skill.emit("SQUEEZE THROUGH! +10 HYPE", 10)
 			break
-
 
 func _update_speed_pressure(delta: float) -> void:
 	var speed_kph := float(player.call("get_speed_kph")) if player.has_method("get_speed_kph") else player.linear_velocity.length() * 3.6
