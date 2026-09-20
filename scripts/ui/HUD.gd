@@ -3,7 +3,7 @@ extends CanvasLayer
 @export var route_manager_path: NodePath
 @export var passenger_manager_path: NodePath
 @export var culture_manager_path: NodePath
-@export var radio_path: NodePath
+@export var radio_path: NodePath\n@export var corridor_service_path: NodePath
 
 @onready var speed_label: Label = $Margin/VBox/TopBar/Speed
 @onready var money_label: Label = $Margin/VBox/TopBar/Money
@@ -22,7 +22,7 @@ extends CanvasLayer
 var route_manager: RouteManager
 var passenger_manager: PassengerManager
 var culture_manager: Node
-var radio: Node
+var radio: Node\nvar corridor_service: Node
 var _fare_notice_time: float = 0.0
 
 func _ready() -> void:
@@ -53,6 +53,11 @@ func _ready() -> void:
 		radio = get_node_or_null(radio_path)
 	if radio != null:
 		radio.station_changed.connect(_on_radio_changed)
+	if not corridor_service_path.is_empty():
+		corridor_service = get_node_or_null(corridor_service_path)
+	if corridor_service != null:
+		corridor_service.corridor_changed.connect(_on_corridor_changed)
+		corridor_service.corridor_completed.connect(_on_corridor_completed)
 	_on_hype_changed(0, 0, "CBD SHIFT STARTED")
 	if OS.has_feature("mobile") or DisplayServer.is_touchscreen_available():
 		controls_label.visible = false
@@ -124,3 +129,11 @@ func _on_reputation_awarded(_amount: int, total: int) -> void:
 
 func _on_radio_changed(station: String, track: String, artist: String) -> void:
 	radio_label.text = "♫ %s\n%s — %s\n[M] RADIO  [N] NEXT" % [station, artist, track]
+
+func _on_corridor_changed(name: String, stop_name: String, current: int, total: int) -> void:
+	passenger_label.text = "%s  •  STAGE %d/%d  •  %s" % [name, current, total, stop_name]
+
+func _on_corridor_completed(name: String, reward: int, balance: int) -> void:
+	fare_notice.text = "%s COMPLETE  +KSh %s\nBALANCE: KSh %s" % [name, _format_number(reward), _format_number(balance)]
+	fare_notice.visible = true
+	_fare_notice_time = 5.0
