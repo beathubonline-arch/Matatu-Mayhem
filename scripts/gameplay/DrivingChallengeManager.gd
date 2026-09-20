@@ -51,7 +51,7 @@ func _register_collision() -> void:
 	_run_collisions += 1
 	clean_streak = 0
 	SaveManager.data["clean_streak"] = 0
-	var penalty := mini(COLLISION_PENALTY, EconomyManager.get_money())
+	var penalty: int = mini(COLLISION_PENALTY, EconomyManager.get_money())
 	if penalty > 0:
 		EconomyManager.spend_money(penalty)
 	SaveManager.save_game()
