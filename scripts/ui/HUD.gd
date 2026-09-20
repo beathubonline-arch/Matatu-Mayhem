@@ -167,8 +167,10 @@ func _on_corridor_completed(name: String, reward: int, balance: int, elapsed: fl
 func _select_corridor(index: int) -> void:
 	if corridor_service == null:
 		return
-	GameManager.set_game_state(GameManager.GameState.PLAYING)
 	corridor_service.call("select_corridor", index)
+	if not bool(corridor_service.get("active")):
+		return
+	GameManager.set_game_state(GameManager.GameState.PLAYING)
 	_corridor_time = 0.0
 	route_select_panel.visible = false
 	finish_panel.visible = false
