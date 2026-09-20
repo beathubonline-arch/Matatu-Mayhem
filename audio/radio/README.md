@@ -1,15 +1,38 @@
-# Matatu Radio audio
+# 254 Street Radio — Matatu Mayhem × BeatHub
 
-Put only music that Matatu Mayhem has permission to distribute in this folder.
+This folder is the game's Kenyan street-music pipeline.
+
+## Rights rule
+Only add audio that Matatu Mayhem has explicit permission to distribute inside the game. Public streaming availability does **not** grant game/sync/distribution rights.
 
 Supported runtime formats: .ogg, .mp3 and .wav.
 
-The radio discovers tracks automatically. Use descriptive filenames, for example:
+## Target sound
+The station is built for contemporary Kenyan street rap, trap, drill-adjacent sounds and producer-led BeatHub releases. ThirtyFourBrick/34 Brick, OnlyMoh, Mauru Gwash, JayLo, Unclean, Toxic Lyrikali, Buruklyn Boyz and related 254 scenes are useful cultural references for the station direction — but their commercial masters must not be copied into this repository unless the rights holder grants game distribution permission.
 
-`Artist - Track_Title.ogg`
+## BeatHub pipeline
+Preferred path:
+1. Producer/artist submits an original track through BeatHub.
+2. Rights holder explicitly approves Matatu Mayhem in-game use.
+3. Put the approved audio file here.
+4. Preserve artist/title/producer credit in `catalog.json`.
+5. 254 Street Radio discovers the file automatically and shows its credits in-game.
 
-Target sound: Kenyan drill, trap, gengetone/drill fusion and other 254 street sounds.
+Filename fallback: `Artist - Track_Title.ogg`.
 
-Do not commit commercial recordings unless the rights holder has granted game distribution rights.
+## catalog.json
+Optional metadata is keyed by the exact audio filename:
 
-Preferred pipeline: original or explicitly licensed BeatHub producer submissions, with artist/title credits preserved in the filename for the in-game 254 Street Radio display.
+```json
+{
+  "Artist - Track_Title.ogg": {
+    "artist": "Artist",
+    "title": "Track Title",
+    "credit": "Prod. Producer",
+    "source": "BeatHub",
+    "licensed_for_game": true
+  }
+}
+```
+
+This structure lets us add a real 34 Brick track later in minutes once permission/audio is supplied, without changing game code.
