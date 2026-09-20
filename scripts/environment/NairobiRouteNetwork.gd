@@ -7,31 +7,32 @@ extends Node3D
 
 const ROAD_Y := 0.04
 const ROAD_W := 15.0
+const CBD_TERMINUS := Vector3(0,0,0)
 const WAIYAKI_POINTS := [
-	Vector3(-31,0,-63), Vector3(-31,0,-92), Vector3(-52,0,-92), Vector3(-52,0,-122),
-	Vector3(-86,0,-122), Vector3(-86,0,-151), Vector3(-122,0,-151), Vector3(-122,0,-184),
-	Vector3(-161,0,-184), Vector3(-161,0,-216), Vector3(-205,0,-216), Vector3(-225,0,-238)
+	CBD_TERMINUS, Vector3(-14,0,-22), Vector3(-31,0,-42), Vector3(-31,0,-63), Vector3(-31,0,-92),
+	Vector3(-52,0,-92), Vector3(-52,0,-122), Vector3(-86,0,-122), Vector3(-122,0,-151),
+	Vector3(-161,0,-184), Vector3(-205,0,-216), Vector3(-225,0,-238)
 ]
-const WAIYAKI_DISTRICTS := ["WESTLANDS","WESTLANDS","ABC PLACE","ABC PLACE","KANGEMI","KANGEMI","UTHIRU","UTHIRU","UTHIRU","UTHIRU","UTHIRU"]
+const WAIYAKI_DISTRICTS := ["CBD","CBD","WESTLANDS","WESTLANDS","ABC PLACE","ABC PLACE","KANGEMI","KANGEMI","UTHIRU","UTHIRU","UTHIRU"]
 const CORRIDOR_DISTRICTS := [
-	["WESTLANDS","ABC PLACE","KANGEMI","UTHIRU"],
-	["NGARA","PANGANI","MUTHAIGA","KASARANI"],
-	["NYAYO","SOUTH B / C","GENERAL MOTORS","IMARA DAIMA"],
-	["COMMUNITY","PRESTIGE","ADAMS ARCADE","JUNCTION"]
+	["CBD","WESTLANDS","ABC PLACE","KANGEMI","UTHIRU"],
+	["CBD","NGARA","PANGANI","MUTHAIGA","KASARANI"],
+	["CBD","NYAYO","SOUTH B / C","GENERAL MOTORS","IMARA DAIMA"],
+	["CBD","COMMUNITY","PRESTIGE","ADAMS ARCADE","JUNCTION"]
 ]
 const CORRIDORS := [
 	{"name":"WAIYAKI WAY","color":"4aa3df","points":WAIYAKI_POINTS,
-	 "service_points":[Vector3(-31,0,-92),Vector3(-86,0,-122),Vector3(-161,0,-184),Vector3(-225,0,-238)],
-	 "stops":["WESTLANDS","ABC PLACE","KANGEMI","UTHIRU"],"reward":9000},
-	{"name":"THIKA ROAD","color":"e8c547","points":[Vector3(31,0,21),Vector3(31,0,-12),Vector3(58,0,-12),Vector3(58,0,-52),Vector3(92,0,-52),Vector3(92,0,-96),Vector3(124,0,-96),Vector3(142,0,-142)],
-	 "service_points":[Vector3(31,0,-12),Vector3(58,0,-52),Vector3(92,0,-96),Vector3(142,0,-142)],
-	 "stops":["NGARA","PANGANI","MUTHAIGA","ROYSAMBU / KASARANI"],"reward":11000},
-	{"name":"MOMBASA ROAD","color":"e36a54","points":[Vector3(0,0,63),Vector3(0,0,96),Vector3(32,0,96),Vector3(32,0,132),Vector3(62,0,132),Vector3(62,0,172),Vector3(92,0,172),Vector3(92,0,214),Vector3(76,0,258)],
-	 "service_points":[Vector3(0,0,96),Vector3(32,0,132),Vector3(62,0,172),Vector3(76,0,258)],
-	 "stops":["NYAYO","SOUTH B / C","GENERAL MOTORS","IMARA DAIMA"],"reward":12000},
-	{"name":"NGONG ROAD","color":"69c779","points":[Vector3(-31,0,21),Vector3(-58,0,21),Vector3(-58,0,54),Vector3(-91,0,54),Vector3(-91,0,91),Vector3(-124,0,91),Vector3(-124,0,132),Vector3(-146,0,178)],
-	 "service_points":[Vector3(-58,0,21),Vector3(-91,0,54),Vector3(-124,0,91),Vector3(-146,0,178)],
-	 "stops":["COMMUNITY","PRESTIGE","ADAMS ARCADE","JUNCTION"],"reward":10000}
+	 "service_points":[CBD_TERMINUS,Vector3(-31,0,-63),Vector3(-86,0,-122),Vector3(-161,0,-184),Vector3(-225,0,-238)],
+	 "stops":["CBD","WESTLANDS","KANGEMI","UTHIRU","UTHIRU TERMINUS"],"reward":9000},
+	{"name":"THIKA ROAD","color":"e8c547","points":[CBD_TERMINUS,Vector3(14,0,-10),Vector3(31,0,-12),Vector3(58,0,-12),Vector3(58,0,-52),Vector3(92,0,-52),Vector3(92,0,-96),Vector3(124,0,-96),Vector3(142,0,-142)],
+	 "service_points":[CBD_TERMINUS,Vector3(31,0,-12),Vector3(58,0,-52),Vector3(92,0,-96),Vector3(142,0,-142)],
+	 "stops":["CBD","NGARA","PANGANI","MUTHAIGA","ROYSAMBU / KASARANI"],"reward":11000},
+	{"name":"MOMBASA ROAD","color":"e36a54","points":[CBD_TERMINUS,Vector3(0,0,32),Vector3(0,0,63),Vector3(0,0,96),Vector3(32,0,96),Vector3(32,0,132),Vector3(62,0,132),Vector3(62,0,172),Vector3(92,0,214),Vector3(76,0,258)],
+	 "service_points":[CBD_TERMINUS,Vector3(0,0,63),Vector3(32,0,132),Vector3(62,0,172),Vector3(76,0,258)],
+	 "stops":["CBD","NYAYO","SOUTH B / C","GENERAL MOTORS","IMARA DAIMA"],"reward":12000},
+	{"name":"NGONG ROAD","color":"69c779","points":[CBD_TERMINUS,Vector3(-18,0,12),Vector3(-31,0,21),Vector3(-58,0,21),Vector3(-58,0,54),Vector3(-91,0,54),Vector3(-91,0,91),Vector3(-124,0,91),Vector3(-124,0,132),Vector3(-146,0,178)],
+	 "service_points":[CBD_TERMINUS,Vector3(-31,0,21),Vector3(-91,0,54),Vector3(-124,0,91),Vector3(-146,0,178)],
+	 "stops":["CBD","COMMUNITY","PRESTIGE","ADAMS ARCADE","JUNCTION"],"reward":10000}
 ]
 
 func corridor_count() -> int:
@@ -86,6 +87,7 @@ func _route_direction_at(route_points: Array, service_point: Vector3) -> Vector3
 	return Vector3.FORWARD if direction.length_squared() < 0.01 else direction.normalized()
 
 func _ready() -> void:
+	_build_cbd_hub()
 	for corridor_index in range(CORRIDORS.size()):
 		_build_corridor(CORRIDORS[corridor_index], corridor_index)
 
@@ -542,3 +544,40 @@ func _add_route_furniture(data: Dictionary, corridor_index: int) -> void:
 			pole_mat.albedo_color = Color("34373b")
 			pole.material_override = pole_mat
 			add_child(pole)
+
+
+func _build_cbd_hub() -> void:
+	var hub := Node3D.new()
+	hub.name = "CBD_Terminus"
+	hub.position = CBD_TERMINUS
+	add_child(hub)
+	var pad := MeshInstance3D.new()
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = 18.0
+	mesh.bottom_radius = 18.0
+	mesh.height = 0.10
+	pad.mesh = mesh
+	pad.position.y = ROAD_Y
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color("20242a")
+	mat.roughness = 0.96
+	pad.material_override = mat
+	hub.add_child(pad)
+	var title := Label3D.new()
+	title.text = "NAIROBI CBD • MATATU TERMINUS\nALL ROUTES START HERE"
+	title.position = Vector3(0, 7.0, 0)
+	title.font_size = 44
+	title.pixel_size = 0.007
+	title.outline_size = 10
+	title.modulate = Color("ffe15a")
+	hub.add_child(title)
+	for i in range(CORRIDORS.size()):
+		var data: Dictionary = CORRIDORS[i]
+		var lane := Label3D.new()
+		lane.text = "%d • %s" % [i + 1, String(data["name"])]
+		lane.position = Vector3(-12.0 + float(i % 2) * 24.0, 2.8, -5.0 + float(i / 2) * 10.0)
+		lane.font_size = 28
+		lane.pixel_size = 0.006
+		lane.outline_size = 7
+		lane.modulate = Color(String(data["color"]))
+		hub.add_child(lane)
