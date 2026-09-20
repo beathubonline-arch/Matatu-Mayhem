@@ -15,6 +15,7 @@ func _ready() -> void:
 	_build_trim()
 	_build_identity()
 	_build_realism_details()
+	_apply_selected_nganya()
 
 func _mat(color: Color, emission: Color = Color.TRANSPARENT, metallic: float = 0.0, roughness: float = 0.55) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
@@ -177,3 +178,24 @@ func _add_label(name_text: String, label_text: String, position_value: Vector3, 
 	label.pixel_size = pixel_size_value
 	label.font_size = font_size_value
 	add_child(label)
+
+func _apply_selected_nganya() -> void:
+	var selected := String(SaveManager.data.get("selected_nganya", "Maverick")).to_upper()
+	var palettes := {
+		"MAVERICK": [Color("00d9ff"), Color("ff2e88")],
+		"ONYX": [Color("a855f7"), Color("22d3ee")],
+		"MOXIE": [Color("ff8a00"), Color("f7ff00")],
+		"MONEYFEST": [Color("22c55e"), Color("facc15")]
+	}
+	var palette: Array = palettes.get(selected, palettes["MAVERICK"])
+	for child in get_children():
+		if child is MeshInstance3D and (child.name.contains("UnderGlow") or child.name.contains("ElectricBelt")):
+			var material := _mat(palette[0], palette[0], 0.25, 0.22)
+			child.material_override = material
+	var rear := get_node_or_null("RearName") as Label3D
+	if rear != null:
+		rear.text = selected
+		rear.modulate = palette[0]
+	var front := get_node_or_null("FrontRoute") as Label3D
+	if front != null:
+		front.modulate = palette[1]
