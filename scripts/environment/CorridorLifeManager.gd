@@ -64,7 +64,7 @@ func _spawn_bodas() -> void:
 	var points: Array = data["points"]
 	for i in range(boda_count):
 		var boda := CharacterBody3D.new()
-		var start_index := i % max(points.size() - 1, 1)
+		var start_index: int = i % max(points.size() - 1, 1)
 		boda.position = points[start_index] + Vector3(0, 0.45, 0)
 		boda.set_meta("points", points)
 		boda.set_meta("point_index", mini(start_index + 1, points.size() - 1))
@@ -130,7 +130,7 @@ func _spawn_route_minibuses() -> void:
 	var points: Array = data["points"]
 	for i in range(minibus_count):
 		var bus := CharacterBody3D.new()
-		var start_index := (i * 2) % max(points.size() - 1, 1)
+		var start_index: int = (i * 2) % max(points.size() - 1, 1)
 		var a: Vector3 = points[start_index]
 		var b: Vector3 = points[start_index + 1]
 		var direction := (b - a).normalized()
@@ -179,7 +179,7 @@ func _spawn_other_corridor_minibuses() -> void:
 		for i in range(route_minibuses_per_other_corridor):
 			if points.size() < 2:
 				continue
-			var segment_index := (i * 2) % (points.size() - 1)
+			var segment_index: int = (i * 2) % (points.size() - 1)
 			var a: Vector3 = points[segment_index]
 			var b: Vector3 = points[segment_index + 1]
 			var direction := (b - a).normalized()
