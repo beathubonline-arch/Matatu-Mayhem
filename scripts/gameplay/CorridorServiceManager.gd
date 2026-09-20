@@ -25,11 +25,11 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if not active or player == null or network == null:
 		return
-	var target := network.get_service_stop(corridor_index, stop_index)
+	var target: Vector3 = network.get_service_stop(corridor_index, stop_index)
 	if player.global_position.distance_to(target) > 7.0:
 		dwell = 0.0
 		return
-	var speed := 999.0
+	var speed: float = 999.0
 	if player.has_method("get_speed_kph"):
 		speed = float(player.call("get_speed_kph"))
 	if speed > 4.0:
@@ -41,13 +41,13 @@ func _physics_process(delta: float) -> void:
 
 func _complete_stop() -> void:
 	dwell = 0.0
-	var data := network.get_corridor(corridor_index)
+	var data: Dictionary = network.get_corridor(corridor_index)
 	var stops: Array = data["stops"]
-	var fare := 2500 + stop_index * 500
+	var fare: int = 2500 + stop_index * 500
 	EconomyManager.add_passenger_fare(fare)
 	stop_index += 1
 	if stop_index >= stops.size():
-		var reward := int(data["reward"])
+		var reward: int = int(data["reward"])
 		EconomyManager.add_money(reward)
 		corridor_completed.emit(String(data["name"]), reward, EconomyManager.get_money())
 		corridor_index = (corridor_index + 1) % network.corridor_count()
