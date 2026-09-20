@@ -176,6 +176,7 @@ culture_manager_path = NodePath("../Gameplay/MatatuCulture")
 radio_path = NodePath("../MatatuRadio")
 corridor_service_path = NodePath("../Gameplay/CorridorService")
 challenge_manager_path = NodePath("../Gameplay/DrivingChallenges")
+career_manager_path = NodePath("../Gameplay/Career")
 [node name="PauseMenu" parent="." instance=ExtResource("7_pause")]
 corridor_service_path = NodePath("../Gameplay/CorridorService")
 [node name="MobileControls" parent="." instance=ExtResource("8_mobile")]
