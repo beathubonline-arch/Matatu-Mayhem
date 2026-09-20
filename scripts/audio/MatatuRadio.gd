@@ -14,10 +14,13 @@ const MANIFEST_PATH := "res://audio/radio/catalog.json"
 
 var _tracks: Array[Dictionary] = []
 var _current_index := 0
+var _last_index := -1
+var _rng := RandomNumberGenerator.new()
 var _player: AudioStreamPlayer
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_rng.randomize()
 	_player = AudioStreamPlayer.new()
 	_player.name = "RadioPlayer"
 	_player.volume_db = volume_db
@@ -25,6 +28,7 @@ func _ready() -> void:
 	_player.finished.connect(_play_next)
 	_discover_tracks()
 	if auto_play and not _tracks.is_empty():
+		_current_index = _random_track_index()
 		_play_current()
 	else:
 		_emit_metadata()
@@ -51,6 +55,9 @@ func _discover_tracks() -> void:
 				var stream := load(RADIO_DIR + "/" + filename) as AudioStream
 				if stream != null:
 					var metadata: Dictionary = manifest.get(filename, {})
+					if not metadata.is_empty() and not bool(metadata.get("licensed_for_game", false)):
+						filename = dir.get_next()
+						continue
 					var display := filename.get_basename().replace("_", " ")
 					var artist := str(metadata.get("artist", "BeatHub / 254"))
 					var title := str(metadata.get("title", display))
@@ -97,8 +104,18 @@ func _play_next() -> void:
 	if _tracks.is_empty():
 		_emit_metadata()
 		return
-	_current_index = (_current_index + 1) % _tracks.size()
+	_current_index = _random_track_index()
 	_play_current()
+
+func _random_track_index() -> int:
+	if _tracks.size() <= 1:
+		_last_index = 0
+		return 0
+	var next_index := _rng.randi_range(0, _tracks.size() - 1)
+	while next_index == _current_index or next_index == _last_index:
+		next_index = _rng.randi_range(0, _tracks.size() - 1)
+	_last_index = _current_index
+	return next_index
 
 func toggle_radio() -> void:
 	if _tracks.is_empty():
