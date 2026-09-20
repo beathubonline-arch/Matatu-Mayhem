@@ -1,10 +1,8 @@
-[gd_scene load_steps=19 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/environment/TestMap.tscn" id="1_map"]
 [ext_resource type="PackedScene" path="res://scenes/vehicle/Matatu.tscn" id="2_car"]
 [ext_resource type="Script" path="res://scripts/vehicle/ChaseCamera.gd" id="3_camera"]
-[ext_resource type="PackedScene" path="res://scenes/gameplay/Checkpoint.tscn" id="4_checkpoint"]
-[ext_resource type="Script" path="res://scripts/gameplay/RouteManager.gd" id="5_route"]
 [ext_resource type="PackedScene" path="res://scenes/ui/HUD.tscn" id="6_hud"]
 [ext_resource type="PackedScene" path="res://scenes/ui/PauseMenu.tscn" id="7_pause"]
 [ext_resource type="PackedScene" path="res://scenes/ui/MobileControls.tscn" id="8_mobile"]
@@ -74,46 +72,10 @@ culture_manager_path = NodePath("../MatatuCulture")
 [node name="MatatuCulture" type="Node" parent="Gameplay"]
 script = ExtResource("14_culture")
 passenger_manager_path = NodePath("../CorridorService")
-route_manager_path = NodePath("../Route")
 radio_path = NodePath("../../MatatuRadio")
 corridor_service_path = NodePath("../CorridorService")
 challenge_manager_path = NodePath("../DrivingChallenges")
 
-[node name="Route" type="Node3D" parent="Gameplay"]
-script = ExtResource("5_route")
-auto_start = false
-
-[node name="Checkpoint01" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
-position = Vector3(0, 0, 63)
-checkpoint_index = 0
-
-[node name="Checkpoint02" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
-position = Vector3(0, 0, 21)
-checkpoint_index = 1
-
-[node name="Checkpoint03" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
-position = Vector3(31, 0, 21)
-checkpoint_index = 2
-
-[node name="Checkpoint04" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
-position = Vector3(31, 0, -21)
-checkpoint_index = 3
-
-[node name="Checkpoint05" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
-position = Vector3(0, 0, -21)
-checkpoint_index = 4
-
-[node name="Checkpoint06" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
-position = Vector3(-31, 0, -21)
-checkpoint_index = 5
-
-[node name="Checkpoint07" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
-position = Vector3(-31, 0, -63)
-checkpoint_index = 6
-
-[node name="Checkpoint08" parent="Gameplay/Route" instance=ExtResource("4_checkpoint")]
-position = Vector3(0, 0, -63)
-checkpoint_index = 7
 
 [node name="MatatuRadio" type="Node" parent="."]
 script = ExtResource("12_radio")
