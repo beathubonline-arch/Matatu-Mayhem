@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/environment/TestMap.tscn" id="1_map"]
 [ext_resource type="PackedScene" path="res://scenes/vehicle/Matatu.tscn" id="2_car"]
@@ -15,6 +15,7 @@
 [ext_resource type="Script" path="res://scripts/environment/CBDLifeManager.gd" id="13_cbd_life"]
 [ext_resource type="Script" path="res://scripts/gameplay/MatatuCultureManager.gd" id="14_culture"]
 [ext_resource type="Script" path="res://scripts/environment/CBDRouteDistrict.gd" id="15_cbd_district"]
+[ext_resource type="Script" path="res://scripts/traffic/RivalMatatuManager.gd" id="16_rivals"]
 
 [sub_resource type="SphereShape3D" id="CameraShape"]
 radius = 0.35
@@ -42,6 +43,10 @@ rotation_degrees = Vector3(0, 0, 0)
 [node name="Traffic" type="Node3D" parent="Gameplay"]
 script = ExtResource("9_traffic")
 traffic_count = 12
+
+[node name="RivalNganyas" type="Node3D" parent="Gameplay"]
+script = ExtResource("16_rivals")
+rival_count = 4
 
 [node name="PassengerStops" type="Node3D" parent="Gameplay"]
 
