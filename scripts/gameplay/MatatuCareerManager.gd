@@ -81,6 +81,9 @@ func _unlock_rank_nganyas() -> void:
 			owned.append(String(entry["name"]))
 			nganya_unlocked.emit(String(entry["name"]))
 	SaveManager.data["owned_nganyas"] = owned
+	var selected := String(SaveManager.data.get("selected_nganya", "Maverick"))
+	if not owned.has(selected):
+		SaveManager.data["selected_nganya"] = String(owned[0]) if not owned.is_empty() else "Maverick"
 
 func get_rank_name() -> String:
 	return String(RANKS[clampi(career_rank - 1, 0, RANKS.size() - 1)]["name"])
