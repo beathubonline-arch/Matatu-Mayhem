@@ -32,6 +32,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		reset_vehicle()
 
 func _physics_process(delta: float) -> void:
+	if GameManager.current_state != GameManager.GameState.PLAYING:
+		engine_force = 0.0
+		brake = stats.brake_force
+		linear_velocity *= 0.92
+		angular_velocity *= 0.85
+		_update_speed_values()
+		return
 	_update_speed_values()
 	_update_steering(delta)
 	_update_engine_and_brakes()
