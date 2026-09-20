@@ -63,6 +63,7 @@ pedestrians_per_waiyaki_stage = 5
 boda_count = 5
 minibus_count = 4
 people_per_other_stage = 3
+route_minibuses_per_other_corridor = 2
 
 [node name="RivalNganyas" type="Node3D" parent="Gameplay"]
 script = ExtResource("16_rivals")
