@@ -11,6 +11,7 @@ signal rival_result(won: bool, player_time: float, rival_time: float, reward: in
 const COLLISION_PENALTY := 350
 const CLEAN_STAGE_REWARD := 250
 const RIVAL_WIN_REWARD := 1800
+const PERFECT_RUN_REWARD := 1200
 const IMPACT_COOLDOWN := 1.2
 
 var player: VehicleBody3D
@@ -70,6 +71,10 @@ func _on_corridor_changed(_name: String, _stop_name: String, current: int, _tota
 	_last_stop_index = current - 1
 
 func _on_corridor_completed(_name: String, _reward: int, _balance: int, elapsed: float, _best: float, _new_best: bool, _fares: int, _passengers: int) -> void:
+	if _run_collisions == 0:
+		EconomyManager.add_money(PERFECT_RUN_REWARD)
+		SaveManager.data["perfect_runs"] = int(SaveManager.data.get("perfect_runs", 0)) + 1
+		challenge_changed.emit("CLEAN RUN! +KSh %d • STREET CRED UP" % PERFECT_RUN_REWARD, clean_streak + 1)
 	var corridor_idx := corridor_service.corridor_index if corridor_service != null else 0
 	var rival_time := 82.0 + float(corridor_idx) * 9.0
 	var won := elapsed <= rival_time
