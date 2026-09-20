@@ -24,6 +24,7 @@ func _ready() -> void:
 	stats = stats.duplicate(true) as VehicleStats
 	_spawn_transform = global_transform
 	_apply_saved_upgrades()
+	_apply_selected_nganya_profile()
 	_apply_vehicle_configuration()
 	GameManager.register_player_vehicle(self)
 
@@ -124,7 +125,40 @@ func refresh_saved_upgrades() -> void:
 	if source != null:
 		stats = source.duplicate(true) as VehicleStats
 		_apply_saved_upgrades()
+		_apply_selected_nganya_profile()
 		_apply_vehicle_configuration()
+
+func _apply_selected_nganya_profile() -> void:
+	var selected := String(SaveManager.data.get("selected_nganya", "Maverick")).to_upper()
+	match selected:
+		"ONYX":
+			stats.engine_force *= 1.08
+			stats.brake_force *= 1.05
+			stats.hard_max_speed_kph += 6.0
+		"MOXIE":
+			stats.max_steer_degrees += 3.0
+			stats.high_speed_steer_degrees += 2.0
+			stats.front_grip *= 1.08
+			stats.rear_grip *= 1.06
+		"MONEYFEST":
+			stats.engine_force *= 1.13
+			stats.hard_max_speed_kph += 10.0
+			stats.brake_force *= 1.08
+		"STREET LEGEND":
+			stats.engine_force *= 1.17
+			stats.hard_max_speed_kph += 14.0
+			stats.brake_force *= 1.12
+			stats.front_grip *= 1.08
+			stats.rear_grip *= 1.08
+
+func _reload_vehicle_stats() -> void:
+	var source := load("res://resources/vehicles/MaverickStats.tres") as VehicleStats
+	if source == null:
+		return
+	stats = source.duplicate(true) as VehicleStats
+	_apply_saved_upgrades()
+	_apply_selected_nganya_profile()
+	_apply_vehicle_configuration()
 
 func _apply_vehicle_configuration() -> void:
 	mass = stats.mass_kg
@@ -172,11 +206,17 @@ func reset_to_spawn() -> void:
 	global_position += Vector3.UP * reset_height
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
+	engine_force = 0.0
+	brake = 0.0
+	steering = 0.0
+	_current_steering = 0.0
+	sleeping = false
 
 func get_speed_kph() -> float:
 	return speed_kph
 
 func refresh_selected_nganya() -> void:
+	_reload_vehicle_stats()
 	var visuals := get_node_or_null("NganyaVisuals")
 	if visuals != null and visuals.has_method("_apply_selected_nganya"):
 		visuals.call("_apply_selected_nganya")
