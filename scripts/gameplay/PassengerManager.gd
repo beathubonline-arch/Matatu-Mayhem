@@ -8,7 +8,7 @@ enum ServiceState { WAITING_FOR_PICKUP, PASSENGERS_ONBOARD }
 
 @export var pickup_stop_path: NodePath
 @export var dropoff_stop_path: NodePath
-@export var fare_amount: int = 5000
+@export var fare_amount: int = 5000\n@export var enabled: bool = true
 
 var state: ServiceState = ServiceState.WAITING_FOR_PICKUP
 var pickup_stop: PassengerStop
@@ -17,6 +17,12 @@ var dropoff_stop: PassengerStop
 func _ready() -> void:
 	pickup_stop = get_node_or_null(pickup_stop_path) as PassengerStop
 	dropoff_stop = get_node_or_null(dropoff_stop_path) as PassengerStop
+	if not enabled:
+		if pickup_stop != null:
+			pickup_stop.set_active(false)
+		if dropoff_stop != null:
+			dropoff_stop.set_active(false)
+		return
 	if pickup_stop == null or dropoff_stop == null:
 		push_error("PassengerManager requires pickup and drop-off stops.")
 		return
