@@ -7,6 +7,7 @@ signal reputation_awarded(amount: int, total: int)
 @export var passenger_manager_path: NodePath
 @export var route_manager_path: NodePath
 @export var radio_path: NodePath
+@export var corridor_service_path: NodePath
 
 var hype := 0
 var combo := 0
@@ -21,6 +22,9 @@ func _ready() -> void:
 	if route != null:
 		route.checkpoint_progress.connect(_on_checkpoint_progress)
 		route.route_completed.connect(_on_route_completed)
+	var corridor := get_node_or_null(corridor_service_path)
+	if corridor != null:
+		corridor.corridor_completed.connect(_on_corridor_completed)
 	var radio := get_node_or_null(radio_path)
 	if radio != null:
 		radio.station_changed.connect(_on_station_changed)
@@ -39,6 +43,10 @@ func _on_checkpoint_progress(current: int, total: int) -> void:
 func _on_route_completed(_elapsed: float, _reward: int) -> void:
 	_add_hype(25, "CBD ROUTE COMPLETE +25 HYPE")
 	_add_reputation(60)
+
+func _on_corridor_completed(_name: String, _reward: int, _balance: int) -> void:
+	_add_hype(30, "CORRIDOR COMPLETE +30 HYPE")
+	_add_reputation(75)
 
 func _on_station_changed(_station: String, _track: String, _artist: String) -> void:
 	if hype > 0:
