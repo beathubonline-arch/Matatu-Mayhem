@@ -27,6 +27,8 @@ var _run_collisions := 0
 var _skill_cooldown := 0.0
 var _near_miss_cooldown := 0.0
 var _drift_time := 0.0
+var _speed_hold := 0.0
+var _last_speed_reward := 0.0
 
 func _ready() -> void:
 	player = get_node_or_null(player_path) as VehicleBody3D
@@ -52,6 +54,7 @@ func _physics_process(delta: float) -> void:
 	if _impact_cooldown <= 0.0 and velocity_change > 7.5 and player.linear_velocity.length() > 1.5:
 		_register_collision()
 	_update_driving_skills(delta)
+	_update_speed_pressure(delta)
 
 func _register_collision() -> void:
 	_impact_cooldown = IMPACT_COOLDOWN
@@ -125,3 +128,16 @@ func _update_driving_skills(delta: float) -> void:
 			_near_miss_cooldown = 2.5
 			driving_skill.emit("SQUEEZE THROUGH! +10 HYPE", 10)
 			break
+
+
+func _update_speed_pressure(delta: float) -> void:
+	var speed_kph := float(player.call("get_speed_kph")) if player.has_method("get_speed_kph") else player.linear_velocity.length() * 3.6
+	if speed_kph >= 75.0:
+		_speed_hold += delta
+		if _speed_hold >= 5.0 and _last_speed_reward <= 0.0:
+			_last_speed_reward = 4.0
+			_speed_hold = 0.0
+			driving_skill.emit("FULL SEND! +8 HYPE", 8)
+	else:
+		_speed_hold = 0.0
+	_last_speed_reward = maxf(_last_speed_reward - delta, 0.0)
