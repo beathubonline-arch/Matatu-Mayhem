@@ -27,13 +27,15 @@ func _spawn_waiyaki_people() -> void:
 	var stops: Array = data["service_points"]
 	for stop_index in range(stops.size()):
 		var centre: Vector3 = network.get_stage_waiting_position(0, stop_index)
+		var stage_dir: Vector3 = network.get_stage_direction(0, stop_index)
+		var stage_right := Vector3(stage_dir.z, 0.0, -stage_dir.x)
 		for i in range(pedestrians_per_waiyaki_stage):
 			var person := MeshInstance3D.new()
 			var mesh := CapsuleMesh.new()
 			mesh.radius = 0.22
 			mesh.height = 1.5
 			person.mesh = mesh
-			person.position = centre + Vector3(-5.0 + float(i) * 1.5, 0.8, 3.0 + float(stop_index % 2))
+			person.position = centre + stage_right * (-3.0 + float(i) * 1.5) + stage_dir * (1.0 + float(i % 2) * 0.8) + Vector3.UP * 0.8
 			var mat := StandardMaterial3D.new()
 			var colors: Array[Color] = [Color("294c60"), Color("e07a5f"), Color("3d9970"), Color("d4a373"), Color("6d597a")]
 			mat.albedo_color = colors[(i + stop_index) % colors.size()]
@@ -46,13 +48,15 @@ func _spawn_other_corridor_people() -> void:
 		var stops: Array = data["service_points"]
 		for stop_index in range(stops.size()):
 			var centre: Vector3 = network.get_stage_waiting_position(corridor_index, stop_index)
+			var stage_dir: Vector3 = network.get_stage_direction(corridor_index, stop_index)
+			var stage_right := Vector3(stage_dir.z, 0.0, -stage_dir.x)
 			for i in range(people_per_other_stage):
 				var person := MeshInstance3D.new()
 				var mesh := CapsuleMesh.new()
 				mesh.radius = 0.21
 				mesh.height = 1.48
 				person.mesh = mesh
-				person.position = centre + Vector3(-2.2 + float(i) * 1.6, 0.78, 2.8)
+				person.position = centre + stage_right * (-1.6 + float(i) * 1.6) + stage_dir * (1.0 + float(i % 2) * 0.7) + Vector3.UP * 0.78
 				var mat := StandardMaterial3D.new()
 				var colors: Array[Color] = [Color("466a8a"), Color("a54f45"), Color("557a55"), Color("9a7137")]
 				mat.albedo_color = colors[(i + stop_index + corridor_index) % colors.size()]
@@ -70,6 +74,7 @@ func _spawn_bodas() -> void:
 		boda.set_meta("point_index", mini(start_index + 1, points.size() - 1))
 		boda.set_meta("forward", true)
 		boda.set_meta("speed", 5.5 + float(i % 3))
+		boda.set_meta("steer_dir", (points[mini(start_index + 1, points.size() - 1)] - points[start_index]).normalized())
 		var body := MeshInstance3D.new()
 		var body_mesh := BoxMesh.new()
 		body_mesh.size = Vector3(0.7, 0.65, 1.8)
@@ -120,9 +125,16 @@ func _physics_process(_delta: float) -> void:
 			var lateral := Vector3(direction.z, 0.0, -direction.x) * lane_offset
 			direction = (target + lateral - mover.global_position).normalized()
 			direction.y = 0.0
-		mover.velocity = direction * float(mover.get_meta("speed", 6.0))
+		var steer_dir: Vector3 = mover.get_meta("steer_dir", direction)
+		direction = steer_dir.lerp(direction, clampf(_delta * (2.4 if to_target.length() < 10.0 else 4.0), 0.0, 1.0)).normalized()
+		mover.set_meta("steer_dir", direction)
+		var speed: float = float(mover.get_meta("speed", 6.0))
+		if to_target.length() < 9.0:
+			speed *= 0.75
+		mover.velocity = direction * speed
 		if direction.length_squared() > 0.01:
-			mover.rotation.y = atan2(-direction.x, -direction.z)
+			var target_yaw: float = atan2(-direction.x, -direction.z)
+			mover.rotation.y = lerp_angle(mover.rotation.y, target_yaw, clampf(_delta * 4.5, 0.0, 1.0))
 		mover.move_and_slide()
 
 func _spawn_route_minibuses() -> void:
@@ -142,6 +154,7 @@ func _spawn_route_minibuses() -> void:
 		bus.set_meta("forward", forward)
 		bus.set_meta("speed", 6.8 + float(i % 2))
 		bus.set_meta("lane_offset", lane_offset)
+		bus.set_meta("steer_dir", direction)
 		var body := MeshInstance3D.new()
 		var mesh := BoxMesh.new()
 		mesh.size = Vector3(2.0, 2.1, 4.4)
@@ -192,6 +205,7 @@ func _spawn_other_corridor_minibuses() -> void:
 			bus.set_meta("forward", forward)
 			bus.set_meta("speed", 6.6 + float(corridor_index) * 0.35)
 			bus.set_meta("lane_offset", lane_offset)
+		bus.set_meta("steer_dir", direction)
 			var body := MeshInstance3D.new()
 			var mesh := BoxMesh.new()
 			mesh.size = Vector3(2.0, 2.1, 4.4)
