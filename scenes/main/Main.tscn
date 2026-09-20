@@ -86,6 +86,7 @@ script = ExtResource("14_culture")
 passenger_manager_path = NodePath("../CorridorService")
 route_manager_path = NodePath("../Route")
 radio_path = NodePath("../../MatatuRadio")
+corridor_service_path = NodePath("../CorridorService")
 
 [node name="Route" type="Node3D" parent="Gameplay"]
 script = ExtResource("5_route")
