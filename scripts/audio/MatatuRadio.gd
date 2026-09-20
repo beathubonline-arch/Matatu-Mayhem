@@ -48,7 +48,13 @@ func _discover_tracks() -> void:
 				var stream := load("res://audio/radio/" + filename) as AudioStream
 				if stream != null:
 					var display := filename.get_basename().replace("_", " ")
-					_tracks.append({"stream": stream, "title": display, "artist": "BeatHub / 254"})
+					var artist := "BeatHub / 254"
+					var title := display
+					var split_at := display.find(" - ")
+					if split_at > 0:
+						artist = display.substr(0, split_at).strip_edges()
+						title = display.substr(split_at + 3).strip_edges()
+					_tracks.append({"stream": stream, "title": title, "artist": artist})
 		filename = dir.get_next()
 	dir.list_dir_end()
 
