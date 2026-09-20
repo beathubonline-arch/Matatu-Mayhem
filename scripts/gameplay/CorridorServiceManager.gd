@@ -44,7 +44,12 @@ func select_corridor(index: int) -> void:
 	if index >= unlocked:
 		service_progress.emit("ROUTE LOCKED • BUILD REPUTATION FIRST")
 		return
-	corridor_index = clampi(index, 0, network.corridor_count() - 1)
+	var requested := clampi(index, 0, network.corridor_count() - 1)
+	var unlocked := clampi(int(SaveManager.data.get("unlocked_corridors", 1)), 1, network.corridor_count())
+	if requested >= unlocked:
+		service_progress.emit("ROUTE LOCKED • COMPLETE MORE NAIROBI CORRIDORS")
+		return
+	corridor_index = requested
 	stop_index = 0
 	dwell = 0.0
 	elapsed_seconds = 0.0
