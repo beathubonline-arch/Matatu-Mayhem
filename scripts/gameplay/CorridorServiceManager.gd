@@ -55,6 +55,6 @@ func _complete_stop() -> void:
 	_emit_status()
 
 func _emit_status() -> void:
-	var data := network.get_corridor(corridor_index)
+	var data: Dictionary = network.get_corridor(corridor_index)
 	var stops: Array = data["stops"]
 	corridor_changed.emit(String(data["name"]), String(stops[stop_index]), stop_index + 1, stops.size())
