@@ -66,6 +66,7 @@ func _ready() -> void:
 	if corridor_service != null:
 		corridor_service.corridor_changed.connect(_on_corridor_changed)
 		corridor_service.corridor_completed.connect(_on_corridor_completed)
+		corridor_service.fare_awarded.connect(_on_fare_awarded)
 	_on_hype_changed(0, 0, "CBD SHIFT STARTED")
 	if OS.has_feature("mobile") or DisplayServer.is_touchscreen_available():
 		controls_label.visible = false
@@ -111,6 +112,9 @@ func _on_route_completed(elapsed: float, reward: int) -> void:
 
 func _on_replay_pressed() -> void:
 	finish_panel.visible = false
+	if corridor_service != null:
+		route_select_panel.visible = true
+		return
 	if route_manager != null:
 		route_manager.restart_route()
 
