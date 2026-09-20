@@ -12,7 +12,7 @@ var network: NairobiRouteNetwork
 var corridor_index := 0
 var stop_index := 0
 var dwell := 0.0
-var active := true
+var active := false
 
 func _ready() -> void:
 	player = get_node_or_null(player_path) as Node3D
@@ -20,6 +20,22 @@ func _ready() -> void:
 	if player == null or network == null:
 		push_error("CorridorServiceManager requires player and NairobiRouteNetwork.")
 		return
+	# Wait for the player to choose a Nairobi route from the HUD.
+	active = false
+
+func select_corridor(index: int) -> void:
+	if network == null or player == null:
+		return
+	corridor_index = clampi(index, 0, network.corridor_count() - 1)
+	stop_index = 0
+	dwell = 0.0
+	active = true
+	var data: Dictionary = network.get_corridor(corridor_index)
+	var points: Array = data["points"]
+	var start: Vector3 = points[0]
+	player.global_position = start + Vector3(0.0, 1.4, 0.0)
+	if player.has_method("reset_vehicle"):
+		player.call("reset_vehicle")
 	_emit_status()
 
 func _physics_process(delta: float) -> void:
