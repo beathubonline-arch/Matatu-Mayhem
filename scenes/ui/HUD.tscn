@@ -36,6 +36,7 @@ script = ExtResource("1")
 route_manager_path = NodePath("../Gameplay/Route")
 
 [node name="Margin" type="MarginContainer" parent="."]
+mouse_filter = 2
 offset_left = 20.0
 offset_top = 18.0
 offset_right = 1260.0
@@ -183,6 +184,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="RouteSelectPanel" type="PanelContainer" parent="."]
+z_index = 20
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -210,7 +212,7 @@ horizontal_alignment = 1
 [node name="Subtitle" type="Label" parent="RouteSelectPanel/VBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 17
-text = "Pick a corridor. Work the stages. Earn KSh. Build your reputation."
+text = "Click a route or press 1–4. Work stages. Earn KSh. Build reputation."
 horizontal_alignment = 1
 
 [node name="Waiyaki" type="Button" parent="RouteSelectPanel/VBox"]
