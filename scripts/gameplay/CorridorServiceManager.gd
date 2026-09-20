@@ -13,6 +13,7 @@ signal route_progress_changed(percent: int, off_route: bool)
 signal conductor_call(message: String)
 signal stage_rush_changed(seconds_left: float, bonus: int)
 signal stage_grade(message: String, reward: int)
+signal event_changed(message: String, seconds_left: float)
 
 @export var player_path: NodePath
 @export var network_path: NodePath
@@ -34,6 +35,9 @@ var _off_route_time := 0.0
 var _stage_rush_time := 0.0
 var _stage_rush_bonus := 0
 var _stage_entry_speed := 0.0
+var _event_time := 0.0
+var _event_message := ""
+var _event_triggered_stage := -1
 
 func _ready() -> void:
 	player = get_node_or_null(player_path) as Node3D
@@ -72,6 +76,9 @@ func select_corridor(index: int) -> void:
 	_off_route_time = 0.0
 	_stage_rush_time = 0.0
 	_stage_rush_bonus = 0
+	_event_time = 0.0
+	_event_message = ""
+	_event_triggered_stage = -1
 	var data: Dictionary = network.get_corridor(corridor_index)
 	var points: Array = data["points"]
 	var start: Vector3 = points[0]
@@ -95,9 +102,13 @@ func _physics_process(delta: float) -> void:
 	if _stage_rush_time > 0.0:
 		_stage_rush_time = maxf(_stage_rush_time - delta, 0.0)
 		stage_rush_changed.emit(_stage_rush_time, _stage_rush_bonus)
+	if _event_time > 0.0:
+		_event_time = maxf(_event_time - delta, 0.0)
+		event_changed.emit(_event_message, _event_time)
 	var data: Dictionary = network.get_corridor(corridor_index)
 	var route_points: Array = data["points"]
 	var stage_target: Vector3 = network.get_service_stop(corridor_index, stop_index)
+	_maybe_trigger_route_event()
 	var distance: float = player.global_position.distance_to(stage_target)
 	while route_point_index < next_stage_route_index:
 		var waypoint: Vector3 = route_points[route_point_index]
@@ -274,3 +285,23 @@ func _route_turn_angle(route_points: Array, index: int) -> float:
 	if incoming.length_squared() < 0.01 or outgoing.length_squared() < 0.01:
 		return 0.0
 	return incoming.normalized().signed_angle_to(outgoing.normalized(), Vector3.UP)
+
+
+func _maybe_trigger_route_event() -> void:
+	if stop_index <= 0 or stop_index == _event_triggered_stage or _event_time > 0.0:
+		return
+	var seed := (corridor_index * 11 + stop_index * 7 + int(elapsed_seconds) / 8) % 4
+	if seed == 0:
+		_event_message = "PASSENGER LATE • PUSH FOR THE STAGE!"
+		_event_time = 14.0
+	elif seed == 1:
+		_event_message = "RIVAL CREW AHEAD • DON'T LET THEM TAKE THE STAGE!"
+		_event_time = 16.0
+	elif seed == 2:
+		_event_message = "TRAFFIC BUILDING • FIND THE CLEAN LINE!"
+		_event_time = 12.0
+	else:
+		return
+	_event_triggered_stage = stop_index
+	event_changed.emit(_event_message, _event_time)
+	conductor_call.emit(_event_message)
