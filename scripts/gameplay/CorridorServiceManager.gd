@@ -12,6 +12,7 @@ signal maneuver_changed(message: String)
 signal route_progress_changed(percent: int, off_route: bool)
 signal conductor_call(message: String)
 signal stage_rush_changed(seconds_left: float, bonus: int)
+signal stage_grade(message: String, reward: int)
 
 @export var player_path: NodePath
 @export var network_path: NodePath
@@ -32,6 +33,7 @@ var next_stage_route_index := 1
 var _off_route_time := 0.0
 var _stage_rush_time := 0.0
 var _stage_rush_bonus := 0
+var _stage_entry_speed := 0.0
 
 func _ready() -> void:
 	player = get_node_or_null(player_path) as Node3D
@@ -133,6 +135,8 @@ func _physics_process(delta: float) -> void:
 		maneuver_changed.emit("FOLLOW ROUTE • STAGE %dm" % int(distance))
 	if distance > 7.0:
 		dwell = 0.0
+		if distance < 18.0 and player.has_method("get_speed_kph"):
+			_stage_entry_speed = float(player.call("get_speed_kph"))
 		if distance < 28.0:
 			service_progress.emit("STAGE AHEAD • %dm" % int(distance))
 		return
@@ -150,6 +154,18 @@ func _physics_process(delta: float) -> void:
 
 func _complete_stop() -> void:
 	dwell = 0.0
+	var stage_reward := 0
+	var stage_message := ""
+	if _stage_entry_speed >= 18.0 and _stage_entry_speed <= 34.0:
+		stage_reward = 350
+		stage_message = "PERFECT STAGE ENTRY"
+	elif _stage_entry_speed > 34.0 and _stage_entry_speed <= 48.0:
+		stage_reward = 180
+		stage_message = "HOT STAGE ENTRY"
+	if stage_reward > 0:
+		EconomyManager.add_money(stage_reward)
+		stage_grade.emit(stage_message, stage_reward)
+	_stage_entry_speed = 0.0
 	var data: Dictionary = network.get_corridor(corridor_index)
 	var stops: Array = data["stops"]
 	var is_terminal := stop_index >= stops.size() - 1
