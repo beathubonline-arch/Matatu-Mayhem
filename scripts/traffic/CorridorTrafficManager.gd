@@ -3,6 +3,7 @@ extends Node3D
 
 @export var network_path: NodePath
 @export var vehicles_per_corridor: int = 4
+@export var junction_slowdown_distance := 11.0
 
 var network: NairobiRouteNetwork
 
@@ -90,6 +91,8 @@ func _physics_process(_delta: float) -> void:
 		direction = (desired_target - vehicle.global_position).normalized()
 		direction.y = 0.0
 		var speed: float = float(vehicle.get_meta("speed", 8.0))
+		if to_target.length() < junction_slowdown_distance:
+			speed *= 0.58
 		if player != null:
 			var distance_to_player: float = vehicle.global_position.distance_to(player.global_position)
 			if distance_to_player < 9.0:
