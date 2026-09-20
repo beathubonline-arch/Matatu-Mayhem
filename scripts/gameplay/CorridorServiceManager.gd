@@ -11,6 +11,7 @@ signal navigation_changed(distance: float, turn_angle: float)
 signal maneuver_changed(message: String)
 signal route_progress_changed(percent: int, off_route: bool)
 signal conductor_call(message: String)
+signal stage_rush_changed(seconds_left: float, bonus: int)
 
 @export var player_path: NodePath
 @export var network_path: NodePath
@@ -29,6 +30,8 @@ var total_passengers_this_run := 0
 var route_point_index := 1
 var next_stage_route_index := 1
 var _off_route_time := 0.0
+var _stage_rush_time := 0.0
+var _stage_rush_bonus := 0
 
 func _ready() -> void:
 	player = get_node_or_null(player_path) as Node3D
@@ -65,6 +68,8 @@ func select_corridor(index: int) -> void:
 	next_stage_route_index = _find_route_index_for_service(0)
 	active = true
 	_off_route_time = 0.0
+	_stage_rush_time = 0.0
+	_stage_rush_bonus = 0
 	var data: Dictionary = network.get_corridor(corridor_index)
 	var points: Array = data["points"]
 	var start: Vector3 = points[0]
@@ -85,6 +90,9 @@ func _physics_process(delta: float) -> void:
 		return
 	elapsed_seconds += delta
 	run_time_changed.emit(elapsed_seconds)
+	if _stage_rush_time > 0.0:
+		_stage_rush_time = maxf(_stage_rush_time - delta, 0.0)
+		stage_rush_changed.emit(_stage_rush_time, _stage_rush_bonus)
 	var data: Dictionary = network.get_corridor(corridor_index)
 	var route_points: Array = data["points"]
 	var stage_target: Vector3 = network.get_service_stop(corridor_index, stop_index)
@@ -145,6 +153,13 @@ func _complete_stop() -> void:
 	var data: Dictionary = network.get_corridor(corridor_index)
 	var stops: Array = data["stops"]
 	var is_terminal := stop_index >= stops.size() - 1
+	var rush_won := _stage_rush_time > 0.0 and stop_index > 0
+	if rush_won and _stage_rush_bonus > 0:
+		EconomyManager.add_money(_stage_rush_bonus)
+		service_progress.emit("STAGE RUSH WON • +KSh %d" % _stage_rush_bonus)
+	_stage_rush_time = 0.0
+	_stage_rush_bonus = 0
+	stage_rush_changed.emit(0.0, 0)
 	var alighted := passengers_onboard if is_terminal else (0 if stop_index == 0 else mini(passengers_onboard, 2 + stop_index))
 	passengers_onboard -= alighted
 	var boarded := 0
@@ -159,6 +174,9 @@ func _complete_stop() -> void:
 		total_passengers_this_run += boarded
 		fare_awarded.emit(fare, EconomyManager.get_money())
 		conductor_call.emit("TWENDE! %d WAMEPANDA • STAGE INAYOFUATA!" % boarded)
+		_stage_rush_time = 24.0 + float(corridor_index * 2)
+		_stage_rush_bonus = 900 + corridor_index * 250
+		stage_rush_changed.emit(_stage_rush_time, _stage_rush_bonus)
 	passenger_load_changed.emit(passengers_onboard, passenger_capacity, boarded, alighted)
 	SaveManager.data["passenger_trips_completed"] = int(SaveManager.data.get("passenger_trips_completed", 0)) + boarded
 	SaveManager.save_game()
