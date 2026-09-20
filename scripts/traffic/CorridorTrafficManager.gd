@@ -31,6 +31,7 @@ func _spawn_vehicle(data: Dictionary, index: int) -> void:
 	vehicle.set_meta("forward", forward)
 	vehicle.set_meta("lane_offset", 2.6 if index % 2 == 0 else -2.6)
 	vehicle.set_meta("speed", 7.0 + float(index % 3))
+	vehicle.set_meta("steer_dir", direction)
 	vehicle.set_collision_layer_value(1, true)
 	vehicle.set_collision_mask_value(1, false)
 	var mesh_instance := MeshInstance3D.new()
@@ -88,8 +89,12 @@ func _physics_process(_delta: float) -> void:
 		var lane_offset: float = float(vehicle.get_meta("lane_offset", 2.6))
 		var lateral := Vector3(direction.z, 0.0, -direction.x) * lane_offset
 		var desired_target: Vector3 = target + lateral
-		direction = (desired_target - vehicle.global_position).normalized()
-		direction.y = 0.0
+		var desired_direction: Vector3 = (desired_target - vehicle.global_position).normalized()
+		desired_direction.y = 0.0
+		var steer_dir: Vector3 = vehicle.get_meta("steer_dir", desired_direction)
+		var steer_weight: float = clampf(_delta * (2.2 if to_target.length() < junction_slowdown_distance * 1.6 else 4.5), 0.0, 1.0)
+		direction = steer_dir.lerp(desired_direction, steer_weight).normalized()
+		vehicle.set_meta("steer_dir", direction)
 		var speed: float = float(vehicle.get_meta("speed", 8.0))
 		if to_target.length() < junction_slowdown_distance:
 			speed *= 0.58
@@ -101,5 +106,6 @@ func _physics_process(_delta: float) -> void:
 				speed *= 0.35
 		vehicle.velocity = direction * speed
 		if direction.length_squared() > 0.01:
-			vehicle.rotation.y = atan2(-direction.x, -direction.z)
+			var target_yaw: float = atan2(-direction.x, -direction.z)
+			vehicle.rotation.y = lerp_angle(vehicle.rotation.y, target_yaw, clampf(_delta * 5.0, 0.0, 1.0))
 		vehicle.move_and_slide()
