@@ -1,5 +1,7 @@
 extends CanvasLayer
 
+@export var corridor_service_path: NodePath
+
 @onready var panel: PanelContainer = $Panel
 @onready var resume_button: Button = $Panel/VBox/Resume
 @onready var restart_button: Button = $Panel/VBox/RestartRoute
@@ -25,7 +27,14 @@ func _resume() -> void:
 	panel.visible = false
 
 func _restart() -> void:
+	var corridor := get_node_or_null(corridor_service_path)
+	if corridor != null and corridor.has_method("restart_corridor") and bool(corridor.get("active")):
+		corridor.call("restart_corridor")
+		GameManager.set_game_state(GameManager.GameState.PLAYING)
+		panel.visible = false
+		return
 	var route = GameManager.current_route
 	if route != null and route.has_method("restart_route"):
 		route.call("restart_route")
+	GameManager.set_game_state(GameManager.GameState.PLAYING)
 	panel.visible = false
