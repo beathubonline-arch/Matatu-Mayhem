@@ -4,6 +4,7 @@ extends Node3D
 @export var network_path: NodePath
 @export var pedestrians_per_waiyaki_stage := 5
 @export var boda_count := 5
+@export var minibus_count := 4
 
 var network: NairobiRouteNetwork
 var _movers: Array[CharacterBody3D] = []
@@ -15,6 +16,7 @@ func _ready() -> void:
 		return
 	_spawn_waiyaki_people()
 	_spawn_bodas()
+	_spawn_route_minibuses()
 
 func _spawn_waiyaki_people() -> void:
 	var data := network.get_corridor(0)
@@ -94,3 +96,50 @@ func _physics_process(_delta: float) -> void:
 		if direction.length_squared() > 0.01:
 			boda.rotation.y = atan2(-direction.x, -direction.z)
 		boda.move_and_slide()
+
+func _spawn_route_minibuses() -> void:
+	var data := network.get_corridor(0)
+	var points: Array = data["points"]
+	for i in range(minibus_count):
+		var bus := CharacterBody3D.new()
+		var start_index := (i * 2) % max(points.size() - 1, 1)
+		var a: Vector3 = points[start_index]
+		var b: Vector3 = points[start_index + 1]
+		var direction := (b - a).normalized()
+		var forward := i % 2 == 0
+		var lane_offset := 2.2 if forward else -2.2
+		bus.position = a.lerp(b, 0.45) + Vector3(direction.z, 0.65, -direction.x) * lane_offset
+		bus.set_meta("points", points)
+		bus.set_meta("point_index", start_index + 1 if forward else start_index)
+		bus.set_meta("forward", forward)
+		bus.set_meta("speed", 6.8 + float(i % 2))
+		bus.set_meta("lane_offset", lane_offset)
+		var body := MeshInstance3D.new()
+		var mesh := BoxMesh.new()
+		mesh.size = Vector3(2.0, 2.1, 4.4)
+		body.mesh = mesh
+		body.position.y = 1.05
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = [Color("d6d6d2"), Color("efe9d5"), Color("bfc4c8"), Color("ded5c4")][i % 4]
+		body.material_override = mat
+		bus.add_child(body)
+		var stripe := MeshInstance3D.new()
+		var stripe_mesh := BoxMesh.new()
+		stripe_mesh.size = Vector3(2.04, 0.22, 4.2)
+		stripe.mesh = stripe_mesh
+		stripe.position = Vector3(0, 1.0, 0)
+		var stripe_mat := StandardMaterial3D.new()
+		stripe_mat.albedo_color = Color("e0b51b")
+		stripe.material_override = stripe_mat
+		bus.add_child(stripe)
+		var route := Label3D.new()
+		route.text = ["23 UTHIRU", "22 KANGEMI", "105 LIMURU", "115 WANGIGE"][i % 4]
+		route.position = Vector3(0, 1.6, -2.22)
+		route.rotation_degrees.y = 180
+		route.font_size = 26
+		route.pixel_size = 0.005
+		route.outline_size = 7
+		route.modulate = Color("fff2a8")
+		bus.add_child(route)
+		add_child(bus)
+		_movers.append(bus)
