@@ -4,6 +4,8 @@ extends Node
 signal corridor_changed(name: String, stop_name: String, current: int, total: int)
 signal corridor_completed(name: String, reward: int, balance: int)
 signal fare_awarded(amount: int, balance: int)
+signal service_progress(message: String)
+signal run_time_changed(seconds: float)
 
 @export var player_path: NodePath
 @export var network_path: NodePath
@@ -14,6 +16,7 @@ var corridor_index := 0
 var stop_index := 0
 var dwell := 0.0
 var active := false
+var elapsed_seconds := 0.0
 
 func _ready() -> void:
 	player = get_node_or_null(player_path) as Node3D
@@ -30,6 +33,7 @@ func select_corridor(index: int) -> void:
 	corridor_index = clampi(index, 0, network.corridor_count() - 1)
 	stop_index = 0
 	dwell = 0.0
+	elapsed_seconds = 0.0
 	active = true
 	var data: Dictionary = network.get_corridor(corridor_index)
 	var points: Array = data["points"]
@@ -48,17 +52,24 @@ func select_corridor(index: int) -> void:
 func _physics_process(delta: float) -> void:
 	if not active or player == null or network == null:
 		return
+	elapsed_seconds += delta
+	run_time_changed.emit(elapsed_seconds)
 	var target: Vector3 = network.get_service_stop(corridor_index, stop_index)
-	if player.global_position.distance_to(target) > 7.0:
+	var distance: float = player.global_position.distance_to(target)
+	if distance > 7.0:
 		dwell = 0.0
+		if distance < 28.0:
+			service_progress.emit("STAGE AHEAD • %dm" % int(distance))
 		return
 	var speed: float = 999.0
 	if player.has_method("get_speed_kph"):
 		speed = float(player.call("get_speed_kph"))
 	if speed > 4.0:
 		dwell = 0.0
+		service_progress.emit("SLOW DOWN FOR STAGE • %d km/h" % int(speed))
 		return
 	dwell += delta
+	service_progress.emit("BOARDING PASSENGERS • %d%%" % int(clampf(dwell / 1.5, 0.0, 1.0) * 100.0))
 	if dwell >= 1.5:
 		_complete_stop()
 
