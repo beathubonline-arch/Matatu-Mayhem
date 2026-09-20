@@ -78,6 +78,12 @@ theme_override_colors/font_color = Color(1, 0.84, 0.2, 1)
 theme_override_font_sizes/font_size = 19
 text = "PICK UP PASSENGERS AT THE GREEN MATATU STAGE"
 
+[node name="Hype" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.32, 0.52, 1)
+theme_override_font_sizes/font_size = 18
+text = "HYPE 000 • CBD SHIFT STARTED"
+
 [node name="Controls" type="Label" parent="Margin/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.82, 0.84, 0.88, 1)
@@ -139,5 +145,27 @@ theme_override_colors/font_outline_color = Color(0.01, 0.02, 0.02, 1)
 theme_override_constants/outline_size = 12
 theme_override_font_sizes/font_size = 32
 text = "+ KSh 5,000  PASSENGER FARE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RadioPanel" type="PanelContainer" parent="."]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -390.0
+offset_top = -128.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("TopStyle")
+
+[node name="RadioText" type="Label" parent="RadioPanel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "♫ 254 STREET RADIO\nMATATU MAYHEM × BEATHUB\n[M] RADIO  [N] NEXT"
 horizontal_alignment = 1
 vertical_alignment = 1
