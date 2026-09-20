@@ -5,6 +5,7 @@ extends Node3D
 @export var pedestrians_per_waiyaki_stage := 5
 @export var boda_count := 5
 @export var minibus_count := 4
+@export var people_per_other_stage := 3
 
 var network: NairobiRouteNetwork
 var _movers: Array[CharacterBody3D] = []
@@ -15,6 +16,7 @@ func _ready() -> void:
 		push_error("CorridorLifeManager requires NairobiRouteNetwork.")
 		return
 	_spawn_waiyaki_people()
+	_spawn_other_corridor_people()
 	_spawn_bodas()
 	_spawn_route_minibuses()
 
@@ -35,6 +37,25 @@ func _spawn_waiyaki_people() -> void:
 			mat.albedo_color = colors[(i + stop_index) % colors.size()]
 			person.material_override = mat
 			add_child(person)
+
+func _spawn_other_corridor_people() -> void:
+	for corridor_index in range(1, network.corridor_count()):
+		var data := network.get_corridor(corridor_index)
+		var stops: Array = data["service_points"]
+		for stop_index in range(stops.size()):
+			var centre: Vector3 = stops[stop_index]
+			for i in range(people_per_other_stage):
+				var person := MeshInstance3D.new()
+				var mesh := CapsuleMesh.new()
+				mesh.radius = 0.21
+				mesh.height = 1.48
+				person.mesh = mesh
+				person.position = centre + Vector3(-2.2 + float(i) * 1.6, 0.78, 2.8)
+				var mat := StandardMaterial3D.new()
+				var colors: Array[Color] = [Color("466a8a"), Color("a54f45"), Color("557a55"), Color("9a7137")]
+				mat.albedo_color = colors[(i + stop_index + corridor_index) % colors.size()]
+				person.material_override = mat
+				add_child(person)
 
 func _spawn_bodas() -> void:
 	var data := network.get_corridor(0)
