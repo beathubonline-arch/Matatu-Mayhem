@@ -61,6 +61,8 @@ script = ExtResource("20_corridor_life")
 network_path = NodePath("../../World/Environment/NairobiRouteNetwork")
 pedestrians_per_waiyaki_stage = 5
 boda_count = 5
+minibus_count = 4
+people_per_other_stage = 3
 
 [node name="RivalNganyas" type="Node3D" parent="Gameplay"]
 script = ExtResource("16_rivals")
