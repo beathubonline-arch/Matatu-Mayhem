@@ -11,7 +11,6 @@ var data := {
 	"last_corridor": 0,
 	"unlocked_corridors": 1,
 	"corridor_best_times": {},
-	"owned_nganyas": ["Maverick"],
 	"upgrade_levels": {},
 	"rival_wins": 0,
 	"rival_losses": 0,
@@ -19,7 +18,12 @@ var data := {
 	"best_clean_streak": 0,
 	"street_cred": 0,
 	"best_hype": 0,
-	"perfect_runs": 0
+	"perfect_runs": 0,
+	"owned_nganyas": ["Maverick"],
+	"selected_nganya": "Maverick",
+	"career_rank": 1,
+	"career_xp": 0,
+	"career_earnings": 0
 }
 
 func _ready() -> void:
