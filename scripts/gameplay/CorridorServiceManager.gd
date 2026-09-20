@@ -34,9 +34,15 @@ func select_corridor(index: int) -> void:
 	var data: Dictionary = network.get_corridor(corridor_index)
 	var points: Array = data["points"]
 	var start: Vector3 = points[0]
-	player.global_position = start + Vector3(0.0, 1.4, 0.0)
-	if player.has_method("reset_vehicle"):
-		player.call("reset_vehicle")
+	var next_point: Vector3 = points[1]
+	var direction: Vector3 = (next_point - start).normalized()
+	var yaw: float = atan2(-direction.x, -direction.z)
+	var spawn_transform := Transform3D(Basis(Vector3.UP, yaw), start + Vector3(0.0, 1.4, 0.0))
+	player.global_transform = spawn_transform
+	if player.has_method("set_route_spawn"):
+		player.call("set_route_spawn", spawn_transform)
+	if player.has_method("reset_to_spawn"):
+		player.call("reset_to_spawn")
 	_emit_status()
 
 func _physics_process(delta: float) -> void:
