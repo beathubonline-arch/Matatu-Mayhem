@@ -14,6 +14,17 @@ const CORRIDORS := [
 	{"name":"NGONG ROAD","color":"69c779","points":[Vector3(-31,0,21),Vector3(-66,0,50),Vector3(-96,0,86),Vector3(-122,0,130),Vector3(-146,0,178)],"stops":["COMMUNITY","PRESTIGE","ADAMS ARCADE","JUNCTION"],"reward":10000}
 ]
 
+func corridor_count() -> int:
+	return CORRIDORS.size()
+
+func get_corridor(index: int) -> Dictionary:
+	return CORRIDORS[index % CORRIDORS.size()]
+
+func get_service_stop(corridor: int, stop: int) -> Vector3:
+	var data := get_corridor(corridor)
+	var points: Array = data["points"]
+	return points[clampi(stop + 1, 1, points.size() - 1)]
+
 func _ready() -> void:
 	for corridor in CORRIDORS:
 		_build_corridor(corridor)
