@@ -12,7 +12,11 @@ var data := {
 	"unlocked_corridors": 1,
 	"corridor_best_times": {},
 	"owned_nganyas": ["Maverick"],
-	"upgrade_levels": {}
+	"upgrade_levels": {},
+	"rival_wins": 0,
+	"rival_losses": 0,
+	"clean_streak": 0,
+	"best_clean_streak": 0
 }
 
 func _ready() -> void:
