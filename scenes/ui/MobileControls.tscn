@@ -24,7 +24,7 @@ corner_radius_bottom_left = 18
 [node name="MobileControls" type="CanvasLayer"]
 layer = 20
 script = ExtResource("1")
-always_show_in_editor = true
+always_show_in_editor = false
 
 [node name="Controls" type="Control" parent="."]
 layout_mode = 3
