@@ -78,6 +78,7 @@ func _ready() -> void:
 		corridor_service.passenger_load_changed.connect(_on_passenger_load_changed)
 		corridor_service.navigation_changed.connect(_on_navigation_changed)
 		corridor_service.maneuver_changed.connect(_on_maneuver_changed)
+		corridor_service.route_progress_changed.connect(_on_route_progress_changed)
 	if not challenge_manager_path.is_empty():
 		challenge_manager = get_node_or_null(challenge_manager_path)
 	if challenge_manager != null:
@@ -318,3 +319,9 @@ func _on_rival_result(won: bool, player_time: float, rival_time: float, reward: 
 
 func _on_maneuver_changed(message: String) -> void:
 	navigation_label.text = "NAV • %s" % message
+
+func _on_route_progress_changed(percent: int, off_route: bool) -> void:
+	if off_route:
+		navigation_label.text = "NAV • OFF ROUTE • REJOIN ROAD"
+	elif not navigation_label.text.contains("TURN"):
+		navigation_label.text = "NAV • ROUTE %d%% • FOLLOW ROAD" % percent
