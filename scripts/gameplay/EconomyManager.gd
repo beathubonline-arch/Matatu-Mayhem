@@ -15,6 +15,17 @@ func add_money(amount: int) -> void:
 	SaveManager.save_game()
 	money_changed.emit(get_money())
 
+func spend_money(amount: int) -> bool:
+	var cost := maxi(amount, 0)
+	if cost <= 0:
+		return true
+	if get_money() < cost:
+		return false
+	SaveManager.data["money"] = get_money() - cost
+	SaveManager.save_game()
+	money_changed.emit(get_money())
+	return true
+
 func add_passenger_fare(amount: int = PASSENGER_FARE) -> void:
 	add_money(amount)
 
