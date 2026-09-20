@@ -73,9 +73,15 @@ func _route_direction_at(route_points: Array, service_point: Vector3) -> Vector3
 		if d < best_distance:
 			best_distance = d
 			best_index = i
-	var prev_index := maxi(best_index - 1, 0)
+	# Stages sit on the outgoing road segment at junctions instead of using
+	# an averaged diagonal between incoming and outgoing roads.
 	var next_index := mini(best_index + 1, route_points.size() - 1)
-	var direction: Vector3 = route_points[next_index] - route_points[prev_index]
+	var prev_index := maxi(best_index - 1, 0)
+	var direction: Vector3
+	if next_index != best_index:
+		direction = route_points[next_index] - route_points[best_index]
+	else:
+		direction = route_points[best_index] - route_points[prev_index]
 	direction.y = 0.0
 	return Vector3.FORWARD if direction.length_squared() < 0.01 else direction.normalized()
 
@@ -405,17 +411,21 @@ func _other_corridor_landmarks(data: Dictionary, corridor_index: int) -> void:
 	var stops: Array = data["stops"]
 	var accent := Color(String(data["color"]))
 	for i in range(points.size()):
-		var pos: Vector3 = points[i]
+		var pos: Vector3 = get_stage_waiting_position(corridor_index, i)
+		var stage_dir: Vector3 = get_stage_direction(corridor_index, i)
 		var sign := Label3D.new()
 		sign.text = String(stops[i])
-		sign.position = pos + Vector3(0, 5.2, -5.0)
+		sign.position = pos + stage_dir * 1.5 + Vector3.UP * 5.2
 		sign.font_size = 34
 		sign.pixel_size = 0.007
 		sign.outline_size = 9
 		sign.modulate = accent
 		add_child(sign)
 	if points.size() >= 2:
-		_billboard(points[1] + Vector3(8.0, 4.5, 5.0), "MATATU MAYHEM\n%s" % String(data["name"]))
+		var billboard_pos: Vector3 = get_stage_waiting_position(corridor_index, 1)
+		var stage_dir: Vector3 = get_stage_direction(corridor_index, 1)
+		var stage_right := Vector3(stage_dir.z, 0.0, -stage_dir.x)
+		_billboard(billboard_pos + stage_right * 5.0 + Vector3.UP * 4.5, "MATATU MAYHEM\n%s" % String(data["name"]))
 
 func _landmark_sign(pos: Vector3, text: String) -> void:
 	var sign := Label3D.new()
