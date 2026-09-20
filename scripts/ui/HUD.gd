@@ -3,7 +3,8 @@ extends CanvasLayer
 @export var route_manager_path: NodePath
 @export var passenger_manager_path: NodePath
 @export var culture_manager_path: NodePath
-@export var radio_path: NodePath\n@export var corridor_service_path: NodePath
+@export var radio_path: NodePath
+@export var corridor_service_path: NodePath
 
 @onready var speed_label: Label = $Margin/VBox/TopBar/Speed
 @onready var money_label: Label = $Margin/VBox/TopBar/Money
@@ -22,7 +23,8 @@ extends CanvasLayer
 var route_manager: RouteManager
 var passenger_manager: PassengerManager
 var culture_manager: Node
-var radio: Node\nvar corridor_service: Node
+var radio: Node
+var corridor_service: Node
 var _fare_notice_time: float = 0.0
 
 func _ready() -> void:
@@ -92,14 +94,17 @@ func _on_passenger_status_changed(message: String) -> void:
 	passenger_label.text = message
 
 func _on_fare_awarded(amount: int, new_balance: int) -> void:
-	fare_notice.text = "+ KSh %s  PASSENGER FARE\nBALANCE: KSh %s" % [_format_number(amount), _format_number(new_balance)]
+	fare_notice.text = "+ KSh %s  PASSENGER FARE
+BALANCE: KSh %s" % [_format_number(amount), _format_number(new_balance)]
 	fare_notice.visible = true
 	_fare_notice_time = 4.0
 
 func _on_route_completed(elapsed: float, reward: int) -> void:
 	finish_panel.visible = true
 	finish_title.text = "ROUTE COMPLETE"
-	finish_summary.text = "Time: %s\nReward: KSh %s\nTotal: KSh %s" % [_format_time(elapsed), _format_number(reward), _format_number(EconomyManager.get_money())]
+	finish_summary.text = "Time: %s
+Reward: KSh %s
+Total: KSh %s" % [_format_time(elapsed), _format_number(reward), _format_number(EconomyManager.get_money())]
 
 func _on_replay_pressed() -> void:
 	finish_panel.visible = false
@@ -128,12 +133,15 @@ func _on_reputation_awarded(_amount: int, total: int) -> void:
 	hype_label.text += "  •  REP %d" % total
 
 func _on_radio_changed(station: String, track: String, artist: String) -> void:
-	radio_label.text = "♫ %s\n%s — %s\n[M] RADIO  [N] NEXT" % [station, artist, track]
+	radio_label.text = "♫ %s
+%s — %s
+[M] RADIO  [N] NEXT" % [station, artist, track]
 
 func _on_corridor_changed(name: String, stop_name: String, current: int, total: int) -> void:
 	passenger_label.text = "%s  •  STAGE %d/%d  •  %s" % [name, current, total, stop_name]
 
 func _on_corridor_completed(name: String, reward: int, balance: int) -> void:
-	fare_notice.text = "%s COMPLETE  +KSh %s\nBALANCE: KSh %s" % [name, _format_number(reward), _format_number(balance)]
+	fare_notice.text = "%s COMPLETE  +KSh %s
+BALANCE: KSh %s" % [name, _format_number(reward), _format_number(balance)]
 	fare_notice.visible = true
 	_fare_notice_time = 5.0
