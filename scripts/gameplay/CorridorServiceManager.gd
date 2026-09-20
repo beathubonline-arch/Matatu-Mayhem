@@ -9,6 +9,7 @@ signal run_time_changed(seconds: float)
 signal passenger_load_changed(onboard: int, capacity: int, boarded: int, alighted: int)
 signal navigation_changed(distance: float, turn_angle: float)
 signal maneuver_changed(message: String)
+signal route_progress_changed(percent: int, off_route: bool)
 
 @export var player_path: NodePath
 @export var network_path: NodePath
@@ -26,6 +27,7 @@ var total_fares_this_run := 0
 var total_passengers_this_run := 0
 var route_point_index := 1
 var next_stage_route_index := 1
+var _off_route_time := 0.0
 
 func _ready() -> void:
 	player = get_node_or_null(player_path) as Node3D
@@ -61,6 +63,7 @@ func select_corridor(index: int) -> void:
 	route_point_index = 1
 	next_stage_route_index = _find_route_index_for_service(0)
 	active = true
+	_off_route_time = 0.0
 	var data: Dictionary = network.get_corridor(corridor_index)
 	var points: Array = data["points"]
 	var start: Vector3 = points[0]
@@ -95,6 +98,16 @@ func _physics_process(delta: float) -> void:
 	if to_target.length_squared() > 0.01 and forward.length_squared() > 0.01:
 		turn_angle = forward.normalized().signed_angle_to(to_target.normalized(), Vector3.UP)
 	navigation_changed.emit(player.global_position.distance_to(nav_target), turn_angle)
+	var nearest_distance := _nearest_route_distance(player.global_position, route_points)
+	var off_route := nearest_distance > 18.0
+	if off_route:
+		_off_route_time += delta
+		if _off_route_time > 1.0:
+			service_progress.emit("OFF ROUTE • RETURN TO THE MARKED ROAD")
+	else:
+		_off_route_time = 0.0
+	var progress := int(clampf(float(route_point_index) / float(maxi(route_points.size() - 1, 1)), 0.0, 1.0) * 100.0)
+	route_progress_changed.emit(progress, off_route)
 	if absf(rad_to_deg(turn_angle)) > 22.0 and player.global_position.distance_to(nav_target) < 32.0:
 		maneuver_changed.emit(("TURN LEFT" if turn_angle > 0.0 else "TURN RIGHT") + " • %dm" % int(player.global_position.distance_to(nav_target)))
 	if distance > 7.0:
@@ -185,3 +198,18 @@ func _find_route_index_for_service(service_index: int) -> int:
 			best_distance = d
 			best_index = i
 	return best_index
+
+func _nearest_route_distance(position: Vector3, route_points: Array) -> float:
+	var best := INF
+	for i in range(route_points.size() - 1):
+		var a: Vector3 = route_points[i]
+		var b: Vector3 = route_points[i + 1]
+		var ab := b - a
+		ab.y = 0.0
+		var ap := position - a
+		ap.y = 0.0
+		var denom := ab.length_squared()
+		var t := 0.0 if denom < 0.001 else clampf(ap.dot(ab) / denom, 0.0, 1.0)
+		var closest := a + ab * t
+		best = minf(best, position.distance_to(closest))
+	return best
