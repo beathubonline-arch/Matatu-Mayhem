@@ -209,8 +209,22 @@ func _refresh_route_unlocks() -> void:
 		$RouteSelectPanel/VBox/Mombasa,
 		$RouteSelectPanel/VBox/Ngong
 	]
+	var base_texts := [
+		"WAIYAKI WAY  •  WESTLANDS → UTHIRU  •  KSh 9,000 BONUS",
+		"THIKA ROAD  •  NGARA → KASARANI  •  KSh 11,000 BONUS",
+		"MOMBASA ROAD  •  NYAYO → IMARA DAIMA  •  KSh 12,000 BONUS",
+		"NGONG ROAD  •  COMMUNITY → JUNCTION  •  KSh 10,000 BONUS"
+	]
+	var best_times: Dictionary = SaveManager.data.get("corridor_best_times", {})
 	for i in range(buttons.size()):
-		buttons[i].disabled = i >= unlocked
+		var locked := i >= unlocked
+		buttons[i].disabled = locked
+		if locked:
+			buttons[i].text = "🔒 %s" % base_texts[i]
+		else:
+			var best := float(best_times.get(str(i), 0.0))
+			var pb := "" if best <= 0.0 else "  •  PB %s" % _format_time(best)
+			buttons[i].text = "%s%s" % [base_texts[i], pb]
 
 
 func _on_navigation_changed(distance: float, turn_angle: float) -> void:
