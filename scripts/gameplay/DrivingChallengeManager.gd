@@ -13,6 +13,8 @@ const CLEAN_STAGE_REWARD := 250
 const RIVAL_WIN_REWARD := 1800
 const PERFECT_RUN_REWARD := 1200
 const IMPACT_COOLDOWN := 1.2
+# Calibrated against the current compressed route lengths and mandatory stage dwell.
+const RIVAL_BASE_TIMES := [58.0, 54.0, 58.0, 53.0]
 
 var player: VehicleBody3D
 var corridor_service: CorridorServiceManager
@@ -76,7 +78,7 @@ func _on_corridor_completed(_name: String, _reward: int, _balance: int, elapsed:
 		SaveManager.data["perfect_runs"] = int(SaveManager.data.get("perfect_runs", 0)) + 1
 		challenge_changed.emit("CLEAN RUN! +KSh %d • STREET CRED UP" % PERFECT_RUN_REWARD, clean_streak + 1)
 	var corridor_idx := corridor_service.corridor_index if corridor_service != null else 0
-	var rival_time := 82.0 + float(corridor_idx) * 9.0
+	var rival_time: float = RIVAL_BASE_TIMES[clampi(corridor_idx, 0, RIVAL_BASE_TIMES.size() - 1)]
 	var won := elapsed <= rival_time
 	var reward := 0
 	if won:
