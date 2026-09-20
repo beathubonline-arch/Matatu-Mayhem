@@ -24,9 +24,10 @@ func _spawn_vehicle(data: Dictionary, index: int) -> void:
 	var direction: Vector3 = (b - a).normalized()
 	var vehicle := CharacterBody3D.new()
 	vehicle.position = a.lerp(b, 0.25 + 0.15 * float(index % 4)) + Vector3(direction.z, 0.55, -direction.x) * (2.6 if index % 2 == 0 else -2.6)
-	vehicle.set_meta("a", a)
-	vehicle.set_meta("b", b)
-	vehicle.set_meta("direction", direction if index % 2 == 0 else -direction)
+	vehicle.set_meta("points", points)
+	vehicle.set_meta("point_index", segment_index + 1)
+	vehicle.set_meta("forward", index % 2 == 0)
+	vehicle.set_meta("lane_offset", 2.6 if index % 2 == 0 else -2.6)
 	vehicle.set_meta("speed", 7.0 + float(index % 3))
 	vehicle.set_collision_layer_value(1, true)
 	vehicle.set_collision_mask_value(1, false)
@@ -54,9 +55,35 @@ func _physics_process(_delta: float) -> void:
 		var vehicle := child as CharacterBody3D
 		if vehicle == null:
 			continue
-		var direction: Vector3 = vehicle.get_meta("direction", Vector3.ZERO)
+		var points: Array = vehicle.get_meta("points", [])
+		if points.size() < 2:
+			continue
+		var point_index: int = int(vehicle.get_meta("point_index", 1))
+		point_index = clampi(point_index, 0, points.size() - 1)
+		var target: Vector3 = points[point_index]
+		var to_target: Vector3 = target - vehicle.global_position
+		to_target.y = 0.0
+		if to_target.length() < 5.0:
+			var forward: bool = bool(vehicle.get_meta("forward", true))
+			if forward:
+				point_index += 1
+				if point_index >= points.size():
+					point_index = 0
+			else:
+				point_index -= 1
+				if point_index < 0:
+					point_index = points.size() - 1
+			vehicle.set_meta("point_index", point_index)
+			target = points[point_index]
+			to_target = target - vehicle.global_position
+			to_target.y = 0.0
+		var direction: Vector3 = to_target.normalized()
+		var lane_offset: float = float(vehicle.get_meta("lane_offset", 2.6))
+		var lateral := Vector3(direction.z, 0.0, -direction.x) * lane_offset
+		var desired_target: Vector3 = target + lateral
+		direction = (desired_target - vehicle.global_position).normalized()
+		direction.y = 0.0
 		var speed: float = float(vehicle.get_meta("speed", 8.0))
-		# Stage safety: AI yields instead of shoving a stopped matatu while it loads.
 		if player != null:
 			var distance_to_player: float = vehicle.global_position.distance_to(player.global_position)
 			if distance_to_player < 9.0:
@@ -64,8 +91,6 @@ func _physics_process(_delta: float) -> void:
 			elif distance_to_player < 16.0:
 				speed *= 0.35
 		vehicle.velocity = direction * speed
+		if direction.length_squared() > 0.01:
+			vehicle.rotation.y = atan2(-direction.x, -direction.z)
 		vehicle.move_and_slide()
-		var a: Vector3 = vehicle.get_meta("a", Vector3.ZERO)
-		var b: Vector3 = vehicle.get_meta("b", Vector3.ZERO)
-		if vehicle.global_position.distance_to(a) > a.distance_to(b) + 12.0 and vehicle.global_position.distance_to(b) > 12.0:
-			vehicle.global_position = a + Vector3(0, 0.55, 0)
