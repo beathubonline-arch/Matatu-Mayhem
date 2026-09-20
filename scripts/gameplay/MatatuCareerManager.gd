@@ -18,7 +18,8 @@ const NGANYA_UNLOCKS := [
 	{"name":"Maverick","rank":1},
 	{"name":"ONYX","rank":2},
 	{"name":"MOXIE","rank":3},
-	{"name":"MONEYFEST","rank":4}
+	{"name":"MONEYFEST","rank":4},
+	{"name":"STREET LEGEND","rank":5}
 ]
 
 var career_xp := 0
@@ -37,6 +38,8 @@ func _ready() -> void:
 	if culture != null:
 		culture.reputation_awarded.connect(_on_reputation)
 	_refresh_rank()
+	_unlock_rank_nganyas()
+	SaveManager.save_game()
 	_emit()
 
 func _on_fare(amount: int, _balance: int) -> void:
