@@ -60,6 +60,7 @@ func _build_corridor(data: Dictionary, corridor_index: int) -> void:
 			_corridor_streetscape(points[i], points[i + 1], i, corridor_index)
 		if i > 0:
 			_junction_detail(points[i], color)
+			_branch_road(points[i - 1], points[i], points[i + 1], color, i)
 	var service_points: Array = data["service_points"]
 	for i in range(service_points.size()):
 		_stage(_stage_visual_position(points, service_points[i]), String(data["stops"][i]), String(data["name"]), int(data["reward"]))
@@ -121,6 +122,55 @@ func _road_segment(a: Vector3, b: Vector3, accent: Color) -> void:
 	_marking(mid, yaw, length, 3.7, 0.10, Color("d9d9d9"))
 	_marking(mid, yaw, length, -7.15, 0.14, Color("f2f2f2"))
 	_marking(mid, yaw, length, 7.15, 0.14, Color("f2f2f2"))
+
+func _branch_road(prev: Vector3, junction: Vector3, next: Vector3, accent: Color, seed: int) -> void:
+	var incoming := junction - prev
+	var outgoing := next - junction
+	incoming.y = 0.0
+	outgoing.y = 0.0
+	if incoming.length_squared() < 0.01 or outgoing.length_squared() < 0.01:
+		return
+	incoming = incoming.normalized()
+	outgoing = outgoing.normalized()
+	if absf(incoming.dot(outgoing)) > 0.96:
+		return
+	var branch_dir := -incoming if seed % 2 == 0 else -outgoing
+	var branch_end := junction + branch_dir * (20.0 + float(seed % 3) * 4.0)
+	_side_road_segment(junction, branch_end)
+	var sign := Label3D.new()
+	sign.text = "LOCAL ROAD"
+	sign.position = junction + branch_dir * 8.0 + Vector3(0, 3.2, 0)
+	sign.font_size = 22
+	sign.pixel_size = 0.005
+	sign.outline_size = 6
+	sign.modulate = accent
+	add_child(sign)
+
+func _side_road_segment(a: Vector3, b: Vector3) -> void:
+	var delta := b - a
+	var length := Vector2(delta.x, delta.z).length()
+	if length < 2.0:
+		return
+	var road := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(9.0, 0.07, length)
+	road.mesh = mesh
+	road.position = (a + b) * 0.5 + Vector3(0, ROAD_Y - 0.005, 0)
+	road.rotation.y = atan2(delta.x, delta.z)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color("303338")
+	mat.roughness = 0.98
+	road.material_override = mat
+	add_child(road)
+	var body := StaticBody3D.new()
+	body.position = road.position + Vector3(0, -0.10, 0)
+	body.rotation.y = road.rotation.y
+	var collision := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(9.0, 0.20, length)
+	collision.shape = shape
+	body.add_child(collision)
+	add_child(body)
 
 func _junction_detail(pos: Vector3, accent: Color) -> void:
 	var pad := MeshInstance3D.new()
