@@ -103,7 +103,7 @@ func _physics_process(_delta: float) -> void:
 		var points: Array = rival.get_meta("points", [])
 		if points.size() < 2:
 			continue
-		var point_index := clampi(int(rival.get_meta("point_index", 1)), 0, points.size() - 1)
+		var point_index: int = clampi(int(rival.get_meta("point_index", 1)), 0, points.size() - 1)
 		var target: Vector3 = points[point_index]
 		var to_target := target - rival.global_position
 		to_target.y = 0.0
