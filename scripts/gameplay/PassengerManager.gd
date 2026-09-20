@@ -8,7 +8,8 @@ enum ServiceState { WAITING_FOR_PICKUP, PASSENGERS_ONBOARD }
 
 @export var pickup_stop_path: NodePath
 @export var dropoff_stop_path: NodePath
-@export var fare_amount: int = 5000\n@export var enabled: bool = true
+@export var fare_amount: int = 5000
+@export var enabled: bool = true
 
 var state: ServiceState = ServiceState.WAITING_FOR_PICKUP
 var pickup_stop: PassengerStop
