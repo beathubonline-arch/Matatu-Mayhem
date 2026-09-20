@@ -38,6 +38,10 @@ func _ready() -> void:
 	$RouteSelectPanel/VBox/Mombasa.pressed.connect(func(): _select_corridor(2))
 	$RouteSelectPanel/VBox/Ngong.pressed.connect(func(): _select_corridor(3))
 	route_select_panel.visible = true
+	GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
+	objective_label.text = "CHOOSE YOUR NAIROBI ROUTE"
+	passenger_label.text = "WAIYAKI • THIKA • MOMBASA • NGONG"
+	timer_label.text = "00:00.00"
 	EconomyManager.money_changed.connect(_on_money_changed)
 	_on_money_changed(EconomyManager.get_money())
 	if not route_manager_path.is_empty():
@@ -119,6 +123,9 @@ func _on_replay_pressed() -> void:
 	finish_panel.visible = false
 	if corridor_service != null:
 		route_select_panel.visible = true
+		GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
+		objective_label.text = "CHOOSE YOUR NEXT ROUTE"
+		passenger_label.text = "WAIYAKI • THIKA • MOMBASA • NGONG"
 		return
 	if route_manager != null:
 		route_manager.restart_route()
@@ -162,7 +169,9 @@ func _on_corridor_completed(name: String, reward: int, balance: int) -> void:
 func _select_corridor(index: int) -> void:
 	if corridor_service == null:
 		return
+	GameManager.set_game_state(GameManager.GameState.PLAYING)
 	corridor_service.call("select_corridor", index)
+	_corridor_time = 0.0
 	route_select_panel.visible = false
 	finish_panel.visible = false
 
