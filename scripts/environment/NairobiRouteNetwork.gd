@@ -8,11 +8,11 @@ extends Node3D
 const ROAD_Y := 0.04
 const ROAD_W := 15.0
 const WAIYAKI_POINTS := [
-	Vector3(-31,0,-63), Vector3(-49,0,-72), Vector3(-70,0,-82),
-	Vector3(-92,0,-91), Vector3(-118,0,-98), Vector3(-143,0,-104),
-	Vector3(-170,0,-108), Vector3(-198,0,-111), Vector3(-225,0,-112)
+	Vector3(-31,0,-63), Vector3(-31,0,-92), Vector3(-52,0,-92), Vector3(-52,0,-122),
+	Vector3(-86,0,-122), Vector3(-86,0,-151), Vector3(-122,0,-151), Vector3(-122,0,-184),
+	Vector3(-161,0,-184), Vector3(-161,0,-216), Vector3(-205,0,-216), Vector3(-225,0,-238)
 ]
-const WAIYAKI_DISTRICTS := ["WESTLANDS","WESTLANDS","ABC PLACE","ABC PLACE","KANGEMI","KANGEMI","UTHIRU","UTHIRU"]
+const WAIYAKI_DISTRICTS := ["WESTLANDS","WESTLANDS","ABC PLACE","ABC PLACE","KANGEMI","KANGEMI","UTHIRU","UTHIRU","UTHIRU","UTHIRU","UTHIRU"]
 const CORRIDOR_DISTRICTS := [
 	["WESTLANDS","ABC PLACE","KANGEMI","UTHIRU"],
 	["NGARA","PANGANI","MUTHAIGA","KASARANI"],
@@ -21,16 +21,16 @@ const CORRIDOR_DISTRICTS := [
 ]
 const CORRIDORS := [
 	{"name":"WAIYAKI WAY","color":"4aa3df","points":WAIYAKI_POINTS,
-	 "service_points":[Vector3(-70,0,-82),Vector3(-118,0,-98),Vector3(-170,0,-108),Vector3(-225,0,-112)],
+	 "service_points":[Vector3(-31,0,-92),Vector3(-86,0,-122),Vector3(-161,0,-184),Vector3(-225,0,-238)],
 	 "stops":["WESTLANDS","ABC PLACE","KANGEMI","UTHIRU"],"reward":9000},
-	{"name":"THIKA ROAD","color":"e8c547","points":[Vector3(31,0,21),Vector3(62,0,2),Vector3(95,0,-38),Vector3(122,0,-86),Vector3(142,0,-142)],
-	 "service_points":[Vector3(62,0,2),Vector3(95,0,-38),Vector3(122,0,-86),Vector3(142,0,-142)],
+	{"name":"THIKA ROAD","color":"e8c547","points":[Vector3(31,0,21),Vector3(31,0,-12),Vector3(58,0,-12),Vector3(58,0,-52),Vector3(92,0,-52),Vector3(92,0,-96),Vector3(124,0,-96),Vector3(142,0,-142)],
+	 "service_points":[Vector3(31,0,-12),Vector3(58,0,-52),Vector3(92,0,-96),Vector3(142,0,-142)],
 	 "stops":["NGARA","PANGANI","MUTHAIGA","ROYSAMBU / KASARANI"],"reward":11000},
-	{"name":"MOMBASA ROAD","color":"e36a54","points":[Vector3(0,0,63),Vector3(34,0,102),Vector3(58,0,148),Vector3(72,0,202),Vector3(76,0,258)],
-	 "service_points":[Vector3(34,0,102),Vector3(58,0,148),Vector3(72,0,202),Vector3(76,0,258)],
+	{"name":"MOMBASA ROAD","color":"e36a54","points":[Vector3(0,0,63),Vector3(0,0,96),Vector3(32,0,96),Vector3(32,0,132),Vector3(62,0,132),Vector3(62,0,172),Vector3(92,0,172),Vector3(92,0,214),Vector3(76,0,258)],
+	 "service_points":[Vector3(0,0,96),Vector3(32,0,132),Vector3(62,0,172),Vector3(76,0,258)],
 	 "stops":["NYAYO","SOUTH B / C","GENERAL MOTORS","IMARA DAIMA"],"reward":12000},
-	{"name":"NGONG ROAD","color":"69c779","points":[Vector3(-31,0,21),Vector3(-66,0,50),Vector3(-96,0,86),Vector3(-122,0,130),Vector3(-146,0,178)],
-	 "service_points":[Vector3(-66,0,50),Vector3(-96,0,86),Vector3(-122,0,130),Vector3(-146,0,178)],
+	{"name":"NGONG ROAD","color":"69c779","points":[Vector3(-31,0,21),Vector3(-58,0,21),Vector3(-58,0,54),Vector3(-91,0,54),Vector3(-91,0,91),Vector3(-124,0,91),Vector3(-124,0,132),Vector3(-146,0,178)],
+	 "service_points":[Vector3(-58,0,21),Vector3(-91,0,54),Vector3(-124,0,91),Vector3(-146,0,178)],
 	 "stops":["COMMUNITY","PRESTIGE","ADAMS ARCADE","JUNCTION"],"reward":10000}
 ]
 
@@ -99,6 +99,28 @@ func _road_segment(a: Vector3, b: Vector3, accent: Color) -> void:
 	_marking(mid, yaw, length, 3.7, 0.10, Color("d9d9d9"))
 	_marking(mid, yaw, length, -7.15, 0.14, Color("f2f2f2"))
 	_marking(mid, yaw, length, 7.15, 0.14, Color("f2f2f2"))
+
+func _junction_detail(pos: Vector3, accent: Color) -> void:
+	var pad := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(17.5, 0.09, 17.5)
+	pad.mesh = mesh
+	pad.position = pos + Vector3(0, ROAD_Y + 0.01, 0)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color("292c31")
+	mat.roughness = 0.96
+	pad.material_override = mat
+	add_child(pad)
+	for offset in [-5.2, 5.2]:
+		var stripe := MeshInstance3D.new()
+		var stripe_mesh := BoxMesh.new()
+		stripe_mesh.size = Vector3(0.16, 0.025, 11.0)
+		stripe.mesh = stripe_mesh
+		stripe.position = pos + Vector3(offset, ROAD_Y + 0.07, 0)
+		var stripe_mat := StandardMaterial3D.new()
+		stripe_mat.albedo_color = accent
+		stripe.material_override = stripe_mat
+		add_child(stripe)
 
 func _marking(mid: Vector3, yaw: float, length: float, lateral: float, width: float, color: Color) -> void:
 	var stripe := MeshInstance3D.new()
