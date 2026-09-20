@@ -4,7 +4,7 @@ extends Node3D
 @export var rival_count := 4
 
 func _ready() -> void:
-	for i in rival_count:
+	for i in range(rival_count):
 		_spawn_rival(i)
 
 func _spawn_rival(index: int) -> void:
@@ -59,8 +59,9 @@ func _spawn_rival(index: int) -> void:
 	add_child(rival)
 
 func _physics_process(_delta: float) -> void:
-	for rival in get_children():
-		if not rival is CharacterBody3D:
+	for child in get_children():
+		var rival := child as CharacterBody3D
+		if rival == null:
 			continue
 		var direction := float(rival.get_meta("direction", -1.0))
 		var speed := float(rival.get_meta("speed", 10.0))
