@@ -26,7 +26,7 @@ func _spawn_waiyaki_people() -> void:
 	var data := network.get_corridor(0)
 	var stops: Array = data["service_points"]
 	for stop_index in range(stops.size()):
-		var centre: Vector3 = stops[stop_index]
+		var centre: Vector3 = network.get_stage_waiting_position(0, stop_index)
 		for i in range(pedestrians_per_waiyaki_stage):
 			var person := MeshInstance3D.new()
 			var mesh := CapsuleMesh.new()
@@ -45,7 +45,7 @@ func _spawn_other_corridor_people() -> void:
 		var data := network.get_corridor(corridor_index)
 		var stops: Array = data["service_points"]
 		for stop_index in range(stops.size()):
-			var centre: Vector3 = stops[stop_index]
+			var centre: Vector3 = network.get_stage_waiting_position(corridor_index, stop_index)
 			for i in range(people_per_other_stage):
 				var person := MeshInstance3D.new()
 				var mesh := CapsuleMesh.new()
