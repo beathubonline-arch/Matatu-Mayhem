@@ -142,7 +142,6 @@ current = true
 fov = 68.0
 
 [node name="HUD" parent="." instance=ExtResource("6_hud")]
-passenger_manager_path = NodePath("../Gameplay/PassengerService")
 culture_manager_path = NodePath("../Gameplay/MatatuCulture")
 radio_path = NodePath("../MatatuRadio")
 corridor_service_path = NodePath("../Gameplay/CorridorService")
