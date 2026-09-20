@@ -13,12 +13,16 @@ extends Node3D
 @export var max_speed_reference := 145.0
 @export var lateral_look_strength := 1.6
 @export var lateral_smoothness := 4.0
+@export var acceleration_kick := 0.22
+@export var turn_roll_degrees := 2.4
 
 @onready var spring_arm: SpringArm3D = $SpringArm3D
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
 
 var target: Node3D
 var _lateral_look := 0.0
+var _last_speed_kph := 0.0
+var _camera_roll := 0.0
 
 func _ready() -> void:
 	if not target_path.is_empty():
@@ -60,5 +64,11 @@ func _physics_process(delta: float) -> void:
 	global_basis = global_basis.slerp(desired_basis, 1.0 - exp(-rotation_smoothness * delta))
 
 	spring_arm.spring_length = lerp(base_distance, max_distance, speed_ratio)
+	var acceleration := (speed_kph - _last_speed_kph) / maxf(delta, 0.001)
+	_last_speed_kph = speed_kph
+	var kick := clampf(acceleration / 90.0, -1.0, 1.0) * acceleration_kick
+	spring_arm.position.z = lerpf(spring_arm.position.z, kick, 1.0 - exp(-5.0 * delta))
+	_camera_roll = lerpf(_camera_roll, deg_to_rad(-steer_input * turn_roll_degrees * speed_ratio), 1.0 - exp(-5.0 * delta))
+	camera.rotation.z = _camera_roll
 	camera.fov = lerp(base_fov, max_fov, speed_ratio)
 
