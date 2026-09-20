@@ -44,7 +44,7 @@ func _on_route_completed(_elapsed: float, _reward: int) -> void:
 	_add_hype(25, "CBD ROUTE COMPLETE +25 HYPE")
 	_add_reputation(60)
 
-func _on_corridor_completed(_name: String, _reward: int, _balance: int) -> void:
+func _on_corridor_completed(_name: String, _reward: int, _balance: int, _elapsed: float, _best: float, _new_best: bool) -> void:
 	_add_hype(30, "CORRIDOR COMPLETE +30 HYPE")
 	_add_reputation(75)
 
