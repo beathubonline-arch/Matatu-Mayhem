@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/environment/TestMap.tscn" id="1_map"]
 [ext_resource type="PackedScene" path="res://scenes/vehicle/Matatu.tscn" id="2_car"]
@@ -13,6 +13,7 @@
 [ext_resource type="Script" path="res://scripts/gameplay/PassengerManager.gd" id="11_passengers"]
 [ext_resource type="Script" path="res://scripts/audio/MatatuRadio.gd" id="12_radio"]
 [ext_resource type="Script" path="res://scripts/environment/CBDLifeManager.gd" id="13_cbd_life"]
+[ext_resource type="Script" path="res://scripts/gameplay/MatatuCultureManager.gd" id="14_culture"]
 
 [sub_resource type="SphereShape3D" id="CameraShape"]
 radius = 0.35
@@ -54,6 +55,12 @@ script = ExtResource("11_passengers")
 pickup_stop_path = NodePath("../PassengerStops/PickupStage")
 dropoff_stop_path = NodePath("../PassengerStops/DropoffStage")
 fare_amount = 5000
+
+[node name="MatatuCulture" type="Node" parent="Gameplay"]
+script = ExtResource("14_culture")
+passenger_manager_path = NodePath("../PassengerService")
+route_manager_path = NodePath("../Route")
+radio_path = NodePath("../../MatatuRadio")
 
 [node name="Route" type="Node3D" parent="Gameplay"]
 script = ExtResource("5_route")
