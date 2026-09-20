@@ -21,7 +21,7 @@ func get_corridor(index: int) -> Dictionary:
 	return CORRIDORS[index % CORRIDORS.size()]
 
 func get_service_stop(corridor: int, stop: int) -> Vector3:
-	var data := get_corridor(corridor)
+	var data: Dictionary = get_corridor(corridor)
 	var points: Array = data["points"]
 	return points[clampi(stop + 1, 1, points.size() - 1)]
 
@@ -31,16 +31,16 @@ func _ready() -> void:
 
 func _build_corridor(data: Dictionary) -> void:
 	var points: Array = data["points"]
-	var color := Color(String(data["color"]))
+	var color: Color = Color(String(data["color"]))
 	for i in range(points.size() - 1):
 		_road_segment(points[i], points[i + 1], color)
 	for i in range(1, points.size()):
 		_stage(points[i], String(data["stops"][i - 1]), String(data["name"]), int(data["reward"]))
 
 func _road_segment(a: Vector3, b: Vector3, accent: Color) -> void:
-	var delta := b - a
-	var length := Vector2(delta.x, delta.z).length()
-	var mid := (a + b) * 0.5
+	var delta: Vector3 = b - a
+	var length: float = Vector2(delta.x, delta.z).length()
+	var mid: Vector3 = (a + b) * 0.5
 	var road := MeshInstance3D.new()
 	var mesh := BoxMesh.new()
 	mesh.size = Vector3(ROAD_W, 0.08, length)
@@ -103,6 +103,6 @@ func _spawn_passengers(parent: Node3D) -> void:
 		person.mesh = mesh
 		person.position = Vector3(-2.5 + float(i), 0.8, 1.7)
 		var mat := StandardMaterial3D.new()
-		mat.albedo_color = [Color("4f86c6"),Color("d25f4b"),Color("59a96a"),Color("d5a33f")][i % 4]
+		var passenger_colors: Array[Color] = [Color("4f86c6"), Color("d25f4b"), Color("59a96a"), Color("d5a33f")]\n\t\tmat.albedo_color = passenger_colors[i % passenger_colors.size()]
 		person.material_override = mat
 		parent.add_child(person)
