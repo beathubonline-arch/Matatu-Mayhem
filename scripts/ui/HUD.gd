@@ -6,6 +6,7 @@ extends CanvasLayer
 @export var radio_path: NodePath
 @export var corridor_service_path: NodePath
 @export var challenge_manager_path: NodePath
+@export var career_manager_path: NodePath
 
 @onready var speed_label: Label = $Margin/VBox/TopBar/Speed
 @onready var money_label: Label = $Margin/VBox/TopBar/Money
@@ -30,6 +31,7 @@ var culture_manager: Node
 var radio: Node
 var corridor_service: Node
 var challenge_manager: Node
+var career_manager: Node
 var _fare_notice_time: float = 0.0
 var _corridor_time: float = 0.0
 
@@ -85,6 +87,11 @@ func _ready() -> void:
 		challenge_manager.challenge_changed.connect(_on_challenge_changed)
 		challenge_manager.penalty_applied.connect(_on_penalty_applied)
 		challenge_manager.rival_result.connect(_on_rival_result)
+	if not career_manager_path.is_empty():
+		career_manager = get_node_or_null(career_manager_path)
+	if career_manager != null:
+		career_manager.career_changed.connect(_on_career_changed)
+		career_manager.nganya_unlocked.connect(_on_nganya_unlocked)
 	_refresh_route_unlocks()
 	_refresh_garage()
 	_on_hype_changed(0, 0, "NAIROBI SHIFT READY")
@@ -325,3 +332,14 @@ func _on_route_progress_changed(percent: int, off_route: bool) -> void:
 		navigation_label.text = "NAV • OFF ROUTE • REJOIN ROAD"
 	elif not navigation_label.text.contains("TURN"):
 		navigation_label.text = "NAV • ROUTE %d%% • FOLLOW ROAD" % percent
+
+func _on_career_changed(rank: int, rank_name: String, xp: int, next_xp: int, owned: Array) -> void:
+	var progress := "MAX"
+	if next_xp > xp:
+		progress = "%d/%d XP" % [xp, next_xp]
+	controls_label.text = "CAREER • RANK %d %s • %s • NGANYAS %d" % [rank, rank_name, progress, owned.size()]
+
+func _on_nganya_unlocked(name: String) -> void:
+	fare_notice.text = "NEW NGANYA UNLOCKED • %s" % name
+	fare_notice.visible = true
+	_fare_notice_time = 5.0
