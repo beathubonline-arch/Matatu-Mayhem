@@ -66,6 +66,7 @@ func _ready() -> void:
 		corridor_service.fare_awarded.connect(_on_fare_awarded)
 		corridor_service.service_progress.connect(_on_service_progress)
 		corridor_service.run_time_changed.connect(_on_corridor_time_changed)
+		corridor_service.passenger_load_changed.connect(_on_passenger_load_changed)
 	_on_hype_changed(0, 0, "CBD SHIFT STARTED")
 	if OS.has_feature("mobile") or DisplayServer.is_touchscreen_available():
 		controls_label.visible = false
@@ -174,3 +175,11 @@ func _on_service_progress(message: String) -> void:
 
 func _on_corridor_time_changed(seconds: float) -> void:
 	_corridor_time = seconds
+
+func _on_passenger_load_changed(onboard: int, capacity: int, boarded: int, alighted: int) -> void:
+	var movement := ""
+	if boarded > 0:
+		movement += "  +%d IN" % boarded
+	if alighted > 0:
+		movement += "  -%d OUT" % alighted
+	passenger_label.text = "PASSENGERS %d/%d%s" % [onboard, capacity, movement]
