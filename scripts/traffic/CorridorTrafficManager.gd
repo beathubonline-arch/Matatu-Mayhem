@@ -28,6 +28,8 @@ func _spawn_vehicle(data: Dictionary, index: int) -> void:
 	vehicle.set_meta("b", b)
 	vehicle.set_meta("direction", direction if index % 2 == 0 else -direction)
 	vehicle.set_meta("speed", 7.0 + float(index % 3))
+	vehicle.set_collision_layer_value(1, true)
+	vehicle.set_collision_mask_value(1, false)
 	var mesh_instance := MeshInstance3D.new()
 	var mesh := BoxMesh.new()
 	mesh.size = Vector3(1.8, 1.55, 3.8)
@@ -47,12 +49,20 @@ func _spawn_vehicle(data: Dictionary, index: int) -> void:
 	add_child(vehicle)
 
 func _physics_process(_delta: float) -> void:
+	var player := GameManager.get_player_vehicle() as Node3D
 	for child in get_children():
 		var vehicle := child as CharacterBody3D
 		if vehicle == null:
 			continue
 		var direction: Vector3 = vehicle.get_meta("direction", Vector3.ZERO)
 		var speed: float = float(vehicle.get_meta("speed", 8.0))
+		# Stage safety: AI yields instead of shoving a stopped matatu while it loads.
+		if player != null:
+			var distance_to_player: float = vehicle.global_position.distance_to(player.global_position)
+			if distance_to_player < 9.0:
+				speed = 0.0
+			elif distance_to_player < 16.0:
+				speed *= 0.35
 		vehicle.velocity = direction * speed
 		vehicle.move_and_slide()
 		var a: Vector3 = vehicle.get_meta("a", Vector3.ZERO)
