@@ -58,12 +58,30 @@ func _build_corridor(data: Dictionary, corridor_index: int) -> void:
 				_waiyaki_streetscape(points[i], points[i + 1], i)
 	var service_points: Array = data["service_points"]
 	for i in range(service_points.size()):
-		_stage(service_points[i], String(data["stops"][i]), String(data["name"]), int(data["reward"]))
+		_stage(_stage_visual_position(points, service_points[i]), String(data["stops"][i]), String(data["name"]), int(data["reward"]))
 	if corridor_index == 0:
 		_waiyaki_landmarks()
 	else:
 		_other_corridor_landmarks(data, corridor_index)
 	_corridor_gateway(data, corridor_index)
+
+func _stage_visual_position(route_points: Array, service_point: Vector3) -> Vector3:
+	var best_index := 0
+	var best_distance := INF
+	for i in range(route_points.size()):
+		var d := service_point.distance_squared_to(route_points[i])
+		if d < best_distance:
+			best_distance = d
+			best_index = i
+	var next_index := mini(best_index + 1, route_points.size() - 1)
+	var prev_index := maxi(best_index - 1, 0)
+	var direction: Vector3 = route_points[next_index] - route_points[prev_index]
+	direction.y = 0.0
+	if direction.length_squared() < 0.01:
+		direction = Vector3.FORWARD
+	direction = direction.normalized()
+	var right := Vector3(direction.z, 0.0, -direction.x)
+	return service_point + right * 10.2
 
 func _road_segment(a: Vector3, b: Vector3, accent: Color) -> void:
 	var delta: Vector3 = b - a
