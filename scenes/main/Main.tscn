@@ -79,6 +79,8 @@ network_path = NodePath("../../World/Environment/NairobiRouteNetwork")
 corridor_service_path = NodePath("../CorridorService")
 
 [node name="PassengerStops" type="Node3D" parent="Gameplay"]
+process_mode = 4
+visible = false
 
 [node name="PickupStage" parent="Gameplay/PassengerStops" instance=ExtResource("10_stop")]
 position = Vector3(-5.5, 0, 63)
