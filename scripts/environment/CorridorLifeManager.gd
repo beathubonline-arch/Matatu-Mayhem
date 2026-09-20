@@ -6,6 +6,7 @@ extends Node3D
 @export var boda_count := 5
 @export var minibus_count := 4
 @export var people_per_other_stage := 3
+@export var route_minibuses_per_other_corridor := 2
 
 var network: NairobiRouteNetwork
 var _movers: Array[CharacterBody3D] = []
@@ -19,6 +20,7 @@ func _ready() -> void:
 	_spawn_other_corridor_people()
 	_spawn_bodas()
 	_spawn_route_minibuses()
+	_spawn_other_corridor_minibuses()
 
 func _spawn_waiyaki_people() -> void:
 	var data := network.get_corridor(0)
@@ -169,3 +171,45 @@ func _spawn_route_minibuses() -> void:
 		bus.add_child(route)
 		add_child(bus)
 		_movers.append(bus)
+
+func _spawn_other_corridor_minibuses() -> void:
+	for corridor_index in range(1, network.corridor_count()):
+		var data := network.get_corridor(corridor_index)
+		var points: Array = data["points"]
+		for i in range(route_minibuses_per_other_corridor):
+			if points.size() < 2:
+				continue
+			var segment_index := (i * 2) % (points.size() - 1)
+			var a: Vector3 = points[segment_index]
+			var b: Vector3 = points[segment_index + 1]
+			var direction := (b - a).normalized()
+			var forward := i % 2 == 0
+			var lane_offset := 2.15 if forward else -2.15
+			var bus := CharacterBody3D.new()
+			bus.position = a.lerp(b, 0.35 + 0.2 * i) + Vector3(direction.z, 0.65, -direction.x) * lane_offset
+			bus.set_meta("points", points)
+			bus.set_meta("point_index", segment_index + 1 if forward else segment_index)
+			bus.set_meta("forward", forward)
+			bus.set_meta("speed", 6.6 + float(corridor_index) * 0.35)
+			bus.set_meta("lane_offset", lane_offset)
+			var body := MeshInstance3D.new()
+			var mesh := BoxMesh.new()
+			mesh.size = Vector3(2.0, 2.1, 4.4)
+			body.mesh = mesh
+			body.position.y = 1.05
+			var mat := StandardMaterial3D.new()
+			var colors: Array[Color] = [Color("c8c6bd"), Color("d8d1be"), Color("b8bec2")]
+			mat.albedo_color = colors[corridor_index % colors.size()]
+			body.material_override = mat
+			bus.add_child(body)
+			var route := Label3D.new()
+			route.text = String(data["name"])
+			route.position = Vector3(0, 1.6, -2.22)
+			route.rotation_degrees.y = 180
+			route.font_size = 22
+			route.pixel_size = 0.005
+			route.outline_size = 6
+			route.modulate = Color(String(data["color"]))
+			bus.add_child(route)
+			add_child(bus)
+			_movers.append(bus)
