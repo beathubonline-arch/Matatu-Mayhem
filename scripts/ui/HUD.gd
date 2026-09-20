@@ -82,6 +82,7 @@ func _ready() -> void:
 		corridor_service.navigation_changed.connect(_on_navigation_changed)
 		corridor_service.maneuver_changed.connect(_on_maneuver_changed)
 		corridor_service.route_progress_changed.connect(_on_route_progress_changed)
+		corridor_service.conductor_call.connect(_on_conductor_call)
 	if not challenge_manager_path.is_empty():
 		challenge_manager = get_node_or_null(challenge_manager_path)
 	if challenge_manager != null:
@@ -395,3 +396,9 @@ func _on_nganya_unlocked(name: String) -> void:
 	fare_notice.text = "NEW NGANYA UNLOCKED • %s" % name
 	fare_notice.visible = true
 	_fare_notice_time = 5.0
+
+
+func _on_conductor_call(message: String) -> void:
+	fare_notice.text = "CONDUCTOR • %s" % message
+	fare_notice.visible = true
+	_fare_notice_time = 2.8
