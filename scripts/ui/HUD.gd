@@ -307,6 +307,30 @@ func _refresh_garage() -> void:
 			button.text = "%s • LEVEL 5 • MAX" % kind.to_upper()
 		else:
 			button.text = "%s • LEVEL %d → %d • KSh %s" % [kind.to_upper(), level, level + 1, _format_number(_upgrade_cost(kind))]
+	_refresh_nganya_selector()
+
+func _cycle_nganya() -> void:
+	var owned: Array = SaveManager.data.get("owned_nganyas", ["Maverick"])
+	if owned.is_empty():
+		return
+	var selected := String(SaveManager.data.get("selected_nganya", "Maverick"))
+	var index := owned.find(selected)
+	index = 0 if index < 0 else (index + 1) % owned.size()
+	SaveManager.data["selected_nganya"] = String(owned[index])
+	SaveManager.save_game()
+	var vehicle = GameManager.get_player_vehicle()
+	if vehicle != null and vehicle.has_method("refresh_selected_nganya"):
+		vehicle.call("refresh_selected_nganya")
+	_refresh_nganya_selector()
+	fare_notice.text = "NGANYA SELECTED • %s" % String(owned[index]).to_upper()
+	fare_notice.visible = true
+	_fare_notice_time = 3.0
+
+func _refresh_nganya_selector() -> void:
+	var owned: Array = SaveManager.data.get("owned_nganyas", ["Maverick"])
+	var selected := String(SaveManager.data.get("selected_nganya", "Maverick")).to_upper()
+	$RouteSelectPanel/VBox/GarageTitle.text = "%s GARAGE • %d OWNED" % [selected, owned.size()]
+	$RouteSelectPanel/VBox/NganyaSelect.text = "NGANYA • %s • CLICK TO SWITCH" % selected
 
 func _on_challenge_changed(message: String, clean_streak: int) -> void:
 	var suffix := "" if clean_streak <= 0 else " • CLEAN x%d" % clean_streak
