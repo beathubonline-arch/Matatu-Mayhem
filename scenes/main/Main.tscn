@@ -104,6 +104,7 @@ passenger_manager_path = NodePath("../CorridorService")
 route_manager_path = NodePath("../Route")
 radio_path = NodePath("../../MatatuRadio")
 corridor_service_path = NodePath("../CorridorService")
+challenge_manager_path = NodePath("../DrivingChallenges")
 
 [node name="Route" type="Node3D" parent="Gameplay"]
 script = ExtResource("5_route")
