@@ -122,6 +122,9 @@ func _configure_wheel(wheel: VehicleWheel3D, steering_wheel: bool, traction_whee
 	wheel.damping_relaxation = stats.damping_relaxation
 	wheel.wheel_friction_slip = grip
 
+func set_route_spawn(spawn_transform: Transform3D) -> void:
+	_spawn_transform = spawn_transform
+
 func reset_vehicle() -> void:
 	var pos := global_position
 	var forward := -global_basis.z
