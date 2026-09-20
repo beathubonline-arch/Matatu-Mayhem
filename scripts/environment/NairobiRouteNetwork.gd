@@ -52,6 +52,18 @@ func _road_segment(a: Vector3, b: Vector3, accent: Color) -> void:
 	mat.roughness = 0.96
 	road.material_override = mat
 	add_child(road)
+	# Physical road deck: extended corridors must support the VehicleBody3D,
+	# not just look like roads beyond the original CBD ground.
+	var body := StaticBody3D.new()
+	body.position = Vector3(mid.x, ROAD_Y - 0.10, mid.z)
+	body.rotation.y = road.rotation.y
+	body.collision_layer = 1
+	var collision := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(ROAD_W, 0.20, length)
+	collision.shape = shape
+	body.add_child(collision)
+	add_child(body)
 	var stripe := MeshInstance3D.new()
 	var stripe_mesh := BoxMesh.new()
 	stripe_mesh.size = Vector3(0.18, 0.02, length * 0.92)
