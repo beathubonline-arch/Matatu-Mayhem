@@ -55,7 +55,11 @@ func _build_corridor(data: Dictionary, corridor_index: int) -> void:
 	for i in range(points.size() - 1):
 		_road_segment(points[i], points[i + 1], color)
 		if corridor_index == 0:
-				_waiyaki_streetscape(points[i], points[i + 1], i)
+			_waiyaki_streetscape(points[i], points[i + 1], i)
+		else:
+			_corridor_streetscape(points[i], points[i + 1], i, corridor_index)
+		if i > 0:
+			_junction_detail(points[i], color)
 	var service_points: Array = data["service_points"]
 	for i in range(service_points.size()):
 		_stage(_stage_visual_position(points, service_points[i]), String(data["stops"][i]), String(data["name"]), int(data["reward"]))
