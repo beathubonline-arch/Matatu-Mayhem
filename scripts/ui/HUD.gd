@@ -1,7 +1,5 @@
 extends CanvasLayer
 
-@export var route_manager_path: NodePath
-@export var passenger_manager_path: NodePath
 @export var culture_manager_path: NodePath
 @export var radio_path: NodePath
 @export var corridor_service_path: NodePath
@@ -25,8 +23,6 @@ extends CanvasLayer
 @onready var replay_button: Button = $FinishPanel/VBox/Replay
 @onready var route_select_panel: PanelContainer = $RouteSelectPanel
 
-var route_manager: RouteManager
-var passenger_manager: PassengerManager
 var culture_manager: Node
 var radio: Node
 var corridor_service: Node
@@ -56,10 +52,6 @@ func _ready() -> void:
 	timer_label.text = "00:00.00"
 	EconomyManager.money_changed.connect(_on_money_changed)
 	_on_money_changed(EconomyManager.get_money())
-	if not route_manager_path.is_empty():
-		route_manager = get_node_or_null(route_manager_path) as RouteManager
-	if not passenger_manager_path.is_empty():
-		passenger_manager = get_node_or_null(passenger_manager_path) as PassengerManager
 	fare_notice.visible = false
 	if not culture_manager_path.is_empty():
 		culture_manager = get_node_or_null(culture_manager_path)
@@ -85,6 +77,7 @@ func _ready() -> void:
 		corridor_service.conductor_call.connect(_on_conductor_call)
 		corridor_service.stage_rush_changed.connect(_on_stage_rush_changed)
 		corridor_service.stage_grade.connect(_on_stage_grade)
+		corridor_service.event_changed.connect(_on_event_changed)
 	if not challenge_manager_path.is_empty():
 		challenge_manager = get_node_or_null(challenge_manager_path)
 	if challenge_manager != null:
@@ -174,8 +167,6 @@ func _on_replay_pressed() -> void:
 		_refresh_garage()
 		_refresh_nganya_selector()
 		return
-	if route_manager != null:
-		route_manager.restart_route()
 
 func _format_time(seconds: float) -> String:
 	var minutes := int(seconds / 60.0)
@@ -416,3 +407,9 @@ func _on_stage_grade(message: String, reward: int) -> void:
 	fare_notice.text = "%s • +KSh %s" % [message, _format_number(reward)]
 	fare_notice.visible = true
 	_fare_notice_time = 2.6
+
+
+func _on_event_changed(message: String, seconds_left: float) -> void:
+	if seconds_left <= 0.0:
+		return
+	objective_label.text = "⚡ %s • %.0fs" % [message, seconds_left]
