@@ -111,5 +111,7 @@ fov = 68.0
 
 [node name="HUD" parent="." instance=ExtResource("6_hud")]
 passenger_manager_path = NodePath("../Gameplay/PassengerService")
+culture_manager_path = NodePath("../Gameplay/MatatuCulture")
+radio_path = NodePath("../MatatuRadio")
 [node name="PauseMenu" parent="." instance=ExtResource("7_pause")]
 [node name="MobileControls" parent="." instance=ExtResource("8_mobile")]
