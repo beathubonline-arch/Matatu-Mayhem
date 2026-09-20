@@ -3,6 +3,7 @@ extends Node
 
 signal corridor_changed(name: String, stop_name: String, current: int, total: int)
 signal corridor_completed(name: String, reward: int, balance: int)
+signal fare_awarded(amount: int, balance: int)
 
 @export var player_path: NodePath
 @export var network_path: NodePath
@@ -61,13 +62,19 @@ func _complete_stop() -> void:
 	var stops: Array = data["stops"]
 	var fare: int = 2500 + stop_index * 500
 	EconomyManager.add_passenger_fare(fare)
+	fare_awarded.emit(fare, EconomyManager.get_money())
+	SaveManager.data["passenger_trips_completed"] = int(SaveManager.data.get("passenger_trips_completed", 0)) + 1
+	SaveManager.save_game()
 	stop_index += 1
 	if stop_index >= stops.size():
 		var reward: int = int(data["reward"])
 		EconomyManager.add_money(reward)
+		SaveManager.data["routes_completed"] = int(SaveManager.data.get("routes_completed", 0)) + 1
+		SaveManager.data["last_corridor"] = corridor_index
+		SaveManager.save_game()
 		corridor_completed.emit(String(data["name"]), reward, EconomyManager.get_money())
-		corridor_index = (corridor_index + 1) % network.corridor_count()
-		stop_index = 0
+		active = false
+		return
 	_emit_status()
 
 func _emit_status() -> void:
