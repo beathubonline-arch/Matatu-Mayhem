@@ -40,6 +40,10 @@ func restart_corridor() -> void:
 func select_corridor(index: int) -> void:
 	if network == null or player == null:
 		return
+	var unlocked := int(SaveManager.data.get("unlocked_corridors", 1))
+	if index >= unlocked:
+		service_progress.emit("ROUTE LOCKED • BUILD REPUTATION FIRST")
+		return
 	corridor_index = clampi(index, 0, network.corridor_count() - 1)
 	stop_index = 0
 	dwell = 0.0
@@ -114,6 +118,9 @@ func _complete_stop() -> void:
 		EconomyManager.add_money(reward)
 		SaveManager.data["routes_completed"] = int(SaveManager.data.get("routes_completed", 0)) + 1
 		SaveManager.data["last_corridor"] = corridor_index
+		var unlocked := int(SaveManager.data.get("unlocked_corridors", 1))
+		if corridor_index + 1 >= unlocked and unlocked < network.corridor_count():
+			SaveManager.data["unlocked_corridors"] = unlocked + 1
 		var best_times: Dictionary = SaveManager.data.get("corridor_best_times", {})
 		var key := str(corridor_index)
 		var previous_best := float(best_times.get(key, 0.0))
