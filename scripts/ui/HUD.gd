@@ -84,6 +84,7 @@ func _ready() -> void:
 		corridor_service.route_progress_changed.connect(_on_route_progress_changed)
 		corridor_service.conductor_call.connect(_on_conductor_call)
 		corridor_service.stage_rush_changed.connect(_on_stage_rush_changed)
+		corridor_service.stage_grade.connect(_on_stage_grade)
 	if not challenge_manager_path.is_empty():
 		challenge_manager = get_node_or_null(challenge_manager_path)
 	if challenge_manager != null:
@@ -409,3 +410,9 @@ func _on_stage_rush_changed(seconds_left: float, bonus: int) -> void:
 	if seconds_left <= 0.0 or bonus <= 0:
 		return
 	objective_label.text = "STAGE RUSH • %.1fs • +KSh %s" % [seconds_left, _format_number(bonus)]
+
+
+func _on_stage_grade(message: String, reward: int) -> void:
+	fare_notice.text = "%s • +KSh %s" % [message, _format_number(reward)]
+	fare_notice.visible = true
+	_fare_notice_time = 2.6
