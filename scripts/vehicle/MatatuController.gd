@@ -114,8 +114,8 @@ func _apply_arcade_stability() -> void:
 
 func _apply_saved_upgrades() -> void:
 	var levels: Dictionary = SaveManager.data.get("upgrade_levels", {})
-	var engine_level := clampi(int(levels.get("engine", 0)), 0, 5)
-	var brake_level := clampi(int(levels.get("brakes", 0)), 0, 5)
+	var engine_level: int = clampi(int(levels.get("engine", 0)), 0, 5)
+	var brake_level: int = clampi(int(levels.get("brakes", 0)), 0, 5)
 	stats.engine_force *= 1.0 + 0.07 * engine_level
 	stats.brake_force *= 1.0 + 0.08 * brake_level
 
