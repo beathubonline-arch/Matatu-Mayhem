@@ -8,6 +8,7 @@ signal reputation_awarded(amount: int, total: int)
 @export var route_manager_path: NodePath
 @export var radio_path: NodePath
 @export var corridor_service_path: NodePath
+@export var challenge_manager_path: NodePath
 
 var hype := 0
 var combo := 0
@@ -28,6 +29,10 @@ func _ready() -> void:
 	var radio := get_node_or_null(radio_path)
 	if radio != null:
 		radio.station_changed.connect(_on_station_changed)
+	var challenges := get_node_or_null(challenge_manager_path)
+	if challenges != null:
+		challenges.challenge_changed.connect(_on_challenge_changed)
+		challenges.rival_result.connect(_on_rival_result)
 	reputation = int(SaveManager.data.get("matatu_reputation", 0))
 	hype_changed.emit(hype, combo, "NAIROBI SHIFT READY")
 
@@ -68,3 +73,16 @@ func _add_reputation(amount: int) -> void:
 	SaveManager.data["matatu_reputation"] = reputation
 	SaveManager.save_game()
 	reputation_awarded.emit(amount, reputation)
+
+func _on_challenge_changed(message: String, clean_streak: int) -> void:
+	if clean_streak > 0:
+		_add_hype(mini(4 + clean_streak * 2, 16), message)
+
+func _on_rival_result(won: bool, _player_time: float, _rival_time: float, _reward: int) -> void:
+	if won:
+		_add_hype(35, "RIVAL BEATEN +35 HYPE")
+		_add_reputation(90)
+	else:
+		combo = 0
+		hype = maxi(hype - 20, 0)
+		hype_changed.emit(hype, combo, "RIVAL GOT THERE FIRST • RUN IT BACK")
