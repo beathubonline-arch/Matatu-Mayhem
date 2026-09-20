@@ -16,7 +16,10 @@ var data := {
 	"rival_wins": 0,
 	"rival_losses": 0,
 	"clean_streak": 0,
-	"best_clean_streak": 0
+	"best_clean_streak": 0,
+	"street_cred": 0,
+	"best_hype": 0,
+	"perfect_runs": 0
 }
 
 func _ready() -> void:
