@@ -95,26 +95,25 @@ func _complete_stop() -> void:
 	dwell = 0.0
 	var data: Dictionary = network.get_corridor(corridor_index)
 	var stops: Array = data["stops"]
-	var alighted: int = 0 if stop_index == 0 else mini(passengers_onboard, 2 + stop_index)
+	var is_terminal := stop_index >= stops.size() - 1
+	var alighted := passengers_onboard if is_terminal else (0 if stop_index == 0 else mini(passengers_onboard, 2 + stop_index))
 	passengers_onboard -= alighted
-	var waiting: int = 4 + ((corridor_index * 3 + stop_index * 2) % 7)
-	var boarded: int = mini(waiting, passenger_capacity - passengers_onboard)
-	passengers_onboard += boarded
-	var fare: int = boarded * 500
+	var boarded := 0
+	if not is_terminal:
+		var waiting: int = 4 + ((corridor_index * 3 + stop_index * 2) % 7)
+		boarded = mini(waiting, passenger_capacity - passengers_onboard)
+		passengers_onboard += boarded
+	var fare := boarded * 500
 	if fare > 0:
 		EconomyManager.add_passenger_fare(fare)
 		total_fares_this_run += fare
 		total_passengers_this_run += boarded
-	if fare > 0:
 		fare_awarded.emit(fare, EconomyManager.get_money())
 	passenger_load_changed.emit(passengers_onboard, passenger_capacity, boarded, alighted)
-	SaveManager.data["passenger_trips_completed"] = int(SaveManager.data.get("passenger_trips_completed", 0)) + 1
+	SaveManager.data["passenger_trips_completed"] = int(SaveManager.data.get("passenger_trips_completed", 0)) + boarded
 	SaveManager.save_game()
 	stop_index += 1
-	if stop_index >= stops.size():
-		var final_alighted := passengers_onboard
-		passengers_onboard = 0
-		passenger_load_changed.emit(0, passenger_capacity, 0, final_alighted)
+	if is_terminal:
 		var reward: int = int(data["reward"])
 		EconomyManager.add_money(reward)
 		SaveManager.data["routes_completed"] = int(SaveManager.data.get("routes_completed", 0)) + 1
