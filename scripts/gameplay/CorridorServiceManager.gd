@@ -6,6 +6,7 @@ signal corridor_completed(name: String, reward: int, balance: int)
 signal fare_awarded(amount: int, balance: int)
 signal service_progress(message: String)
 signal run_time_changed(seconds: float)
+signal passenger_load_changed(onboard: int, capacity: int, boarded: int, alighted: int)
 
 @export var player_path: NodePath
 @export var network_path: NodePath
@@ -17,6 +18,8 @@ var stop_index := 0
 var dwell := 0.0
 var active := false
 var elapsed_seconds := 0.0
+var passenger_capacity := 14
+var passengers_onboard := 0
 
 func _ready() -> void:
 	player = get_node_or_null(player_path) as Node3D
@@ -39,6 +42,7 @@ func select_corridor(index: int) -> void:
 	stop_index = 0
 	dwell = 0.0
 	elapsed_seconds = 0.0
+	passengers_onboard = 0
 	active = true
 	var data: Dictionary = network.get_corridor(corridor_index)
 	var points: Array = data["points"]
@@ -82,13 +86,24 @@ func _complete_stop() -> void:
 	dwell = 0.0
 	var data: Dictionary = network.get_corridor(corridor_index)
 	var stops: Array = data["stops"]
-	var fare: int = 2500 + stop_index * 500
-	EconomyManager.add_passenger_fare(fare)
-	fare_awarded.emit(fare, EconomyManager.get_money())
+	var alighted: int = 0 if stop_index == 0 else mini(passengers_onboard, 2 + stop_index)
+	passengers_onboard -= alighted
+	var waiting: int = 4 + ((corridor_index * 3 + stop_index * 2) % 7)
+	var boarded: int = mini(waiting, passenger_capacity - passengers_onboard)
+	passengers_onboard += boarded
+	var fare: int = boarded * 500
+	if fare > 0:
+		EconomyManager.add_passenger_fare(fare)
+	if fare > 0:
+		fare_awarded.emit(fare, EconomyManager.get_money())
+	passenger_load_changed.emit(passengers_onboard, passenger_capacity, boarded, alighted)
 	SaveManager.data["passenger_trips_completed"] = int(SaveManager.data.get("passenger_trips_completed", 0)) + 1
 	SaveManager.save_game()
 	stop_index += 1
 	if stop_index >= stops.size():
+		var final_alighted := passengers_onboard
+		passengers_onboard = 0
+		passenger_load_changed.emit(0, passenger_capacity, 0, final_alighted)
 		var reward: int = int(data["reward"])
 		EconomyManager.add_money(reward)
 		SaveManager.data["routes_completed"] = int(SaveManager.data.get("routes_completed", 0)) + 1
