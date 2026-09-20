@@ -46,16 +46,8 @@ func _ready() -> void:
 	_on_money_changed(EconomyManager.get_money())
 	if not route_manager_path.is_empty():
 		route_manager = get_node_or_null(route_manager_path) as RouteManager
-	if route_manager != null:
-		route_manager.checkpoint_progress.connect(_on_checkpoint_progress)
-		route_manager.route_completed.connect(_on_route_completed)
-		_on_checkpoint_progress(route_manager.current_index, route_manager.checkpoints.size())
 	if not passenger_manager_path.is_empty():
 		passenger_manager = get_node_or_null(passenger_manager_path) as PassengerManager
-	if passenger_manager != null:
-		passenger_manager.passenger_status_changed.connect(_on_passenger_status_changed)
-		passenger_manager.fare_awarded.connect(_on_fare_awarded)
-		_on_passenger_status_changed("PICK UP PASSENGERS AT THE GREEN MATATU STAGE")
 	fare_notice.visible = false
 	if not culture_manager_path.is_empty():
 		culture_manager = get_node_or_null(culture_manager_path)
@@ -88,8 +80,8 @@ func _process(_delta: float) -> void:
 		speed_label.text = "000 km/h"
 	if corridor_service != null and bool(corridor_service.get("active")):
 		timer_label.text = _format_time(_corridor_time)
-	elif route_manager != null:
-		timer_label.text = _format_time(route_manager.elapsed_seconds)
+	elif GameManager.current_state == GameManager.GameState.ROUTE_SELECT:
+		timer_label.text = "00:00.00"
 	if _fare_notice_time > 0.0:
 		_fare_notice_time -= _delta
 		if _fare_notice_time <= 0.0:
@@ -158,6 +150,8 @@ func _on_corridor_changed(name: String, stop_name: String, current: int, total: 
 	passenger_label.text = "%s  •  STAGE %d/%d  •  %s" % [name, current, total, stop_name]
 
 func _on_corridor_completed(name: String, reward: int, balance: int) -> void:
+	GameManager.set_game_state(GameManager.GameState.ROUTE_COMPLETE)
+	objective_label.text = "ROUTE COMPLETE"
 	fare_notice.text = "%s COMPLETE  +KSh %s\\nBALANCE: KSh %s" % [name, _format_number(reward), _format_number(balance)]
 	fare_notice.visible = true
 	_fare_notice_time = 5.0
