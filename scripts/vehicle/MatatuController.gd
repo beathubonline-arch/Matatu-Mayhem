@@ -47,7 +47,7 @@ func _update_steering(delta: float) -> void:
 	# VehicleBody3D steering sign is opposite to the matatu's visual/local
 	# forward convention (-Z). Keep the input actions semantically correct:
 	# steer_left must physically turn left and steer_right must turn right.
-	var input_value := Input.get_action_strength("steer_right") - Input.get_action_strength("steer_left")
+	var input_value := Input.get_action_strength("steer_left") - Input.get_action_strength("steer_right")
 	var ratio: float = clampf(speed_kph / float(stats.steering_reduction_speed_kph), 0.0, 1.0)
 	var steer_degrees: float = lerpf(float(stats.max_steer_degrees), float(stats.high_speed_steer_degrees), ratio)
 	var target := deg_to_rad(steer_degrees * input_value)
