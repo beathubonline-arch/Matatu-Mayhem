@@ -49,7 +49,7 @@ func _ready() -> void:
 	$RouteSelectPanel/VBox/NganyaSelect.pressed.connect(_cycle_nganya)
 	route_select_panel.visible = true
 	GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
-	objective_label.text = "CHOOSE YOUR NAIROBI ROUTE"
+	objective_label.text = "CHOOSE YOUR NAIROBI ROUTE • CLICK OR PRESS 1–4"
 	passenger_label.text = "WAIYAKI • THIKA • MOMBASA • NGONG"
 	passenger_load_label.text = "PASSENGERS 0/%d" % _current_capacity()
 	navigation_label.text = "NAV • SELECT ROUTE"
@@ -101,6 +101,24 @@ func _ready() -> void:
 		controls_label.visible = false
 	else:
 		controls_label.text = "W/S Accelerate & Brake   A/D Steer   SPACE Handbrake   R Reset   ESC Pause"
+
+func _input(event: InputEvent) -> void:
+	if not route_select_panel.visible:
+		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		match event.keycode:
+			KEY_1:
+				_select_corridor(0)
+				get_viewport().set_input_as_handled()
+			KEY_2:
+				_select_corridor(1)
+				get_viewport().set_input_as_handled()
+			KEY_3:
+				_select_corridor(2)
+				get_viewport().set_input_as_handled()
+			KEY_4:
+				_select_corridor(3)
+				get_viewport().set_input_as_handled()
 
 func _process(_delta: float) -> void:
 	var vehicle = GameManager.get_player_vehicle()
@@ -198,6 +216,9 @@ func _on_corridor_completed(name: String, reward: int, balance: int, elapsed: fl
 
 func _select_corridor(index: int) -> void:
 	if corridor_service == null:
+		fare_notice.text = "ROUTE SYSTEM NOT READY"
+		fare_notice.visible = true
+		_fare_notice_time = 3.0
 		return
 	corridor_service.call("select_corridor", index)
 	if not bool(corridor_service.get("active")):
