@@ -48,8 +48,8 @@ func restart_corridor() -> void:
 func select_corridor(index: int) -> void:
 	if network == null or player == null:
 		return
-	var requested := clampi(index, 0, network.corridor_count() - 1)
-	var unlocked := clampi(int(SaveManager.data.get("unlocked_corridors", 1)), 1, network.corridor_count())
+	var requested: int = clampi(index, 0, network.corridor_count() - 1)
+	var unlocked: int = clampi(int(SaveManager.data.get("unlocked_corridors", 1)), 1, network.corridor_count())
 	if requested >= unlocked:
 		service_progress.emit("ROUTE LOCKED • COMPLETE MORE NAIROBI CORRIDORS")
 		return
@@ -205,7 +205,7 @@ func _find_route_index_for_service(service_index: int) -> int:
 	var service_points: Array = data["service_points"]
 	var target: Vector3 = service_points[clampi(service_index, 0, service_points.size() - 1)]
 	var best_index := 0
-	var best_distance := INF
+	var best_distance: float = INF
 	for i in range(route_points.size()):
 		var d := target.distance_squared_to(route_points[i])
 		if d < best_distance:
@@ -214,7 +214,7 @@ func _find_route_index_for_service(service_index: int) -> int:
 	return best_index
 
 func _nearest_route_distance(position: Vector3, route_points: Array) -> float:
-	var best := INF
+	var best: float = INF
 	for i in range(route_points.size() - 1):
 		var a: Vector3 = route_points[i]
 		var b: Vector3 = route_points[i + 1]
