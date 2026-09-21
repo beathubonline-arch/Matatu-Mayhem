@@ -16,6 +16,7 @@ signal stage_grade(message: String, reward: int)
 signal event_changed(message: String, seconds_left: float)
 signal route_unlocked(name: String)
 signal direction_changed(label: String)
+signal matatu_moment(message: String, reward: int)
 
 @export var player_path: NodePath
 @export var network_path: NodePath
@@ -43,6 +44,7 @@ var _event_time := 0.0
 var _event_message := ""
 var _event_triggered_stage := -1
 var inbound := false
+var _moment_triggered: Dictionary = {}
 
 func _ready() -> void:
 	player = get_node_or_null(player_path) as Node3D
@@ -86,6 +88,7 @@ func select_corridor(index: int, return_to_cbd: bool = false) -> void:
 	_event_time = 0.0
 	_event_message = ""
 	_event_triggered_stage = -1
+	_moment_triggered.clear()
 	var data: Dictionary = _active_corridor_data()
 	var points: Array = data["points"]
 	var start: Vector3 = points[0]
@@ -117,6 +120,7 @@ func _physics_process(delta: float) -> void:
 	var route_points: Array = data["points"]
 	var stage_target: Vector3 = _active_stage_bay(stop_index)
 	_maybe_trigger_route_event()
+	_update_matatu_moments(stage_target)
 	var distance: float = player.global_position.distance_to(stage_target)
 	while route_point_index < next_stage_route_index:
 		var waypoint: Vector3 = route_points[route_point_index]
@@ -383,3 +387,37 @@ func _direction_at_active_point(points: Array, service_point: Vector3) -> Vector
 		direction = points[best_index] - points[prev_index]
 	direction.y = 0.0
 	return Vector3.FORWARD if direction.length_squared() < 0.01 else direction.normalized()
+
+
+func _update_matatu_moments(stage_target: Vector3) -> void:
+	if not active or player == null or stop_index <= 0:
+		return
+	var speed: float = float(player.call("get_speed_kph")) if player.has_method("get_speed_kph") else 0.0
+	var distance := player.global_position.distance_to(stage_target)
+	var key := "%d:%d:%s" % [corridor_index, stop_index, "IN" if inbound else "OUT"]
+	if _moment_triggered.has(key):
+		return
+	var trigger := false
+	var message := ""
+	var reward := 0
+	match corridor_index:
+		0:
+			trigger = speed >= 42.0 and distance > 20.0 and distance < 55.0
+			message = "NGONG HUSTLE • BEAT THE STAGE RUSH!"
+			reward = 220
+		1:
+			trigger = speed >= 58.0 and distance > 28.0 and distance < 70.0
+			message = "MOMBASA ROAD PULL • INDUSTRIAL EXPRESS!"
+			reward = 300
+		2:
+			trigger = speed >= 68.0 and distance > 32.0 and distance < 80.0
+			message = "WESTLANDS HEAT • RIVAL TERRITORY!"
+			reward = 450
+		3:
+			trigger = speed >= 78.0 and distance > 35.0 and distance < 90.0
+			message = "THIKA SUPERHIGHWAY • FULL SEND!"
+			reward = 600
+	if trigger:
+		_moment_triggered[key] = true
+		EconomyManager.add_money(reward)
+		matatu_moment.emit(message, reward)
