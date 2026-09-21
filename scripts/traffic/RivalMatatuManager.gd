@@ -18,6 +18,7 @@ func _ready() -> void:
 	corridor_service = get_node_or_null(corridor_service_path) as CorridorServiceManager
 	if corridor_service != null:
 		corridor_service.corridor_changed.connect(_on_corridor_changed)
+		corridor_service.direction_changed.connect(_on_direction_changed)
 	_player = GameManager.get_player_vehicle() as Node3D
 	_spawn_pack()
 
@@ -36,12 +37,15 @@ func _on_corridor_changed(_name: String, _stop_name: String, current: int, _tota
 	active_corridor = selected
 	_spawn_pack()
 
+func _on_direction_changed(_label: String) -> void:
+	_spawn_pack()
+
 func _spawn_rival(index: int) -> void:
 	var rival := CharacterBody3D.new()
 	rival.name = "RivalNganya%02d" % index
 	var points: Array = []
 	if network != null:
-		points = network.get_corridor(active_corridor)["points"]
+		points = corridor_service._active_corridor_data()["points"] if corridor_service != null else network.get_corridor(active_corridor)["points"]
 	if points.size() < 2:
 		points = [Vector3(0,0,80), Vector3(0,0,-80)]
 	var segment_index: int = index % max(points.size() - 1, 1)
@@ -142,13 +146,13 @@ func _physics_process(_delta: float) -> void:
 			_player = GameManager.get_player_vehicle() as Node3D
 		if _player != null:
 			var gap := rival.global_position.distance_to(_player.global_position)
-			if gap < 18.0:
-				speed *= 1.12
+			if gap < 12.0:
+				speed *= 0.92
 				if _pressure_cooldown <= 0.0:
 					_pressure_cooldown = 7.0
 					rival_pressure.emit("%s IS ON YOUR BUMPER!" % String(rival.name).replace("RivalNganya", "NGANYA "))
 			elif gap > 65.0:
-				speed *= 0.92
+				speed *= 1.15
 		if to_target.length() < 12.0:
 			speed *= 0.72
 		rival.velocity = direction * speed
