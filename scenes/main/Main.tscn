@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/environment/TestMap.tscn" id="1_map"]
 [ext_resource type="PackedScene" path="res://scenes/vehicle/Matatu.tscn" id="2_car"]
@@ -15,6 +15,7 @@
 [ext_resource type="Script" path="res://scripts/environment/CorridorLifeManager.gd" id="20_corridor_life"]
 [ext_resource type="Script" path="res://scripts/gameplay/DrivingChallengeManager.gd" id="21_challenges"]
 [ext_resource type="Script" path="res://scripts/gameplay/MatatuCareerManager.gd" id="22_career"]
+[ext_resource type="Script" path="res://scripts/gameplay/StreetKingManager.gd" id="23_streetking"]
 
 [sub_resource type="SphereShape3D" id="CameraShape"]
 radius = 0.35
@@ -69,6 +70,11 @@ corridor_service_path = NodePath("../CorridorService")
 script = ExtResource("22_career")
 corridor_service_path = NodePath("../CorridorService")
 culture_manager_path = NodePath("../MatatuCulture")
+
+[node name="StreetKing" type="Node" parent="Gameplay"]
+script = ExtResource("23_streetking")
+corridor_service_path = NodePath("../CorridorService")
+challenge_manager_path = NodePath("../DrivingChallenges")
 
 [node name="MatatuCulture" type="Node" parent="Gameplay"]
 script = ExtResource("14_culture")
