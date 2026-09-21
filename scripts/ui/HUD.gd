@@ -46,6 +46,11 @@ var _service_objective := "FOLLOW ROUTE"
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	finish_panel.visible = false
+	if OS.has_feature("web"):
+		$RadioPanel.visible = false
+	if DisplayServer.is_touchscreen_available():
+		route_select_panel.scale = Vector2(0.88, 0.88)
+		route_select_panel.pivot_offset = route_select_panel.size * 0.5
 	replay_button.pressed.connect(_on_replay_pressed)
 	$FinishPanel/VBox/Share.pressed.connect(_on_share_pressed)
 	$RouteSelectPanel/VBox/Ngong.pressed.connect(func(): _select_corridor(0))
