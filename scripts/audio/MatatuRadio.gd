@@ -11,6 +11,12 @@ signal radio_catalog_changed(message: String)
 
 const RADIO_DIR := "res://audio/radio"
 const MANIFEST_PATH := "res://audio/radio/catalog.json"
+const RADIO_FILES := [
+	"Buruklyn Boyz - 24.ogg",
+	"Buruklyn Boyz - East Kwetu.ogg",
+	"Mtu Mboka & Moti The NRG - Morio Wa Me.ogg",
+	"NI GENJE - Stickman.ogg",
+]
 
 var _tracks: Array[Dictionary] = []
 var _current_index := 0
@@ -42,39 +48,33 @@ func _unhandled_input(event: InputEvent) -> void:
 func _discover_tracks() -> void:
 	_tracks.clear()
 	var manifest := _load_manifest()
-	var dir := DirAccess.open(RADIO_DIR)
-	if dir == null:
-		radio_catalog_changed.emit("254 STREET RADIO • NO AUDIO FOLDER")
-		return
-	dir.list_dir_begin()
-	var filename := dir.get_next()
-	while filename != "":
-		if not dir.current_is_dir():
-			var lower := filename.to_lower()
-			if lower.ends_with(".ogg") or lower.ends_with(".mp3") or lower.ends_with(".wav"):
-				var stream := load(RADIO_DIR + "/" + filename) as AudioStream
-				if stream != null:
-					var metadata: Dictionary = manifest.get(filename, {})
-					if not metadata.is_empty() and not bool(metadata.get("licensed_for_game", false)):
-						filename = dir.get_next()
-						continue
-					var display := filename.get_basename().replace("_", " ")
-					var artist := str(metadata.get("artist", "BeatHub / 254"))
-					var title := str(metadata.get("title", display))
-					var split_at := display.find(" - ")
-					if metadata.is_empty() and split_at > 0:
-						artist = display.substr(0, split_at).strip_edges()
-						title = display.substr(split_at + 3).strip_edges()
-					_tracks.append({
-						"stream": stream,
-						"title": title,
-						"artist": artist,
-						"source": str(metadata.get("source", "BEATHUB / LICENSED 254")),
-						"credit": str(metadata.get("credit", "")),
-						"licensed": bool(metadata.get("licensed_for_game", false))
-					})
-		filename = dir.get_next()
-	dir.list_dir_end()
+	for filename in RADIO_FILES:
+		var path := RADIO_DIR + "/" + filename
+		if not ResourceLoader.exists(path):
+			push_warning("254 Street Radio missing exported resource: " + path)
+			continue
+		var stream := load(path) as AudioStream
+		if stream == null:
+			push_warning("254 Street Radio could not load: " + path)
+			continue
+		var metadata: Dictionary = manifest.get(filename, {})
+		if not metadata.is_empty() and not bool(metadata.get("licensed_for_game", false)):
+			continue
+		var display := filename.get_basename().replace("_", " ")
+		var artist := str(metadata.get("artist", "BeatHub / 254"))
+		var title := str(metadata.get("title", display))
+		var split_at := display.find(" - ")
+		if metadata.is_empty() and split_at > 0:
+			artist = display.substr(0, split_at).strip_edges()
+			title = display.substr(split_at + 3).strip_edges()
+		_tracks.append({
+			"stream": stream,
+			"title": title,
+			"artist": artist,
+			"source": str(metadata.get("source", "BEATHUB / LICENSED 254")),
+			"credit": str(metadata.get("credit", "")),
+			"licensed": bool(metadata.get("licensed_for_game", false))
+		})
 	radio_catalog_changed.emit("254 STREET RADIO • %d LICENSED/LOCAL TRACKS READY" % _tracks.size())
 
 func _load_manifest() -> Dictionary:
@@ -125,8 +125,7 @@ func toggle_radio() -> void:
 		_player.stop()
 		playback_state_changed.emit(false)
 	else:
-		_player.play()
-		playback_state_changed.emit(true)
+		_play_current()
 
 func get_current_track() -> Dictionary:
 	if _tracks.is_empty():
@@ -135,7 +134,7 @@ func get_current_track() -> Dictionary:
 
 func _emit_metadata() -> void:
 	if _tracks.is_empty():
-		station_changed.emit(station_name, "BEATHUB 254 SUBMISSIONS OPEN", "ADD LICENSED KENYAN MUSIC")
+		station_changed.emit(station_name, "RADIO FILES NOT AVAILABLE", "CHECK WEB EXPORT")
 		return
 	var track: Dictionary = _tracks[_current_index]
 	var artist := str(track["artist"])
