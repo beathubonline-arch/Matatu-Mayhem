@@ -8,11 +8,12 @@ signal mastery_changed(corridor: int, level: int, summary: String)
 @export var corridor_service_path: NodePath
 @export var challenge_manager_path: NodePath
 
-const SHIFT_RUN_TARGET := 2
-const SHIFT_PASSENGER_TARGET := 28
-const SHIFT_RIVAL_TARGET := 1
-const SHIFT_REWARD := 15000
-const SHIFT_REP_REWARD := 250
+const SHIFT_PRESETS := [
+	{"name":"CBD HUSTLE","runs":2,"passengers":28,"rivals":1,"reward":15000,"rep":250},
+	{"name":"STAGE PRESSURE","runs":3,"passengers":42,"rivals":1,"reward":22000,"rep":325},
+	{"name":"RIVAL NIGHT","runs":2,"passengers":24,"rivals":2,"reward":26000,"rep":400},
+	{"name":"NAIROBI MARATHON","runs":4,"passengers":55,"rivals":2,"reward":35000,"rep":550}
+]
 const ROUTE_NAMES := ["NGONG ROAD", "MOMBASA ROAD", "WAIYAKI WAY", "THIKA ROAD"]
 
 var corridor_service: CorridorServiceManager
@@ -77,22 +78,44 @@ func _update_mastery(idx: int, new_best: bool) -> void:
 func _check_shift() -> void:
 	if bool(SaveManager.data.get("shift_claimed", false)):
 		return
-	var complete := int(SaveManager.data.get("shift_runs", 0)) >= SHIFT_RUN_TARGET
-	complete = complete and int(SaveManager.data.get("shift_passengers", 0)) >= SHIFT_PASSENGER_TARGET
-	complete = complete and int(SaveManager.data.get("shift_rival_wins", 0)) >= SHIFT_RIVAL_TARGET
+	var shift := _current_shift()
+	var complete := int(SaveManager.data.get("shift_runs", 0)) >= int(shift["runs"])
+	complete = complete and int(SaveManager.data.get("shift_passengers", 0)) >= int(shift["passengers"])
+	complete = complete and int(SaveManager.data.get("shift_rival_wins", 0)) >= int(shift["rivals"])
 	if not complete:
 		return
 	SaveManager.data["shift_claimed"] = true
-	EconomyManager.add_money(SHIFT_REWARD)
-	SaveManager.data["matatu_reputation"] = int(SaveManager.data.get("matatu_reputation", 0)) + SHIFT_REP_REWARD
-	shift_completed.emit(SHIFT_REWARD, SHIFT_REP_REWARD)
+	var reward := int(shift["reward"])
+	var rep := int(shift["rep"])
+	EconomyManager.add_money(reward)
+	SaveManager.data["matatu_reputation"] = int(SaveManager.data.get("matatu_reputation", 0)) + rep
+	SaveManager.data["shifts_completed"] = int(SaveManager.data.get("shifts_completed", 0)) + 1
+	shift_completed.emit(reward, rep)
 
 func get_shift_summary() -> String:
-	var runs := mini(int(SaveManager.data.get("shift_runs", 0)), SHIFT_RUN_TARGET)
-	var passengers := mini(int(SaveManager.data.get("shift_passengers", 0)), SHIFT_PASSENGER_TARGET)
-	var rivals := mini(int(SaveManager.data.get("shift_rival_wins", 0)), SHIFT_RIVAL_TARGET)
-	var status := "SHIFT COMPLETE" if bool(SaveManager.data.get("shift_claimed", false)) else "STREET KING SHIFT"
-	return "%s • RUNS %d/%d • PASSENGERS %d/%d • RIVALS %d/%d • BONUS KSh %d" % [status, runs, SHIFT_RUN_TARGET, passengers, SHIFT_PASSENGER_TARGET, rivals, SHIFT_RIVAL_TARGET, SHIFT_REWARD]
+	var shift := _current_shift()
+	var runs := mini(int(SaveManager.data.get("shift_runs", 0)), int(shift["runs"]))
+	var passengers := mini(int(SaveManager.data.get("shift_passengers", 0)), int(shift["passengers"]))
+	var rivals := mini(int(SaveManager.data.get("shift_rival_wins", 0)), int(shift["rivals"]))
+	var status := "SHIFT COMPLETE" if bool(SaveManager.data.get("shift_claimed", false)) else String(shift["name"])
+	return "%s • RUNS %d/%d • PASSENGERS %d/%d • RIVALS %d/%d • BONUS KSh %d" % [status, runs, int(shift["runs"]), passengers, int(shift["passengers"]), rivals, int(shift["rivals"]), int(shift["reward"])]
+
+func begin_next_shift_if_needed() -> void:
+	if not bool(SaveManager.data.get("shift_claimed", false)):
+		return
+	SaveManager.data["shift_id"] = int(SaveManager.data.get("shift_id", 0)) + 1
+	SaveManager.data["shift_runs"] = 0
+	SaveManager.data["shift_passengers"] = 0
+	SaveManager.data["shift_earnings"] = 0
+	SaveManager.data["shift_rival_wins"] = 0
+	SaveManager.data["shift_clean_runs"] = 0
+	SaveManager.data["shift_claimed"] = false
+	SaveManager.save_game()
+	_emit_shift()
+
+func _current_shift() -> Dictionary:
+	var id := int(SaveManager.data.get("shift_id", 0))
+	return SHIFT_PRESETS[id % SHIFT_PRESETS.size()]
 
 func get_route_mastery(idx: int) -> int:
 	var mastery: Dictionary = SaveManager.data.get("route_mastery", {})
