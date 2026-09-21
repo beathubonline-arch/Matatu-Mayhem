@@ -210,7 +210,7 @@ func _complete_stop() -> void:
 		var waiting: int = 4 + ((corridor_index * 3 + stop_index * 2) % 7)
 		boarded = mini(waiting, passenger_capacity - passengers_onboard)
 		passengers_onboard += boarded
-	var fare := EconomyManager.PASSENGER_FARE if boarded > 0 else 0
+	var fare := EconomyManager.PASSENGER_FARE * boarded if boarded > 0 else 0
 	if fare > 0:
 		EconomyManager.add_passenger_fare(fare)
 		total_fares_this_run += fare
@@ -237,6 +237,9 @@ func _complete_stop() -> void:
 		route_point_index = mini(route_point_index + 1, next_stage_route_index)
 	if is_terminal:
 		conductor_call.emit("MWISHO! WOTE SHUKA • SAFI SANA!")
+		if corridor_life != null and corridor_life.has_method("refresh_stage_passengers"):
+			for physical_stop in range(stops.size()):
+				corridor_life.call("refresh_stage_passengers", corridor_index, physical_stop)
 		var reward: int = int(data["reward"])
 		EconomyManager.add_money(reward)
 		SaveManager.data["routes_completed"] = int(SaveManager.data.get("routes_completed", 0)) + 1
