@@ -24,9 +24,13 @@ func _ready() -> void:
 		corridor_service.direction_changed.connect(_on_direction_changed)
 	_player = GameManager.get_player_vehicle() as Node3D
 	_rng.randomize()
-	_spawn_pack()
+	# RivalNganyas appears before CorridorService in Main.tscn, so defer spawning
+	# until every sibling has completed _ready(). This avoids launch-time nil access.
+	call_deferred("_spawn_pack")
 
 func _spawn_pack() -> void:
+	if network == null or corridor_service == null:
+		return
 	for child in get_children():
 		child.queue_free()
 	for i in range(rival_count):
@@ -48,8 +52,14 @@ func _spawn_rival(index: int) -> void:
 	var rival := CharacterBody3D.new()
 	rival.name = "RivalNganya%02d" % index
 	var points: Array = []
-	if network != null:
-		points = corridor_service._active_corridor_data()["points"] if corridor_service != null else network.get_corridor(active_corridor)["points"]
+	# Rivals may exist before a route is selected. Use network data directly then;
+	# once service is active, use its direction-aware route.
+	if corridor_service != null and corridor_service.active and corridor_service.network != null:
+		var active_data: Dictionary = corridor_service._active_corridor_data()
+		points = active_data.get("points", [])
+	elif network != null:
+		var base_data: Dictionary = network.get_corridor(active_corridor)
+		points = base_data.get("points", [])
 	if points.size() < 2:
 		points = [Vector3(0,0,80), Vector3(0,0,-80)]
 	var segment_index: int = index % max(points.size() - 1, 1)
