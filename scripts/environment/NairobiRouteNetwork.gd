@@ -492,6 +492,50 @@ func _stage(pos: Vector3, direction: Vector3, stop_name: String, corridor: Strin
 	sign.modulate = Color("ffe15a")
 	root.add_child(sign)
 
+
+func _world_sign(parent: Node, text: String, pos: Vector3, accent: Color, size: int = 34, billboard := BaseMaterial3D.BILLBOARD_ENABLED) -> Label3D:
+	var label := Label3D.new()
+	label.text = text
+	label.position = pos
+	label.font_size = size
+	label.pixel_size = 0.006
+	label.outline_size = 10
+	label.modulate = accent
+	label.billboard = billboard
+	label.no_depth_test = false
+	label.alpha_cut = Label3D.ALPHA_CUT_DISCARD
+	parent.add_child(label)
+	return label
+
+func _road_name_totem(pos: Vector3, direction: Vector3, road_name: String, stop_name: String, accent: Color) -> void:
+	var root := Node3D.new()
+	root.position = pos
+	root.rotation.y = atan2(direction.x, direction.z)
+	add_child(root)
+	var pole := MeshInstance3D.new()
+	var pole_mesh := CylinderMesh.new()
+	pole_mesh.top_radius = 0.10
+	pole_mesh.bottom_radius = 0.13
+	pole_mesh.height = 4.8
+	pole.mesh = pole_mesh
+	pole.position = Vector3(0, 2.4, 0)
+	var pole_mat := StandardMaterial3D.new()
+	pole_mat.albedo_color = Color("24282e")
+	pole.material_override = pole_mat
+	root.add_child(pole)
+	var board := MeshInstance3D.new()
+	var board_mesh := BoxMesh.new()
+	board_mesh.size = Vector3(6.8, 1.65, 0.22)
+	board.mesh = board_mesh
+	board.position = Vector3(0, 4.6, 0)
+	var board_mat := StandardMaterial3D.new()
+	board_mat.albedo_color = Color("10151b")
+	board_mat.metallic = 0.15
+	board_mat.roughness = 0.42
+	board.material_override = board_mat
+	root.add_child(board)
+	_world_sign(root, "%s\n%s" % [road_name.to_upper(), stop_name.to_upper()], Vector3(0, 4.62, -0.13), accent, 30, BaseMaterial3D.BILLBOARD_DISABLED)
+
 func _add_route_furniture(data: Dictionary, corridor_index: int) -> void:
 	var points: Array = data["points"]
 	var accent := Color(String(data["color"]))
@@ -507,14 +551,7 @@ func _add_route_furniture(data: Dictionary, corridor_index: int) -> void:
 		var mid := a.lerp(b, 0.5)
 		# Route-number signs make the world readable without staring at HUD text.
 		if i % 2 == 0:
-			var sign := Label3D.new()
-			sign.text = "%s  •  %s" % [String(data["name"]), String(data["stops"][mini(int(i / 2), data["stops"].size() - 1)])]
-			sign.position = mid + right * 10.8 + Vector3.UP * 3.8
-			sign.font_size = 24
-			sign.pixel_size = 0.006
-			sign.outline_size = 7
-			sign.modulate = accent
-			add_child(sign)
+			_road_name_totem(mid + right * 10.8, direction, String(data["name"]), String(data["stops"][mini(int(i / 2), data["stops"].size() - 1)]), accent)
 		# Common Nairobi roadside clutter: barriers, kiosks and utility poles.
 		if i % 3 == 1:
 			_roadside_shop(mid - right * 12.5, String(data["stops"][mini(int(i / 3), data["stops"].size() - 1)]), i + corridor_index * 7)
@@ -577,14 +614,8 @@ func _add_corridor_identity(data: Dictionary, corridor_index: int) -> void:
 		var base: Vector3 = get_stage_waiting_position(corridor_index, i)
 		var direction: Vector3 = get_stage_direction(corridor_index, i)
 		var right := Vector3(direction.z, 0.0, -direction.x)
-		var marker := Label3D.new()
-		marker.text = "📍 %s" % String(stops[i]).to_upper()
-		marker.position = base + right * 3.2 + Vector3.UP * 6.2
-		marker.font_size = 32
-		marker.pixel_size = 0.006
-		marker.outline_size = 9
-		marker.modulate = accent
-		add_child(marker)
+		_world_sign(self, String(stops[i]).to_upper(), base + right * 3.2 + Vector3.UP * 6.2, accent, 32)
+		_road_name_totem(base + right * 5.8, direction, String(data["name"]), String(stops[i]), accent)
 	# Give each corridor a recognisable silhouette without expensive imported assets.
 	var mid_index: int = clampi(int(service_points.size() / 2), 0, service_points.size() - 1)
 	var centre: Vector3 = service_points[mid_index]
