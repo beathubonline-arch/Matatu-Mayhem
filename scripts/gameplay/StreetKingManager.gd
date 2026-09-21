@@ -7,6 +7,7 @@ signal mastery_changed(corridor: int, level: int, summary: String)
 
 @export var corridor_service_path: NodePath
 @export var challenge_manager_path: NodePath
+@export var culture_manager_path: NodePath
 
 const SHIFT_PRESETS := [
 	{"name":"CBD HUSTLE","runs":2,"passengers":28,"rivals":1,"reward":15000,"rep":250},
@@ -18,10 +19,12 @@ const ROUTE_NAMES := ["NGONG ROAD", "MOMBASA ROAD", "WAIYAKI WAY", "THIKA ROAD"]
 
 var corridor_service: CorridorServiceManager
 var challenge_manager: DrivingChallengeManager
+var culture_manager: MatatuCultureManager
 
 func _ready() -> void:
 	corridor_service = get_node_or_null(corridor_service_path) as CorridorServiceManager
 	challenge_manager = get_node_or_null(challenge_manager_path) as DrivingChallengeManager
+	culture_manager = get_node_or_null(culture_manager_path) as MatatuCultureManager
 	if corridor_service != null:
 		corridor_service.corridor_completed.connect(_on_corridor_completed)
 	if challenge_manager != null:
@@ -88,7 +91,10 @@ func _check_shift() -> void:
 	var reward := int(shift["reward"])
 	var rep := int(shift["rep"])
 	EconomyManager.add_money(reward)
-	SaveManager.data["matatu_reputation"] = int(SaveManager.data.get("matatu_reputation", 0)) + rep
+	if culture_manager != null:
+		culture_manager.award_reputation(rep)
+	else:
+		SaveManager.data["matatu_reputation"] = int(SaveManager.data.get("matatu_reputation", 0)) + rep
 	SaveManager.data["shifts_completed"] = int(SaveManager.data.get("shifts_completed", 0)) + 1
 	shift_completed.emit(reward, rep)
 
