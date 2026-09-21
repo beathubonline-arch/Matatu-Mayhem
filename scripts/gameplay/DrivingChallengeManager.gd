@@ -15,7 +15,8 @@ const RIVAL_WIN_REWARD := 1800
 const PERFECT_RUN_REWARD := 1200
 const IMPACT_COOLDOWN := 1.2
 # Calibrated against the current compressed route lengths and mandatory stage dwell.
-const RIVAL_BASE_TIMES := [58.0, 54.0, 58.0, 53.0]
+const RIVAL_BASE_TIMES := [58.0, 58.0, 54.0, 53.0]
+const RIVAL_NAMES := ["ONYX", "MONEYFEST", "MOXIE", "BABA YAGA"]
 
 var player: VehicleBody3D
 var corridor_service: CorridorServiceManager
@@ -100,6 +101,8 @@ func _on_corridor_completed(_name: String, _reward: int, _balance: int, elapsed:
 	else:
 		SaveManager.data["rival_losses"] = int(SaveManager.data.get("rival_losses", 0)) + 1
 	SaveManager.save_game()
+	var rival_name := RIVAL_NAMES[clampi(corridor_idx, 0, RIVAL_NAMES.size() - 1)]
+	challenge_changed.emit(("%s DEFEATED • OWN THE STAGE" if won else "%s GOT THERE FIRST • RUN IT BACK") % rival_name, clean_streak)
 	rival_result.emit(won, elapsed, rival_time, reward)
 
 
