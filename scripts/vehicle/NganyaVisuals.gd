@@ -188,6 +188,11 @@ func _apply_selected_nganya() -> void:
 		"MOXIE": [Color("ff8a00"), Color("f7ff00")],
 		"KINDE SABA": [Color("16e0bd"), Color("f7ff00")],
 		"MONEYFEST": [Color("22c55e"), Color("facc15")],
+		"RAPTOR": [Color("ef4444"), Color("f59e0b")],
+		"MATRIX": [Color("22c55e"), Color("00d9ff")],
+		"MOOD": [Color("8b5cf6"), Color("ff2e88")],
+		"BABA YAGA": [Color("ef4444"), Color("f7ff00")],
+		"AMBUSH": [Color("f97316"), Color("22d3ee")],
 		"STREET LEGEND": [Color("f7ff00"), Color("ff2e88")]
 	}
 	var palette: Array = palettes.get(selected, palettes["MAVERICK"])
@@ -210,6 +215,11 @@ func _apply_selected_nganya() -> void:
 			left.text = "KINDE SABA • 107"
 		if right != null:
 			right.text = "RUAKA • KANAIRO"
+	else:
+		if left != null:
+			left.text = "%s • MATATU MAYHEM" % selected
+		if right != null:
+			right.text = "NAIROBI STREET MACHINE"
 
 
 func _build_wheels_and_door() -> void:
