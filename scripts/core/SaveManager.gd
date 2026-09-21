@@ -30,6 +30,8 @@ var data := {
 	"shift_rival_wins": 0,
 	"shift_clean_runs": 0,
 	"shift_claimed": false,
+	"shift_id": 0,
+	"shifts_completed": 0,
 	"route_mastery": {},
 	"route_total_passengers": {},
 	"route_total_earnings": {},
