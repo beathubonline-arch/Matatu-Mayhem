@@ -65,7 +65,7 @@ func select_corridor(index: int, return_to_cbd: bool = false) -> void:
 	if network == null or player == null:
 		return
 	var requested: int = clampi(index, 0, network.corridor_count() - 1)
-	var unlocked: int = clampi(int(SaveManager.data.get("unlocked_corridors", 1)), 1, network.corridor_count())
+	var unlocked: int = clampi(int(SaveManager.data.get("unlocked_corridors", 2)), 2, network.corridor_count())
 	if requested >= unlocked:
 		service_progress.emit("ROUTE LOCKED • COMPLETE MORE NAIROBI CORRIDORS")
 		return
@@ -99,7 +99,7 @@ func select_corridor(index: int, return_to_cbd: bool = false) -> void:
 	if player.has_method("reset_to_spawn"):
 		player.call("reset_to_spawn")
 	_emit_status()
-	direction_changed.emit("TO CBD" if inbound else "OUT OF CBD")
+	direction_changed.emit("TO CBD" if inbound else "CBD → %s • %s" % [String(data["stops"][data["stops"].size() - 1]).to_upper(), String(data.get("feel", "NAIROBI RUN"))])
 	conductor_call.emit("WATU WA %s! PANDA PANDA!" % String(data["stops"][data["stops"].size() - 1]).to_upper())
 
 func _physics_process(delta: float) -> void:
@@ -207,7 +207,7 @@ func _complete_stop() -> void:
 	passengers_onboard -= alighted
 	var boarded := 0
 	if not is_terminal:
-		var waiting: int = 4 + ((corridor_index * 3 + stop_index * 2) % 7)
+		var waiting: int = 5 + corridor_index + ((corridor_index * 3 + stop_index * 2) % 7)
 		boarded = mini(waiting, passenger_capacity - passengers_onboard)
 		passengers_onboard += boarded
 	var fare := EconomyManager.PASSENGER_FARE * boarded if boarded > 0 else 0
@@ -244,7 +244,7 @@ func _complete_stop() -> void:
 		EconomyManager.add_money(reward)
 		SaveManager.data["routes_completed"] = int(SaveManager.data.get("routes_completed", 0)) + 1
 		SaveManager.data["last_corridor"] = corridor_index
-		var unlocked := int(SaveManager.data.get("unlocked_corridors", 1))
+		var unlocked := maxi(int(SaveManager.data.get("unlocked_corridors", 2)), 2)
 		if corridor_index + 1 >= unlocked and unlocked < network.corridor_count():
 			SaveManager.data["unlocked_corridors"] = unlocked + 1
 			var unlocked_data: Dictionary = network.get_corridor(unlocked)
