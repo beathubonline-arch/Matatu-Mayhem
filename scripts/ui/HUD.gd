@@ -187,7 +187,7 @@ func _on_replay_pressed() -> void:
 		GameManager.set_game_state(GameManager.GameState.PLAYING)
 		_corridor_time = 0.0
 		route_select_panel.visible = false
-		objective_label.text = "RETURN RUN • BACK TO NAIROBI CBD"
+		objective_label.text = "RETURN TRIP STARTED • FOLLOW THE ROAD BACK TO CBD"
 		return
 	route_select_panel.visible = true
 	GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
@@ -234,9 +234,9 @@ func _on_corridor_completed(name: String, reward: int, balance: int, elapsed: fl
 	finish_panel.visible = true
 	finish_title.text = "%s COMPLETE" % name
 	var record_text := "NEW PERSONAL BEST!" if new_best else "Best: %s" % _format_time(best)
-	finish_summary.text = "Time: %s\\n%s\\nPassengers: %d  •  Fares: KSh %s\\nRoute bonus: KSh %s\\nTotal: KSh %s" % [_format_time(elapsed), record_text, passengers, _format_number(fares), _format_number(reward), _format_number(balance)]
+	finish_summary.text = "Time: %s\\n%s\\nPassengers: %d  •  Fares: KSh %s\\nRoute bonus: KSh %s\\nTotal: KSh %s\\n\\nSTOP AT TERMINUS • NO MANUAL U-TURN NEEDED" % [_format_time(elapsed), record_text, passengers, _format_number(fares), _format_number(reward), _format_number(balance)]
 	_last_completed_corridor = int(corridor_service.get("corridor_index")) if corridor_service != null else -1
-	replay_button.text = "RETURN TO CBD" if corridor_service != null and not bool(corridor_service.get("inbound")) else "CHOOSE NEXT ROUTE"
+	replay_button.text = "START RETURN TRIP TO CBD" if corridor_service != null and not bool(corridor_service.get("inbound")) else "BACK AT CBD • CHOOSE NEXT ROUTE"
 	_refresh_route_unlocks()
 
 func _select_corridor(index: int) -> void:
