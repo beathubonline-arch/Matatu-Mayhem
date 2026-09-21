@@ -90,6 +90,7 @@ func _ready() -> void:
 	_build_cbd_hub()
 	for corridor_index in range(CORRIDORS.size()):
 		_build_corridor(CORRIDORS[corridor_index], corridor_index)
+	_build_city_connectors()
 
 func _build_corridor(data: Dictionary, corridor_index: int) -> void:
 	var points: Array = data["points"]
@@ -616,3 +617,65 @@ func _landmark_block(pos: Vector3, size: Vector3, title: String, accent: Color) 
 	label.outline_size = 9
 	label.modulate = accent
 	add_child(label)
+
+
+func _build_city_connectors() -> void:
+	# The playable corridors are part of one city road graph. These cross-links
+	# prevent outer termini and junctions from visually ending in empty space.
+	var links := [
+		[Vector3(-146,0,178), Vector3(-70,0,218), Vector3(0,0,230), Vector3(76,0,258)],
+		[Vector3(76,0,258), Vector3(142,0,205), Vector3(174,0,110), Vector3(142,0,-142)],
+		[Vector3(142,0,-142), Vector3(65,0,-205), Vector3(-55,0,-235), Vector3(-225,0,-238)],
+		[Vector3(-225,0,-238), Vector3(-260,0,-110), Vector3(-220,0,40), Vector3(-146,0,178)],
+		[Vector3(-91,0,54), Vector3(-25,0,80), Vector3(32,0,96)],
+		[Vector3(-31,0,-63), Vector3(18,0,-48), Vector3(58,0,-52)]
+	]
+	for link_index in range(links.size()):
+		var points: Array = links[link_index]
+		for i in range(points.size() - 1):
+			_city_connector_segment(points[i], points[i + 1], link_index, i)
+		for i in range(1, points.size() - 1):
+			var label := Label3D.new()
+			label.text = ["CITY LINK","RING ROAD","NAIROBI CONNECTOR","LOCAL LINK","CROSS-TOWN","CITY BYPASS"][link_index]
+			label.position = points[i] + Vector3.UP * 4.2
+			label.font_size = 22
+			label.pixel_size = 0.005
+			label.outline_size = 6
+			label.modulate = Color("d9d9d9")
+			add_child(label)
+
+func _city_connector_segment(a: Vector3, b: Vector3, seed: int, segment_index: int) -> void:
+	var delta := b - a
+	var length := Vector2(delta.x, delta.z).length()
+	if length < 2.0:
+		return
+	var mid := (a + b) * 0.5
+	var yaw := atan2(delta.x, delta.z)
+	var road := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(11.0, 0.07, length)
+	road.mesh = mesh
+	road.position = mid + Vector3(0, ROAD_Y - 0.005, 0)
+	road.rotation.y = yaw
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color("2c3035")
+	mat.roughness = 0.98
+	road.material_override = mat
+	add_child(road)
+	var body := StaticBody3D.new()
+	body.position = mid + Vector3(0, ROAD_Y - 0.10, 0)
+	body.rotation.y = yaw
+	body.collision_layer = 1
+	var collision := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(11.0, 0.20, length)
+	collision.shape = shape
+	body.add_child(collision)
+	add_child(body)
+	_marking(mid, yaw, length, 0.0, 0.14, Color("c7b84d"))
+	_marking(mid, yaw, length, -5.0, 0.10, Color("eeeeee"))
+	_marking(mid, yaw, length, 5.0, 0.10, Color("eeeeee"))
+	var direction := delta.normalized()
+	var right := Vector3(direction.z, 0.0, -direction.x)
+	if segment_index % 2 == 0:
+		_roadside_shop(mid + right * (8.5 if seed % 2 == 0 else -8.5), "NAIROBI", seed + segment_index + 20)
