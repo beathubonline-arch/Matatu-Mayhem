@@ -186,6 +186,7 @@ func _apply_selected_nganya() -> void:
 		"MAVERICK": [Color("00d9ff"), Color("ff2e88")],
 		"ONYX": [Color("a855f7"), Color("22d3ee")],
 		"MOXIE": [Color("ff8a00"), Color("f7ff00")],
+		"KINDE SABA": [Color("16e0bd"), Color("f7ff00")],
 		"MONEYFEST": [Color("22c55e"), Color("facc15")],
 		"STREET LEGEND": [Color("f7ff00"), Color("ff2e88")]
 	}
@@ -201,6 +202,14 @@ func _apply_selected_nganya() -> void:
 	var front := get_node_or_null("FrontRoute") as Label3D
 	if front != null:
 		front.modulate = palette[1]
+		front.text = "107 • RUAKA" if selected == "KINDE SABA" else "NAIROBI EXPRESS"
+	var left := get_node_or_null("LeftTag") as Label3D
+	var right := get_node_or_null("RightTag") as Label3D
+	if selected == "KINDE SABA":
+		if left != null:
+			left.text = "KINDE SABA • 107"
+		if right != null:
+			right.text = "RUAKA • KANAIRO"
 
 
 func _build_wheels_and_door() -> void:
