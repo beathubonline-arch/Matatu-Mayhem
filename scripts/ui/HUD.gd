@@ -47,6 +47,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	finish_panel.visible = false
 	replay_button.pressed.connect(_on_replay_pressed)
+	$FinishPanel/VBox/Share.pressed.connect(_on_share_pressed)
 	$RouteSelectPanel/VBox/Ngong.pressed.connect(func(): _select_corridor(0))
 	$RouteSelectPanel/VBox/Mombasa.pressed.connect(func(): _select_corridor(1))
 	$RouteSelectPanel/VBox/Waiyaki.pressed.connect(func(): _select_corridor(2))
@@ -59,6 +60,11 @@ func _ready() -> void:
 	route_select_panel.visible = true
 	GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
 	objective_label.text = "CHOOSE YOUR NAIROBI ROUTE • CLICK OR PRESS 1–4"
+	if not bool(SaveManager.data.get("first_run_seen", false)):
+		SaveManager.data["first_run_seen"] = true
+		SaveManager.save_game()
+		objective_label.text = "WELCOME TO NAIROBI • CARRY PASSENGERS • MAKE KSh • BEAT RIVALS • BECOME STREET KING"
+		passenger_label.text = "START WITH NGONG OR MOMBASA • STOP BRIEFLY AT STAGES • FOLLOW NAVIGATION"
 	passenger_label.text = "START: NGONG ROAD + MOMBASA ROAD • UNLOCK WAIYAKI + THIKA"
 	passenger_load_label.text = "PASSENGERS 0/%d" % _current_capacity()
 	navigation_label.text = "NAV • SELECT ROUTE"
@@ -591,3 +597,14 @@ func _route_mastery(index: int) -> int:
 	if street_king_manager == null:
 		return 1
 	return int(street_king_manager.call("get_route_mastery", index))
+
+
+func _on_share_pressed() -> void:
+	if street_king_manager == null:
+		return
+	var card := String(street_king_manager.call("get_driver_card"))
+	DisplayServer.clipboard_set(card)
+	_message_style("unlock")
+	fare_notice.text = "CHALLENGE COPIED!\nSEND IT TO YOUR CREW • TELL THEM TO BEAT YOU"
+	_show_message_card()
+	_fare_notice_time = 4.0
