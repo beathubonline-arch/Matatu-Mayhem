@@ -9,7 +9,7 @@ var data := {
 	"passenger_trips_completed": 0,
 	"matatu_reputation": 0,
 	"last_corridor": 0,
-	"unlocked_corridors": 1,
+	"unlocked_corridors": 2,
 	"corridor_best_times": {},
 	"upgrade_levels": {},
 	"rival_wins": 0,
@@ -23,7 +23,17 @@ var data := {
 	"selected_nganya": "Maverick",
 	"career_rank": 1,
 	"career_xp": 0,
-	"career_earnings": 0
+	"career_earnings": 0,
+	"shift_runs": 0,
+	"shift_passengers": 0,
+	"shift_earnings": 0,
+	"shift_rival_wins": 0,
+	"shift_clean_runs": 0,
+	"shift_claimed": false,
+	"route_mastery": {},
+	"route_total_passengers": {},
+	"route_total_earnings": {},
+	"route_rival_wins": {}
 }
 
 func _ready() -> void:
