@@ -31,6 +31,8 @@ func _spawn_vehicle(data: Dictionary, index: int) -> void:
 	vehicle.set_meta("forward", forward)
 	vehicle.set_meta("lane_offset", 2.6 if index % 2 == 0 else -2.6)
 	vehicle.set_meta("speed", 7.0 + float(index % 3))
+	vehicle.set_meta("base_speed", 7.0 + float(index % 3))
+	vehicle.set_meta("personality", index % 3)
 	vehicle.set_meta("steer_dir", direction)
 	vehicle.set_collision_layer_value(1, true)
 	vehicle.set_collision_layer_value(2, true)
@@ -96,15 +98,20 @@ func _physics_process(_delta: float) -> void:
 		var steer_weight: float = clampf(_delta * (2.2 if to_target.length() < junction_slowdown_distance * 1.6 else 4.5), 0.0, 1.0)
 		direction = steer_dir.lerp(desired_direction, steer_weight).normalized()
 		vehicle.set_meta("steer_dir", direction)
-		var speed: float = float(vehicle.get_meta("speed", 8.0))
+		var speed: float = float(vehicle.get_meta("base_speed", vehicle.get_meta("speed", 8.0)))
+		var personality: int = int(vehicle.get_meta("personality", 0))
+		if personality == 1:
+			speed *= 0.82
+		elif personality == 2:
+			speed *= 1.12
 		if to_target.length() < junction_slowdown_distance:
 			speed *= 0.58
 		if player != null:
 			var distance_to_player: float = vehicle.global_position.distance_to(player.global_position)
-			if distance_to_player < 9.0:
-				speed = 0.0
-			elif distance_to_player < 16.0:
-				speed *= 0.35
+			if distance_to_player < 6.5:
+				speed *= 0.18
+			elif distance_to_player < 12.0:
+				speed *= 0.55
 		vehicle.velocity = direction * speed
 		if direction.length_squared() > 0.01:
 			var target_yaw: float = atan2(-direction.x, -direction.z)
