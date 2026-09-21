@@ -98,8 +98,12 @@ func _on_corridor_completed(_name: String, _reward: int, _balance: int, elapsed:
 		reward = RIVAL_WIN_REWARD + corridor_idx * 350
 		EconomyManager.add_money(reward)
 		SaveManager.data["rival_wins"] = int(SaveManager.data.get("rival_wins", 0)) + 1
+		var streak := int(SaveManager.data.get("rival_win_streak", 0)) + 1
+		SaveManager.data["rival_win_streak"] = streak
+		SaveManager.data["best_rival_win_streak"] = maxi(int(SaveManager.data.get("best_rival_win_streak", 0)), streak)
 	else:
 		SaveManager.data["rival_losses"] = int(SaveManager.data.get("rival_losses", 0)) + 1
+		SaveManager.data["rival_win_streak"] = 0
 	SaveManager.save_game()
 	var rival_name := RIVAL_NAMES[clampi(corridor_idx, 0, RIVAL_NAMES.size() - 1)]
 	challenge_changed.emit(("%s DEFEATED • OWN THE STAGE" if won else "%s GOT THERE FIRST • RUN IT BACK") % rival_name, clean_streak)
