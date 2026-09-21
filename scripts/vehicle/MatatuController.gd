@@ -149,6 +149,26 @@ func _apply_selected_nganya_profile() -> void:
 			stats.engine_force *= 1.13
 			stats.hard_max_speed_kph += 10.0
 			stats.brake_force *= 1.08
+		"RAPTOR":
+			stats.engine_force *= 1.14
+			stats.hard_max_speed_kph += 11.0
+			stats.brake_force *= 1.08
+		"MATRIX":
+			stats.max_steer_degrees += 3.0
+			stats.front_grip *= 1.10
+			stats.rear_grip *= 1.08
+		"MOOD":
+			stats.engine_force *= 1.16
+			stats.hard_max_speed_kph += 13.0
+			stats.front_grip *= 1.06
+		"BABA YAGA":
+			stats.engine_force *= 1.18
+			stats.brake_force *= 1.14
+			stats.hard_max_speed_kph += 12.0
+		"AMBUSH":
+			stats.engine_force *= 1.15
+			stats.max_steer_degrees += 4.0
+			stats.front_grip *= 1.12
 		"STREET LEGEND":
 			stats.engine_force *= 1.17
 			stats.hard_max_speed_kph += 14.0
