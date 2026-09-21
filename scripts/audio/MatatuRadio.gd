@@ -31,9 +31,14 @@ func _ready() -> void:
 	_player = AudioStreamPlayer.new()
 	_player.name = "RadioPlayer"
 	_player.volume_db = volume_db
+	# Godot Web defaults to SAMPLE playback. Long-form 254 Street Radio music
+	# must use Godot STREAM playback to avoid WebAudio sample-path failures.
+	_player.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
 	add_child(_player)
 	_player.finished.connect(_play_next)
 	_discover_tracks()
+	print("RADIO: %d tracks loaded" % _tracks.size())
+	print("RADIO: playback type STREAM (%d)" % _player.playback_type)
 	if auto_play and not _tracks.is_empty():
 		_current_index = _random_track_index()
 		_play_current()
@@ -111,8 +116,10 @@ func _play_current() -> void:
 		return
 	_current_index = wrapi(_current_index, 0, _tracks.size())
 	var track: Dictionary = _tracks[_current_index]
+	print("RADIO: attempting %s - %s" % [str(track["artist"]), str(track["title"])])
 	_player.stream = track["stream"]
 	_player.play()
+	print("RADIO: play() called; playing=%s" % str(_player.playing))
 	_emit_metadata()
 	playback_state_changed.emit(true)
 
