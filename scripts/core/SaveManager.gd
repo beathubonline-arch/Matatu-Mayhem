@@ -39,7 +39,9 @@ var data := {
 	"first_run_seen": false,
 	"total_routes_completed": 0,
 	"total_passengers_carried": 0,
-	"total_rival_wins": 0
+	"total_rival_wins": 0,
+	"rival_win_streak": 0,
+	"best_rival_win_streak": 0
 }
 
 func _ready() -> void:
