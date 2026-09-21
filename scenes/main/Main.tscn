@@ -16,6 +16,7 @@
 [ext_resource type="Script" path="res://scripts/gameplay/DrivingChallengeManager.gd" id="21_challenges"]
 [ext_resource type="Script" path="res://scripts/gameplay/MatatuCareerManager.gd" id="22_career"]
 [ext_resource type="Script" path="res://scripts/gameplay/StreetKingManager.gd" id="23_streetking"]
+[ext_resource type="Script" path="res://scripts/audio/GameSfx.gd" id="24_sfx"]
 
 [sub_resource type="SphereShape3D" id="CameraShape"]
 radius = 0.35
@@ -86,6 +87,11 @@ challenge_manager_path = NodePath("../DrivingChallenges")
 
 [node name="MatatuRadio" type="Node" parent="."]
 script = ExtResource("12_radio")
+
+[node name="GameSfx" type="Node" parent="."]
+script = ExtResource("24_sfx")
+corridor_service_path = NodePath("../Gameplay/CorridorService")
+player_path = NodePath("../Gameplay/Vehicles/Maverick")
 
 [node name="ChaseCamera" type="Node3D" parent="."]
 script = ExtResource("3_camera")
