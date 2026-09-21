@@ -23,6 +23,7 @@ var _current_index := 0
 var _last_index := -1
 var _rng := RandomNumberGenerator.new()
 var _player: AudioStreamPlayer
+var _web_audio_unlocked := false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -38,6 +39,21 @@ func _ready() -> void:
 		_play_current()
 	else:
 		_emit_metadata()
+
+func _input(event: InputEvent) -> void:
+	if not OS.has_feature("web") or _web_audio_unlocked or _tracks.is_empty():
+		return
+	var user_gesture := false
+	if event is InputEventKey:
+		user_gesture = event.pressed and not event.echo
+	elif event is InputEventMouseButton:
+		user_gesture = event.pressed
+	elif event is InputEventScreenTouch:
+		user_gesture = event.pressed
+	if user_gesture:
+		_web_audio_unlocked = true
+		# Browsers require WebAudio playback to begin inside a user gesture.
+		_play_current()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("radio_next"):
