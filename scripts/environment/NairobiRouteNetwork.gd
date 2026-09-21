@@ -21,18 +21,18 @@ const CORRIDOR_DISTRICTS := [
 	["CBD","COMMUNITY","PRESTIGE","ADAMS ARCADE","JUNCTION"]
 ]
 const CORRIDORS := [
-	{"name":"WAIYAKI WAY","color":"4aa3df","points":WAIYAKI_POINTS,
-	 "service_points":[CBD_TERMINUS,Vector3(-31,0,-63),Vector3(-86,0,-122),Vector3(-161,0,-184),Vector3(-225,0,-238)],
-	 "stops":["CBD","WESTLANDS","KANGEMI","UTHIRU","UTHIRU TERMINUS"],"reward":9000},
-	{"name":"THIKA ROAD","color":"e8c547","points":[CBD_TERMINUS,Vector3(14,0,-10),Vector3(31,0,-12),Vector3(58,0,-12),Vector3(58,0,-52),Vector3(92,0,-52),Vector3(92,0,-96),Vector3(124,0,-96),Vector3(142,0,-142)],
-	 "service_points":[CBD_TERMINUS,Vector3(31,0,-12),Vector3(58,0,-52),Vector3(92,0,-96),Vector3(142,0,-142)],
-	 "stops":["CBD","NGARA","PANGANI","MUTHAIGA","ROYSAMBU / KASARANI"],"reward":11000},
-	{"name":"MOMBASA ROAD","color":"e36a54","points":[CBD_TERMINUS,Vector3(0,0,32),Vector3(0,0,63),Vector3(0,0,96),Vector3(32,0,96),Vector3(32,0,132),Vector3(62,0,132),Vector3(62,0,172),Vector3(92,0,214),Vector3(76,0,258)],
+	{"name":"NGONG ROAD","color":"69c779","tier":1,"feel":"CITY HUSTLE","feature":"TIGHT STAGES • FAST BOARDING","points":[CBD_TERMINUS,Vector3(-18,0,12),Vector3(-31,0,21),Vector3(-58,0,21),Vector3(-58,0,54),Vector3(-91,0,54),Vector3(-91,0,91),Vector3(-124,0,91),Vector3(-124,0,132),Vector3(-146,0,178)],
+	 "service_points":[CBD_TERMINUS,Vector3(-31,0,21),Vector3(-91,0,54),Vector3(-124,0,91),Vector3(-146,0,178)],
+	 "stops":["CBD","COMMUNITY","PRESTIGE","ADAMS ARCADE","JUNCTION"],"reward":10000},
+	{"name":"MOMBASA ROAD","color":"e36a54","tier":1,"feel":"INDUSTRIAL RUN","feature":"LONG STRAIGHTS • HEAVY TRAFFIC","points":[CBD_TERMINUS,Vector3(0,0,32),Vector3(0,0,63),Vector3(0,0,96),Vector3(32,0,96),Vector3(32,0,132),Vector3(62,0,132),Vector3(62,0,172),Vector3(92,0,214),Vector3(76,0,258)],
 	 "service_points":[CBD_TERMINUS,Vector3(0,0,63),Vector3(32,0,132),Vector3(62,0,172),Vector3(76,0,258)],
 	 "stops":["CBD","NYAYO","SOUTH B / C","GENERAL MOTORS","IMARA DAIMA"],"reward":12000},
-	{"name":"NGONG ROAD","color":"69c779","points":[CBD_TERMINUS,Vector3(-18,0,12),Vector3(-31,0,21),Vector3(-58,0,21),Vector3(-58,0,54),Vector3(-91,0,54),Vector3(-91,0,91),Vector3(-124,0,91),Vector3(-124,0,132),Vector3(-146,0,178)],
-	 "service_points":[CBD_TERMINUS,Vector3(-31,0,21),Vector3(-91,0,54),Vector3(-124,0,91),Vector3(-146,0,178)],
-	 "stops":["CBD","COMMUNITY","PRESTIGE","ADAMS ARCADE","JUNCTION"],"reward":10000}
+	{"name":"WAIYAKI WAY","color":"4aa3df","tier":2,"feel":"WESTLANDS EXPRESS","feature":"FASTER RUN • RIVAL PRESSURE","points":WAIYAKI_POINTS,
+	 "service_points":[CBD_TERMINUS,Vector3(-31,0,-63),Vector3(-86,0,-122),Vector3(-161,0,-184),Vector3(-225,0,-238)],
+	 "stops":["CBD","WESTLANDS","KANGEMI","UTHIRU","UTHIRU TERMINUS"],"reward":15000},
+	{"name":"THIKA ROAD","color":"e8c547","tier":3,"feel":"SUPERHIGHWAY","feature":"HIGH SPEED • BIGGER PAYOUTS","points":[CBD_TERMINUS,Vector3(14,0,-10),Vector3(31,0,-12),Vector3(58,0,-12),Vector3(58,0,-52),Vector3(92,0,-52),Vector3(92,0,-96),Vector3(124,0,-96),Vector3(142,0,-142)],
+	 "service_points":[CBD_TERMINUS,Vector3(31,0,-12),Vector3(58,0,-52),Vector3(92,0,-96),Vector3(142,0,-142)],
+	 "stops":["CBD","NGARA","PANGANI","MUTHAIGA","ROYSAMBU / KASARANI"],"reward":18000}
 ]
 
 func corridor_count() -> int:
@@ -96,7 +96,7 @@ func _build_corridor(data: Dictionary, corridor_index: int) -> void:
 	var color: Color = Color(String(data["color"]))
 	for i in range(points.size() - 1):
 		_road_segment(points[i], points[i + 1], color)
-		if corridor_index == 0:
+		if String(data["name"]) == "WAIYAKI WAY":
 			_waiyaki_streetscape(points[i], points[i + 1], i)
 		else:
 			_corridor_streetscape(points[i], points[i + 1], i, corridor_index)
@@ -107,8 +107,8 @@ func _build_corridor(data: Dictionary, corridor_index: int) -> void:
 	var service_points: Array = data["service_points"]
 	for i in range(service_points.size()):
 		_stage(get_stage_waiting_position(corridor_index, i), get_stage_direction(corridor_index, i), String(data["stops"][i]), String(data["name"]), int(data["reward"]))
-	if corridor_index == 0:
-		_waiyaki_landmarks()
+	if String(data["name"]) == "WAIYAKI WAY":
+		_waiyaki_landmarks_for(corridor_index)
 	else:
 		_other_corridor_landmarks(data, corridor_index)
 	_corridor_gateway(data, corridor_index)
@@ -401,14 +401,14 @@ func _building(pos: Vector3, size: Vector3, seed: int, side: float) -> void:
 	building.material_override = mat
 	add_child(building)
 
-func _waiyaki_landmarks() -> void:
-	var data: Dictionary = get_corridor(0)
+func _waiyaki_landmarks_for(corridor_index: int) -> void:
+	var data: Dictionary = get_corridor(corridor_index)
 	var stops: Array = data["stops"]
 	for i in range(stops.size()):
-		var pos := get_stage_waiting_position(0, i)
+		var pos := get_stage_waiting_position(corridor_index, i)
 		_landmark_sign(pos + Vector3(0, 5.4, 0), "%s\nWAIYAKI WAY" % String(stops[i]))
-	_billboard(get_stage_waiting_position(0, 1) + Vector3(0, 4.5, 6.0), "MATATU MAYHEM\n254 STREET RADIO")
-	_billboard(get_stage_waiting_position(0, 2) + Vector3(0, 4.5, 6.0), "BEATHUB\nNAIROBI SOUNDS")
+	_billboard(get_stage_waiting_position(corridor_index, 1) + Vector3(0, 4.5, 6.0), "MATATU MAYHEM\n254 STREET RADIO")
+	_billboard(get_stage_waiting_position(corridor_index, 2) + Vector3(0, 4.5, 6.0), "BEATHUB\nNAIROBI SOUNDS")
 
 func _other_corridor_landmarks(data: Dictionary, corridor_index: int) -> void:
 	var points: Array = data["service_points"]
