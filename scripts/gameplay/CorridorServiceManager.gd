@@ -115,7 +115,7 @@ func _physics_process(delta: float) -> void:
 		event_changed.emit(_event_message, _event_time)
 	var data: Dictionary = _active_corridor_data()
 	var route_points: Array = data["points"]
-	var stage_target: Vector3 = network.get_service_stop(corridor_index, stop_index)
+	var stage_target: Vector3 = _active_stage_bay(stop_index)
 	_maybe_trigger_route_event()
 	var distance: float = player.global_position.distance_to(stage_target)
 	while route_point_index < next_stage_route_index:
@@ -305,7 +305,7 @@ func _route_turn_angle(route_points: Array, index: int) -> float:
 func _maybe_trigger_route_event() -> void:
 	if stop_index <= 0 or stop_index == _event_triggered_stage or _event_time > 0.0:
 		return
-	var seed: int = (corridor_index * 11 + stop_index * 7 + int(elapsed_seconds) / 8) % 4
+	var seed: int = int(corridor_index * 11 + stop_index * 7 + int(elapsed_seconds) / 8) % 4
 	if seed == 0:
 		_event_message = "PASSENGER LATE • PUSH FOR THE STAGE!"
 		_event_time = 14.0
@@ -340,3 +340,32 @@ func _active_corridor_data() -> Dictionary:
 
 func start_return_to_cbd() -> void:
 	select_corridor(corridor_index, true)
+
+
+func _active_stage_bay(service_index: int) -> Vector3:
+	var data: Dictionary = _active_corridor_data()
+	var points: Array = data["points"]
+	var service_points: Array = data["service_points"]
+	var idx: int = clampi(service_index, 0, service_points.size() - 1)
+	var service_point: Vector3 = service_points[idx]
+	var direction := _direction_at_active_point(points, service_point)
+	var right := Vector3(direction.z, 0.0, -direction.x)
+	return service_point + right * 5.2
+
+func _direction_at_active_point(points: Array, service_point: Vector3) -> Vector3:
+	var best_index := 0
+	var best_distance: float = INF
+	for i in range(points.size()):
+		var d: float = service_point.distance_squared_to(points[i])
+		if d < best_distance:
+			best_distance = d
+			best_index = i
+	var next_index: int = mini(best_index + 1, points.size() - 1)
+	var prev_index: int = maxi(best_index - 1, 0)
+	var direction: Vector3
+	if next_index != best_index:
+		direction = points[next_index] - points[best_index]
+	else:
+		direction = points[best_index] - points[prev_index]
+	direction.y = 0.0
+	return Vector3.FORWARD if direction.length_squared() < 0.01 else direction.normalized()
