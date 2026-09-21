@@ -451,9 +451,10 @@ func _on_penalty_applied(amount: int, balance: int, reason: String) -> void:
 
 func _on_rival_result(won: bool, player_time: float, rival_time: float, reward: int) -> void:
 	if won:
-		fare_notice.text = "RIVAL BEATEN • +KSh %s\nYOU %s • RIVAL %s" % [_format_number(reward), _format_time(player_time), _format_time(rival_time)]
+		var streak := int(SaveManager.data.get("rival_win_streak", 0))
+		fare_notice.text = "RIVAL BEATEN • +KSh %s • STREAK x%d\nYOU %s • RIVAL %s" % [_format_number(reward), streak, _format_time(player_time), _format_time(rival_time)]
 	else:
-		fare_notice.text = "RIVAL WINS THIS RUN\nYOU %s • RIVAL %s • RUN IT AGAIN" % [_format_time(player_time), _format_time(rival_time)]
+		fare_notice.text = "RIVAL WINS THIS RUN\nYOU %s • RIVAL %s • STREAK ENDED • RUN IT AGAIN" % [_format_time(player_time), _format_time(rival_time)]
 	_show_message_card()
 	_fare_notice_time = 5.0
 
