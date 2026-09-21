@@ -300,7 +300,13 @@ horizontal_alignment = 1
 [node name="NganyaSelect" type="Button" parent="RouteSelectPanel/VBox"]
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
-text = "NGANYA • MAVERICK"
+text = "DRIVE • MAVERICK • CLICK TO SWITCH"
+
+[node name="NganyaBuy" type="Button" parent="RouteSelectPanel/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_styles/normal = SubResource("ButtonStyle")
+text = "GARAGE MARKET • NO STOCK YET"
 
 [node name="EngineUpgrade" type="Button" parent="RouteSelectPanel/VBox"]
 custom_minimum_size = Vector2(0, 42)
