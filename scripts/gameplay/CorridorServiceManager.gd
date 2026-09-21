@@ -221,10 +221,13 @@ func _complete_stop() -> void:
 		_stage_rush_bonus = 900 + corridor_index * 250
 		stage_rush_changed.emit(_stage_rush_time, _stage_rush_bonus)
 	if corridor_life != null:
+		var visual_stop_index: int = stops.size() - 1 - stop_index if inbound else stop_index
 		if alighted > 0 and corridor_life.has_method("alight_passengers"):
-			corridor_life.call("alight_passengers", corridor_index, stop_index, alighted, player)
+			corridor_life.call("alight_passengers", corridor_index, visual_stop_index, alighted, player)
 		if boarded > 0 and corridor_life.has_method("board_passengers"):
-			corridor_life.call("board_passengers", corridor_index, stop_index, boarded, player)
+			corridor_life.call("board_passengers", corridor_index, visual_stop_index, boarded, player)
+		if corridor_life.has_method("set_vehicle_passenger_load"):
+			corridor_life.call("set_vehicle_passenger_load", player, passengers_onboard)
 	passenger_load_changed.emit(passengers_onboard, passenger_capacity, boarded, alighted)
 	SaveManager.data["passenger_trips_completed"] = int(SaveManager.data.get("passenger_trips_completed", 0)) + boarded
 	SaveManager.save_game()
