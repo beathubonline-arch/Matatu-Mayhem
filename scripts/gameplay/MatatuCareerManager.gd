@@ -18,6 +18,7 @@ const NGANYA_UNLOCKS := [
 	{"name":"Maverick","rank":1},
 	{"name":"ONYX","rank":2},
 	{"name":"MOXIE","rank":3},
+	{"name":"KINDE SABA","rank":3},
 	{"name":"MONEYFEST","rank":4},
 	{"name":"STREET LEGEND","rank":5}
 ]
