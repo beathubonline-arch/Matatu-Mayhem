@@ -13,7 +13,8 @@ const RANKS := [
 	{"name":"STAGE REGULAR","xp":350},
 	{"name":"ROUTE KING","xp":900},
 	{"name":"NAIROBI HEAT","xp":1800},
-	{"name":"NGANYA BOSS","xp":3200}
+	{"name":"NGANYA BOSS","xp":3200},
+	{"name":"STREET KING","xp":5000}
 ]
 const NGANYA_UNLOCKS := [
 	{"name":"Maverick","rank":1,"price":0},
@@ -26,7 +27,7 @@ const NGANYA_UNLOCKS := [
 	{"name":"MOOD","rank":5,"price":72000},
 	{"name":"BABA YAGA","rank":5,"price":78000},
 	{"name":"AMBUSH","rank":5,"price":82000},
-	{"name":"STREET LEGEND","rank":5,"price":95000}
+	{"name":"STREET LEGEND","rank":6,"price":95000}
 ]
 
 var career_xp := 0
