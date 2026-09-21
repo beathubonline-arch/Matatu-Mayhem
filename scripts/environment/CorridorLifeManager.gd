@@ -313,20 +313,15 @@ func board_passengers(corridor_index: int, stop_index: int, count: int, vehicle:
 func alight_passengers(corridor_index: int, stop_index: int, count: int, vehicle: Node3D) -> void:
 	if count <= 0:
 		return
-	var centre: Vector3 = network.get_stage_waiting_position(corridor_index, stop_index)
-	var direction: Vector3 = network.get_stage_direction(corridor_index, stop_index)
-	var right := Vector3(direction.z, 0.0, -direction.x)
-	for i in range(mini(count, 6)):
-		var person := MeshInstance3D.new()
-		var mesh := CapsuleMesh.new()
-		mesh.radius = 0.23
-		mesh.height = 1.5
-		person.mesh = mesh
-		person.position = centre + right * (4.0 + float(i) * 0.8) + direction * float(i % 2) + Vector3.UP * 0.78
-		var mat := StandardMaterial3D.new()
-		mat.albedo_color = [Color("e76f51"),Color("2a9d8f"),Color("e9c46a"),Color("577590")][i % 4]
-		person.material_override = mat
-		add_child(person)
+	var key := "%d:%d" % [corridor_index, stop_index]
+	var people: Array = _stage_people.get(key, [])
+	var shown := 0
+	for person in people:
+		if shown >= count:
+			break
+		if person is Node3D and not person.visible:
+			person.visible = true
+			shown += 1
 	if vehicle != null:
 		var label := vehicle.get_node_or_null("PassengerLoad") as Label3D
 		if label != null:
