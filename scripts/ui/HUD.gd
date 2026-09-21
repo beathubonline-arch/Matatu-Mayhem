@@ -91,6 +91,7 @@ func _ready() -> void:
 		corridor_service.event_changed.connect(_on_event_changed)
 		corridor_service.route_unlocked.connect(_on_route_unlocked)
 		corridor_service.direction_changed.connect(_on_direction_changed)
+		corridor_service.matatu_moment.connect(_on_matatu_moment)
 	if not challenge_manager_path.is_empty():
 		challenge_manager = get_node_or_null(challenge_manager_path)
 	if challenge_manager != null:
@@ -548,3 +549,10 @@ func _message_style(kind: String) -> void:
 			fare_notice.modulate = Color("ffe15a")
 		_:
 			fare_notice.modulate = Color("5cecff")
+
+
+func _on_matatu_moment(message: String, reward: int) -> void:
+	_message_style("hype")
+	fare_notice.text = "⚡ %s\n+KSh %s • KEEP IT MOVING!" % [message, _format_number(reward)]
+	_show_message_card()
+	_fare_notice_time = 3.0
