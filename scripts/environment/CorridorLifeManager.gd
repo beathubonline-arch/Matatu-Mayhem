@@ -284,45 +284,55 @@ func _index_stage_people() -> void:
 				mat.albedo_color = colors[(i + stop_index + corridor_index) % colors.size()]
 				person.material_override = mat
 				add_child(person)
+				person.set_meta("stage_home", person.global_position)
 				people.append(person)
 			_stage_people[key] = people
 
 func board_passengers(corridor_index: int, stop_index: int, count: int, vehicle: Node3D) -> void:
 	var key := "%d:%d" % [corridor_index, stop_index]
 	var people: Array = _stage_people.get(key, [])
-	var hidden := 0
+	var moved := 0
 	for person in people:
-		if hidden >= count:
+		if moved >= count:
 			break
 		if person is Node3D and person.visible:
-			person.visible = false
-			hidden += 1
-	if vehicle != null:
-		var label := vehicle.get_node_or_null("PassengerLoad") as Label3D
-		if label == null:
-			label = Label3D.new()
-			label.name = "PassengerLoad"
-			label.position = Vector3(0, 2.9, 0.5)
-			label.font_size = 24
-			label.pixel_size = 0.005
-			label.outline_size = 6
-			vehicle.add_child(label)
-		label.text = "%d PASSENGERS" % count
-		label.modulate = Color("ffe15a")
+			var passenger := person as Node3D
+			var door_target := vehicle.global_position + vehicle.global_basis.x * 1.35 + Vector3.UP * 0.8 if vehicle != null else passenger.global_position
+			var tween := create_tween()
+			tween.tween_property(passenger, "global_position", door_target, 0.55 + float(moved) * 0.08)
+			tween.tween_callback(func(): passenger.visible = false)
+			moved += 1
 
 func alight_passengers(corridor_index: int, stop_index: int, count: int, vehicle: Node3D) -> void:
 	if count <= 0:
 		return
 	var key := "%d:%d" % [corridor_index, stop_index]
 	var people: Array = _stage_people.get(key, [])
-	var shown := 0
+	var moved := 0
 	for person in people:
-		if shown >= count:
+		if moved >= count:
 			break
 		if person is Node3D and not person.visible:
-			person.visible = true
-			shown += 1
-	if vehicle != null:
-		var label := vehicle.get_node_or_null("PassengerLoad") as Label3D
-		if label != null:
-			label.text = "PASSENGERS ALIGHTING"
+			var passenger := person as Node3D
+			var home: Vector3 = passenger.get_meta("stage_home", passenger.global_position)
+			if vehicle != null:
+				passenger.global_position = vehicle.global_position + vehicle.global_basis.x * 1.35 + Vector3.UP * 0.8
+			passenger.visible = true
+			var tween := create_tween()
+			tween.tween_property(passenger, "global_position", home, 0.6 + float(moved) * 0.08)
+			moved += 1
+
+func set_vehicle_passenger_load(vehicle: Node3D, onboard: int) -> void:
+	if vehicle == null:
+		return
+	var label := vehicle.get_node_or_null("PassengerLoad") as Label3D
+	if label == null:
+		label = Label3D.new()
+		label.name = "PassengerLoad"
+		label.position = Vector3(0, 2.9, 0.5)
+		label.font_size = 24
+		label.pixel_size = 0.005
+		label.outline_size = 6
+		vehicle.add_child(label)
+	label.text = "%d PASSENGERS" % onboard
+	label.modulate = Color("ffe15a")
