@@ -38,6 +38,7 @@ var _event_time := 0.0
 var _rush_time := 0.0
 var _rush_bonus := 0
 var _shop_index := 0
+var _service_objective := "FOLLOW ROUTE"
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -251,7 +252,8 @@ func _select_corridor(index: int) -> void:
 	finish_panel.visible = false
 
 func _on_service_progress(message: String) -> void:
-	objective_label.text = message
+	_service_objective = message
+	_render_live_objective()
 
 func _on_corridor_time_changed(seconds: float) -> void:
 	_corridor_time = seconds
@@ -494,6 +496,8 @@ func _render_live_objective() -> void:
 		return
 	if _rush_time > 0.0 and _rush_bonus > 0:
 		objective_label.text = "STAGE RUSH • %.1fs • +KSh %s" % [_rush_time, _format_number(_rush_bonus)]
+		return
+	objective_label.text = _service_objective
 
 
 func _on_nganya_available(name: String, price: int) -> void:
