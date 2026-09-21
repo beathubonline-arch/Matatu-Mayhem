@@ -33,6 +33,10 @@ var rival_manager: Node
 var _fare_notice_time: float = 0.0
 var _corridor_time: float = 0.0
 var _last_completed_corridor := -1
+var _event_text := ""
+var _event_time := 0.0
+var _rush_time := 0.0
+var _rush_bonus := 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -135,6 +139,11 @@ func _process(_delta: float) -> void:
 		timer_label.text = _format_time(_corridor_time)
 	elif GameManager.current_state == GameManager.GameState.ROUTE_SELECT:
 		timer_label.text = "00:00.00"
+	if _event_time > 0.0:
+		_event_time = maxf(_event_time - _delta, 0.0)
+	if _rush_time > 0.0:
+		_rush_time = maxf(_rush_time - _delta, 0.0)
+	_render_live_objective()
 	if _fare_notice_time > 0.0:
 		_fare_notice_time -= _delta
 		if _fare_notice_time <= 0.0:
@@ -415,9 +424,8 @@ func _on_conductor_call(message: String) -> void:
 
 
 func _on_stage_rush_changed(seconds_left: float, bonus: int) -> void:
-	if seconds_left <= 0.0 or bonus <= 0:
-		return
-	objective_label.text = "STAGE RUSH • %.1fs • +KSh %s" % [seconds_left, _format_number(bonus)]
+	_rush_time = seconds_left
+	_rush_bonus = bonus
 
 
 func _on_stage_grade(message: String, reward: int) -> void:
@@ -427,9 +435,8 @@ func _on_stage_grade(message: String, reward: int) -> void:
 
 
 func _on_event_changed(message: String, seconds_left: float) -> void:
-	if seconds_left <= 0.0:
-		return
-	objective_label.text = "⚡ %s • %.0fs" % [message, seconds_left]
+	_event_text = message
+	_event_time = seconds_left
 
 
 func _on_route_unlocked(name: String) -> void:
@@ -448,3 +455,13 @@ func _on_direction_changed(label: String) -> void:
 	fare_notice.text = "ROUTE DIRECTION • %s" % label
 	fare_notice.visible = true
 	_fare_notice_time = 2.5
+
+
+func _render_live_objective() -> void:
+	if GameManager.current_state != GameManager.GameState.PLAYING:
+		return
+	if _event_time > 0.0 and not _event_text.is_empty():
+		objective_label.text = "⚡ %s • %.0fs" % [_event_text, _event_time]
+		return
+	if _rush_time > 0.0 and _rush_bonus > 0:
+		objective_label.text = "STAGE RUSH • %.1fs • +KSh %s" % [_rush_time, _format_number(_rush_bonus)]
