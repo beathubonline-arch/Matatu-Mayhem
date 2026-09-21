@@ -425,7 +425,8 @@ func _buy_market_nganya() -> void:
 func _refresh_nganya_selector() -> void:
 	var owned: Array = SaveManager.data.get("owned_nganyas", ["Maverick"])
 	var selected := String(SaveManager.data.get("selected_nganya", "Maverick")).to_upper()
-	$RouteSelectPanel/VBox/GarageTitle.text = "%s GARAGE • %d OWNED" % [selected, owned.size()]
+	var balance := EconomyManager.get_money()
+	$RouteSelectPanel/VBox/GarageTitle.text = "%s GARAGE • %d OWNED • KSh %s" % [selected, owned.size(), _format_number(balance)]
 	$RouteSelectPanel/VBox/NganyaSelect.text = "DRIVE • %s • CLICK TO SWITCH OWNED" % selected
 	var available: Array = career_manager.call("get_available_nganyas") if career_manager != null else []
 	if available.is_empty():
@@ -435,7 +436,12 @@ func _refresh_nganya_selector() -> void:
 		$RouteSelectPanel/VBox/NganyaBuy.disabled = false
 		_shop_index = _shop_index % available.size()
 		var entry: Dictionary = available[_shop_index]
-		$RouteSelectPanel/VBox/NganyaBuy.text = "BUY • %s • KSh %s" % [String(entry["name"]).to_upper(), _format_number(int(entry["price"]))]
+		var price := int(entry["price"])
+		var gap := maxi(price - balance, 0)
+		if gap > 0:
+			$RouteSelectPanel/VBox/NganyaBuy.text = "NEXT DREAM • %s • KSh %s • NEED %s MORE" % [String(entry["name"]).to_upper(), _format_number(price), _format_number(gap)]
+		else:
+			$RouteSelectPanel/VBox/NganyaBuy.text = "BUY NOW • %s • KSh %s • YOU CAN AFFORD IT" % [String(entry["name"]).to_upper(), _format_number(price)]
 
 func _on_challenge_changed(message: String, clean_streak: int) -> void:
 	var suffix := "" if clean_streak <= 0 else " • CLEAN x%d" % clean_streak
