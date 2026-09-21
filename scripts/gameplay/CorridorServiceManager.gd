@@ -152,7 +152,7 @@ func _physics_process(delta: float) -> void:
 		maneuver_changed.emit(("TURN LEFT" if turn_angle > 0.0 else "TURN RIGHT") + " • %dm" % int(player.global_position.distance_to(nav_target)))
 	else:
 		maneuver_changed.emit("FOLLOW ROUTE • STAGE %dm" % int(distance))
-	if distance > 7.0:
+	if distance > 8.5:
 		dwell = 0.0
 		if distance < 18.0 and _stage_entry_speed <= 0.0 and player.has_method("get_speed_kph"):
 			_stage_entry_speed = float(player.call("get_speed_kph"))
@@ -162,13 +162,13 @@ func _physics_process(delta: float) -> void:
 	var speed: float = 999.0
 	if player.has_method("get_speed_kph"):
 		speed = float(player.call("get_speed_kph"))
-	if speed > 4.0:
+	if speed > 7.0:
 		dwell = 0.0
-		service_progress.emit("SLOW DOWN FOR STAGE • %d km/h" % int(speed))
+		service_progress.emit("PULL IN • SLOW BELOW 7 km/h • %d km/h" % int(speed))
 		return
 	dwell += delta
-	service_progress.emit("BOARDING PASSENGERS • %d%%" % int(clampf(dwell / 1.5, 0.0, 1.0) * 100.0))
-	if dwell >= 1.5:
+	service_progress.emit("PANDA! BOARDING • %d%%" % int(clampf(dwell / 0.65, 0.0, 1.0) * 100.0))
+	if dwell >= 0.65:
 		_complete_stop()
 
 func _complete_stop() -> void:
@@ -236,7 +236,7 @@ func _complete_stop() -> void:
 		next_stage_route_index = _find_route_index_for_service(stop_index)
 		route_point_index = mini(route_point_index + 1, next_stage_route_index)
 	if is_terminal:
-		conductor_call.emit("MWISHO! WOTE SHUKA • SAFI SANA!")
+		conductor_call.emit("MWISHO! WOTE SHUKA • SIMAMA HAPA • RETURN TO CBD NEXT!")
 		if corridor_life != null and corridor_life.has_method("refresh_stage_passengers"):
 			for physical_stop in range(stops.size()):
 				corridor_life.call("refresh_stage_passengers", corridor_index, physical_stop)
