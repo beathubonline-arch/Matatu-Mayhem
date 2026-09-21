@@ -257,6 +257,8 @@ func _on_corridor_completed(name: String, reward: int, balance: int, elapsed: fl
 	_refresh_route_unlocks()
 
 func _select_corridor(index: int) -> void:
+	if street_king_manager != null:
+		street_king_manager.call("begin_next_shift_if_needed")
 	if corridor_service == null:
 		fare_notice.text = "ROUTE SYSTEM NOT READY"
 		_show_message_card()
