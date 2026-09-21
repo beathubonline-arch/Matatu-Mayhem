@@ -15,6 +15,7 @@ func _ready() -> void:
 	_build_trim()
 	_build_identity()
 	_build_realism_details()
+	_build_wheels_and_door()
 	_apply_selected_nganya()
 
 func _mat(color: Color, emission: Color = Color.TRANSPARENT, metallic: float = 0.0, roughness: float = 0.55) -> StandardMaterial3D:
@@ -200,3 +201,16 @@ func _apply_selected_nganya() -> void:
 	var front := get_node_or_null("FrontRoute") as Label3D
 	if front != null:
 		front.modulate = palette[1]
+
+
+func _build_wheels_and_door() -> void:
+	var tyre := _mat(Color("070707"), Color.TRANSPARENT, 0.05, 0.82)
+	var rim := _mat(CHROME, Color.TRANSPARENT, 0.92, 0.16)
+	for side in [-1.0, 1.0]:
+		for z in [-1.55, 1.55]:
+			_cylinder("Tyre", 0.43, 0.22, Vector3(side * 1.08, 0.48, z), Vector3(0, 0, 90), tyre)
+			_cylinder("Rim", 0.24, 0.235, Vector3(side * 1.085, 0.48, z), Vector3(0, 0, 90), rim)
+	# Passenger door is deliberately obvious from the chase camera/stage side.
+	var door_mat := _mat(Color("151923"), Color.TRANSPARENT, 0.42, 0.34)
+	_box("PassengerDoor", Vector3(0.055, 1.65, 1.18), Vector3(1.13, 1.25, -0.82), door_mat)
+	_add_label("DoorCall", "PANDA / SHUKA", Vector3(1.17, 1.45, -0.82), Vector3(0, 90, 0), Color("ffe15a"), 0.0034, 32)
