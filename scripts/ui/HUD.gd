@@ -52,7 +52,8 @@ func _ready() -> void:
 	$RouteSelectPanel/VBox/EngineUpgrade.pressed.connect(func(): _buy_upgrade("engine"))
 	$RouteSelectPanel/VBox/BrakeUpgrade.pressed.connect(func(): _buy_upgrade("brakes"))
 	$RouteSelectPanel/VBox/CapacityUpgrade.pressed.connect(func(): _buy_upgrade("capacity"))
-	$RouteSelectPanel/VBox/NganyaSelect.pressed.connect(_garage_action)
+	$RouteSelectPanel/VBox/NganyaSelect.pressed.connect(_cycle_owned_nganya)
+	$RouteSelectPanel/VBox/NganyaBuy.pressed.connect(_buy_market_nganya)
 	route_select_panel.visible = true
 	GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
 	objective_label.text = "CHOOSE YOUR NAIROBI ROUTE • CLICK OR PRESS 1–4"
@@ -355,29 +356,8 @@ func _refresh_garage() -> void:
 			button.text = "%s • LEVEL %d → %d • KSh %s" % [kind.to_upper(), level, level + 1, _format_number(_upgrade_cost(kind))]
 	_refresh_nganya_selector()
 
-func _garage_action() -> void:
+func _cycle_owned_nganya() -> void:
 	var owned: Array = SaveManager.data.get("owned_nganyas", ["Maverick"])
-	var available: Array = career_manager.call("get_available_nganyas") if career_manager != null else []
-	if not available.is_empty():
-		_shop_index = _shop_index % available.size()
-		var entry: Dictionary = available[_shop_index]
-		var name := String(entry["name"])
-		var price := int(entry["price"])
-		if career_manager.call("buy_nganya", name):
-			var vehicle = GameManager.get_player_vehicle()
-			if vehicle != null and vehicle.has_method("refresh_selected_nganya"):
-				vehicle.call("refresh_selected_nganya")
-			fare_notice.text = "NEW NGANYA BOUGHT • %s • KSh %s" % [name.to_upper(), _format_number(price)]
-			_show_message_card()
-			_fare_notice_time = 4.0
-			_refresh_nganya_selector()
-			return
-		fare_notice.text = "NEED KSh %s • %s" % [_format_number(price), name.to_upper()]
-		_show_message_card()
-		_fare_notice_time = 3.0
-		_shop_index = (_shop_index + 1) % available.size()
-		_refresh_nganya_selector()
-		return
 	if owned.is_empty():
 		return
 	var selected := String(SaveManager.data.get("selected_nganya", "Maverick"))
@@ -389,21 +369,55 @@ func _garage_action() -> void:
 	if vehicle != null and vehicle.has_method("refresh_selected_nganya"):
 		vehicle.call("refresh_selected_nganya")
 	_refresh_nganya_selector()
-	fare_notice.text = "NGANYA SELECTED • %s" % String(owned[index]).to_upper()
+	_message_style("default")
+	fare_notice.text = "NOW DRIVING • %s" % String(owned[index]).to_upper()
+	_show_message_card()
+	_fare_notice_time = 2.5
+
+func _buy_market_nganya() -> void:
+	var available: Array = career_manager.call("get_available_nganyas") if career_manager != null else []
+	if available.is_empty():
+		_message_style("default")
+		fare_notice.text = "GARAGE MARKET • BUILD REP TO UNLOCK NEW NGANYAS"
+		_show_message_card()
+		_fare_notice_time = 3.0
+		return
+	_shop_index = _shop_index % available.size()
+	var entry: Dictionary = available[_shop_index]
+	var name := String(entry["name"])
+	var price := int(entry["price"])
+	if career_manager.call("buy_nganya", name):
+		var vehicle = GameManager.get_player_vehicle()
+		if vehicle != null and vehicle.has_method("refresh_selected_nganya"):
+			vehicle.call("refresh_selected_nganya")
+		_message_style("unlock")
+		fare_notice.text = "NEW NGANYA • %s\nPAID KSh %s • READY TO ROLL" % [name.to_upper(), _format_number(price)]
+		_show_message_card()
+		_fare_notice_time = 4.0
+		_shop_index = 0
+		_refresh_nganya_selector()
+		return
+	_message_style("danger")
+	fare_notice.text = "NEED KSh %s • %s\nKEEP WORKING THE ROUTES" % [_format_number(price), name.to_upper()]
 	_show_message_card()
 	_fare_notice_time = 3.0
+	_shop_index = (_shop_index + 1) % available.size()
+	_refresh_nganya_selector()
 
 func _refresh_nganya_selector() -> void:
 	var owned: Array = SaveManager.data.get("owned_nganyas", ["Maverick"])
 	var selected := String(SaveManager.data.get("selected_nganya", "Maverick")).to_upper()
 	$RouteSelectPanel/VBox/GarageTitle.text = "%s GARAGE • %d OWNED" % [selected, owned.size()]
+	$RouteSelectPanel/VBox/NganyaSelect.text = "DRIVE • %s • CLICK TO SWITCH OWNED" % selected
 	var available: Array = career_manager.call("get_available_nganyas") if career_manager != null else []
-	if not available.is_empty():
+	if available.is_empty():
+		$RouteSelectPanel/VBox/NganyaBuy.text = "GARAGE MARKET • BUILD REP FOR NEW STOCK"
+		$RouteSelectPanel/VBox/NganyaBuy.disabled = true
+	else:
+		$RouteSelectPanel/VBox/NganyaBuy.disabled = false
 		_shop_index = _shop_index % available.size()
 		var entry: Dictionary = available[_shop_index]
-		$RouteSelectPanel/VBox/NganyaSelect.text = "BUY %s • KSh %s" % [String(entry["name"]).to_upper(), _format_number(int(entry["price"]))]
-	else:
-		$RouteSelectPanel/VBox/NganyaSelect.text = "NGANYA • %s • CLICK TO SWITCH" % selected
+		$RouteSelectPanel/VBox/NganyaBuy.text = "BUY • %s • KSh %s" % [String(entry["name"]).to_upper(), _format_number(int(entry["price"]))]
 
 func _on_challenge_changed(message: String, clean_streak: int) -> void:
 	var suffix := "" if clean_streak <= 0 else " • CLEAN x%d" % clean_streak
