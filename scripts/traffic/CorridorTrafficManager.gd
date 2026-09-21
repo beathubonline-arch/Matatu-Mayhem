@@ -6,12 +6,16 @@ extends Node3D
 @export var junction_slowdown_distance := 11.0
 
 var network: NairobiRouteNetwork
+var _rng := RandomNumberGenerator.new()
+
+const STREET_NAMES := ["ONYX","MOXIE","KINDE SABA","RAPTOR","MATRIX","MOOD","BABA YAGA","AMBUSH"]
 
 func _ready() -> void:
 	network = get_node_or_null(network_path) as NairobiRouteNetwork
 	if network == null:
 		push_error("CorridorTrafficManager requires NairobiRouteNetwork.")
 		return
+	_rng.randomize()
 	for corridor_index in range(network.corridor_count()):
 		var data: Dictionary = network.get_corridor(corridor_index)
 		for vehicle_index in range(vehicles_per_corridor):
@@ -34,24 +38,53 @@ func _spawn_vehicle(data: Dictionary, index: int) -> void:
 	vehicle.set_meta("base_speed", 7.0 + float(index % 3))
 	vehicle.set_meta("personality", index % 3)
 	vehicle.set_meta("steer_dir", direction)
+	var is_nganya := index % 3 == 0
+	vehicle.set_meta("is_nganya", is_nganya)
 	vehicle.set_collision_layer_value(1, true)
 	vehicle.set_collision_layer_value(2, true)
 	vehicle.set_collision_mask_value(1, true)
 	var mesh_instance := MeshInstance3D.new()
 	var mesh := BoxMesh.new()
-	mesh.size = Vector3(1.8, 1.55, 3.8)
+	mesh.size = Vector3(2.0, 2.05, 4.4) if is_nganya else Vector3(1.8, 1.55, 3.8)
 	mesh_instance.mesh = mesh
-	mesh_instance.position.y = 0.75
+	mesh_instance.position.y = 1.0 if is_nganya else 0.75
 	var material := StandardMaterial3D.new()
-	var colors: Array[Color] = [Color("d8d4c5"), Color("306b9b"), Color("a53b32"), Color("3e7d50")]
+	var colors: Array[Color] = [Color("d8d4c5"), Color("306b9b"), Color("a53b32"), Color("3e7d50"), Color("171822"), Color("382711")]
 	material.albedo_color = colors[index % colors.size()]
+	material.metallic = 0.35 if is_nganya else 0.0
+	material.roughness = 0.35 if is_nganya else 0.75
 	mesh_instance.material_override = material
 	vehicle.add_child(mesh_instance)
+	if is_nganya:
+		var nganya_name: String = STREET_NAMES[_rng.randi_range(0, STREET_NAMES.size() - 1)]
+		vehicle.set_meta("nganya_name", nganya_name)
+		var glow := MeshInstance3D.new()
+		var glow_mesh := BoxMesh.new()
+		glow_mesh.size = Vector3(2.05, 0.10, 3.5)
+		glow.mesh = glow_mesh
+		glow.position = Vector3(0, 0.42, 0)
+		var glow_mat := StandardMaterial3D.new()
+		var neon: Color = [Color("00d9ff"),Color("ff2e88"),Color("ff9a18"),Color("54ff77")][index % 4]
+		glow_mat.albedo_color = neon
+		glow_mat.emission_enabled = true
+		glow_mat.emission = neon
+		glow_mat.emission_energy_multiplier = 1.8
+		glow.material_override = glow_mat
+		vehicle.add_child(glow)
+		var label := Label3D.new()
+		label.text = nganya_name
+		label.position = Vector3(0, 1.9, -2.25)
+		label.rotation_degrees.y = 180.0
+		label.modulate = neon
+		label.outline_size = 6
+		label.font_size = 26
+		label.pixel_size = 0.005
+		vehicle.add_child(label)
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
-	shape.size = Vector3(1.8, 1.55, 3.8)
+	shape.size = Vector3(2.0, 2.05, 4.4) if is_nganya else Vector3(1.8, 1.55, 3.8)
 	collision.shape = shape
-	collision.position.y = 0.75
+	collision.position.y = 1.0 if is_nganya else 0.75
 	vehicle.add_child(collision)
 	add_child(vehicle)
 
