@@ -12,6 +12,9 @@ var corridor_service: CorridorServiceManager
 var active_corridor := 0
 var _player: Node3D
 var _pressure_cooldown := 0.0
+var _rng := RandomNumberGenerator.new()
+
+const STREET_NGANYAS := ["ONYX", "MONEYFEST", "MOXIE", "KINDE SABA", "RAPTOR", "MATRIX", "MOOD", "BABA YAGA", "AMBUSH"]
 
 func _ready() -> void:
 	network = get_node_or_null(network_path) as NairobiRouteNetwork
@@ -20,6 +23,7 @@ func _ready() -> void:
 		corridor_service.corridor_changed.connect(_on_corridor_changed)
 		corridor_service.direction_changed.connect(_on_direction_changed)
 	_player = GameManager.get_player_vehicle() as Node3D
+	_rng.randomize()
 	_spawn_pack()
 
 func _spawn_pack() -> void:
@@ -61,6 +65,8 @@ func _spawn_rival(index: int) -> void:
 	rival.set_meta("lane_offset", lane_offset)
 	rival.set_meta("speed", 9.0 + float(index) * 0.8)
 	rival.set_meta("steer_dir", direction)
+	var nganya_name: String = STREET_NGANYAS[_rng.randi_range(0, STREET_NGANYAS.size() - 1)]
+	rival.set_meta("nganya_name", nganya_name)
 
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
@@ -73,7 +79,7 @@ func _spawn_rival(index: int) -> void:
 	body_mesh.size = Vector3(2.05, 2.15, 4.5)
 	body.mesh = body_mesh
 	body.position.y = 1.1
-	var palettes := [Color("171822"), Color("28202f"), Color("132c32"), Color("2f181c")]
+	var palettes := [Color("171822"), Color("28202f"), Color("132c32"), Color("2f181c"), Color("17372f"), Color("382711")]
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = palettes[index % palettes.size()]
 	mat.metallic = 0.45
@@ -86,7 +92,7 @@ func _spawn_rival(index: int) -> void:
 	glow.mesh = glow_mesh
 	glow.position = Vector3(0.0, 0.45, 0.0)
 	var glow_mat := StandardMaterial3D.new()
-	var neon: Color = [Color("00d9ff"), Color("ff2e88"), Color("ff9a18"), Color("54ff77")][index % 4]
+	var neon: Color = [Color("00d9ff"), Color("ff2e88"), Color("ff9a18"), Color("54ff77"), Color("f7ff00"), Color("16e0bd")][index % 6]
 	glow_mat.albedo_color = neon
 	glow_mat.emission_enabled = true
 	glow_mat.emission = neon
@@ -94,7 +100,7 @@ func _spawn_rival(index: int) -> void:
 	glow.material_override = glow_mat
 	rival.add_child(glow)
 	var label := Label3D.new()
-	label.text = ["ONYX", "MONEYFEST", "OPPOSITE", "MOXIE"][index % 4]
+	label.text = nganya_name
 	label.position = Vector3(0.0, 2.0, -2.28)
 	label.rotation_degrees.y = 180.0
 	label.modulate = neon
@@ -150,7 +156,7 @@ func _physics_process(_delta: float) -> void:
 				speed *= 0.92
 				if _pressure_cooldown <= 0.0:
 					_pressure_cooldown = 7.0
-					rival_pressure.emit("%s IS ON YOUR BUMPER!" % String(rival.name).replace("RivalNganya", "NGANYA "))
+					rival_pressure.emit("%s IS ON YOUR BUMPER!" % String(rival.get_meta("nganya_name", "RIVAL NGANYA")))
 			elif gap > 65.0:
 				speed *= 1.15
 		if to_target.length() < 12.0:
