@@ -17,8 +17,6 @@ func _ready() -> void:
 	if network == null:
 		push_error("CorridorLifeManager requires NairobiRouteNetwork.")
 		return
-	_spawn_waiyaki_people()
-	_spawn_other_corridor_people()
 	_spawn_bodas()
 	_spawn_route_minibuses()
 	_spawn_other_corridor_minibuses()
@@ -336,3 +334,13 @@ func set_vehicle_passenger_load(vehicle: Node3D, onboard: int) -> void:
 		vehicle.add_child(label)
 	label.text = "%d PASSENGERS" % onboard
 	label.modulate = Color("ffe15a")
+
+
+func refresh_stage_passengers(corridor_index: int, stop_index: int) -> void:
+	var key := "%d:%d" % [corridor_index, stop_index]
+	var people: Array = _stage_people.get(key, [])
+	for person in people:
+		if person is Node3D:
+			var passenger := person as Node3D
+			passenger.global_position = passenger.get_meta("stage_home", passenger.global_position)
+			passenger.visible = true
