@@ -6,6 +6,7 @@ extends CanvasLayer
 @export var challenge_manager_path: NodePath
 @export var career_manager_path: NodePath
 @export var rival_manager_path: NodePath
+@export var street_king_manager_path: NodePath
 
 @onready var speed_label: Label = $Margin/VBox/TopBar/Speed
 @onready var money_label: Label = $Margin/VBox/TopBar/Money
@@ -31,6 +32,7 @@ var corridor_service: Node
 var challenge_manager: Node
 var career_manager: Node
 var rival_manager: Node
+var street_king_manager: Node
 var _fare_notice_time: float = 0.0
 var _corridor_time: float = 0.0
 var _last_completed_corridor := -1
@@ -98,6 +100,13 @@ func _ready() -> void:
 		challenge_manager.challenge_changed.connect(_on_challenge_changed)
 		challenge_manager.penalty_applied.connect(_on_penalty_applied)
 		challenge_manager.rival_result.connect(_on_rival_result)
+	if not street_king_manager_path.is_empty():
+		street_king_manager = get_node_or_null(street_king_manager_path)
+	if street_king_manager != null:
+		street_king_manager.shift_changed.connect(_on_shift_changed)
+		street_king_manager.shift_completed.connect(_on_shift_completed)
+		street_king_manager.mastery_changed.connect(_on_mastery_changed)
+		call_deferred("_refresh_shift_banner")
 	if not rival_manager_path.is_empty():
 		rival_manager = get_node_or_null(rival_manager_path)
 	if rival_manager != null and rival_manager.has_signal("rival_pressure"):
@@ -236,7 +245,7 @@ func _on_corridor_completed(name: String, reward: int, balance: int, elapsed: fl
 	finish_panel.visible = true
 	finish_title.text = "%s COMPLETE" % name
 	var record_text := "NEW PERSONAL BEST!" if new_best else "Best: %s" % _format_time(best)
-	finish_summary.text = "Time: %s\\n%s\\nPassengers: %d  •  Fares: KSh %s\\nRoute bonus: KSh %s\\nTotal: KSh %s\\n\\nSTOP AT TERMINUS • NO MANUAL U-TURN NEEDED" % [_format_time(elapsed), record_text, passengers, _format_number(fares), _format_number(reward), _format_number(balance)]
+	finish_summary.text = "Time: %s\\n%s\\nPassengers: %d  •  Fares: KSh %s\\nRoute bonus: KSh %s\\nTotal: KSh %s\\nMASTERY %d/10 • %s\\n\\nSTOP AT TERMINUS • NO MANUAL U-TURN NEEDED" % [_format_time(elapsed), record_text, passengers, _format_number(fares), _format_number(reward), _format_number(balance), _route_mastery(int(corridor_service.get("corridor_index"))), street_king_manager.call("get_shift_summary") if street_king_manager != null else "STREET KING SHIFT"]
 	_last_completed_corridor = int(corridor_service.get("corridor_index")) if corridor_service != null else -1
 	replay_button.text = "START RETURN TRIP TO CBD" if corridor_service != null and not bool(corridor_service.get("inbound")) else "BACK AT CBD • CHOOSE NEXT ROUTE"
 	_refresh_route_unlocks()
@@ -293,7 +302,7 @@ func _refresh_route_unlocks() -> void:
 		else:
 			var best := float(best_times.get(str(i), 0.0))
 			var pb := "" if best <= 0.0 else " • PB %s" % _format_time(best)
-			buttons[i].text = "%s%s" % [base_texts[i], pb]
+			buttons[i].text = "%s • MASTERY %d/10%s" % [base_texts[i], _route_mastery(i), pb]
 
 func _on_navigation_changed(distance: float, turn_angle: float) -> void:
 	var degrees := rad_to_deg(turn_angle)
@@ -556,3 +565,29 @@ func _on_matatu_moment(message: String, reward: int) -> void:
 	fare_notice.text = "⚡ %s\n+KSh %s • KEEP IT MOVING!" % [message, _format_number(reward)]
 	_show_message_card()
 	_fare_notice_time = 3.0
+
+
+func _refresh_shift_banner() -> void:
+	if street_king_manager != null:
+		passenger_label.text = street_king_manager.call("get_shift_summary")
+
+func _on_shift_changed(summary: String) -> void:
+	if GameManager.current_state == GameManager.GameState.ROUTE_SELECT:
+		passenger_label.text = summary
+
+func _on_shift_completed(reward: int, rep_reward: int) -> void:
+	_message_style("unlock")
+	fare_notice.text = "STREET KING SHIFT COMPLETE!\n+KSh %s • +%d REP • NAIROBI NOTICED" % [_format_number(reward), rep_reward]
+	_show_message_card()
+	_fare_notice_time = 6.0
+
+func _on_mastery_changed(_corridor: int, level: int, summary: String) -> void:
+	_message_style("hype")
+	fare_notice.text = "%s\nMASTERY LEVEL %d • KEEP PUSHING" % [summary, level]
+	_show_message_card()
+	_fare_notice_time = 5.0
+
+func _route_mastery(index: int) -> int:
+	if street_king_manager == null:
+		return 1
+	return int(street_king_manager.call("get_route_mastery", index))
