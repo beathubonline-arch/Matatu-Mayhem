@@ -33,7 +33,11 @@ var data := {
 	"route_mastery": {},
 	"route_total_passengers": {},
 	"route_total_earnings": {},
-	"route_rival_wins": {}
+	"route_rival_wins": {},
+	"first_run_seen": false,
+	"total_routes_completed": 0,
+	"total_passengers_carried": 0,
+	"total_rival_wins": 0
 }
 
 func _ready() -> void:
