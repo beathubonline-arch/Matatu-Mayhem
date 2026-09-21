@@ -490,22 +490,6 @@ func _stage(pos: Vector3, direction: Vector3, stop_name: String, corridor: Strin
 	sign.outline_size = 9
 	sign.modulate = Color("ffe15a")
 	root.add_child(sign)
-	_spawn_passengers(root)
-
-func _spawn_passengers(parent: Node3D) -> void:
-	for i in range(6):
-		var person := MeshInstance3D.new()
-		var mesh := CapsuleMesh.new()
-		mesh.radius = 0.24
-		mesh.height = 1.55
-		person.mesh = mesh
-		person.position = Vector3(-2.5 + float(i), 0.8, 1.7)
-		var mat := StandardMaterial3D.new()
-		var passenger_colors: Array[Color] = [Color("4f86c6"), Color("d25f4b"), Color("59a96a"), Color("d5a33f")]
-		mat.albedo_color = passenger_colors[i % passenger_colors.size()]
-		person.material_override = mat
-		parent.add_child(person)
-
 
 func _add_route_furniture(data: Dictionary, corridor_index: int) -> void:
 	var points: Array = data["points"]
