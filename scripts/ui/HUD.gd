@@ -45,10 +45,10 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	finish_panel.visible = false
 	replay_button.pressed.connect(_on_replay_pressed)
-	$RouteSelectPanel/VBox/Waiyaki.pressed.connect(func(): _select_corridor(0))
-	$RouteSelectPanel/VBox/Thika.pressed.connect(func(): _select_corridor(1))
-	$RouteSelectPanel/VBox/Mombasa.pressed.connect(func(): _select_corridor(2))
-	$RouteSelectPanel/VBox/Ngong.pressed.connect(func(): _select_corridor(3))
+	$RouteSelectPanel/VBox/Ngong.pressed.connect(func(): _select_corridor(0))
+	$RouteSelectPanel/VBox/Mombasa.pressed.connect(func(): _select_corridor(1))
+	$RouteSelectPanel/VBox/Waiyaki.pressed.connect(func(): _select_corridor(2))
+	$RouteSelectPanel/VBox/Thika.pressed.connect(func(): _select_corridor(3))
 	$RouteSelectPanel/VBox/EngineUpgrade.pressed.connect(func(): _buy_upgrade("engine"))
 	$RouteSelectPanel/VBox/BrakeUpgrade.pressed.connect(func(): _buy_upgrade("brakes"))
 	$RouteSelectPanel/VBox/CapacityUpgrade.pressed.connect(func(): _buy_upgrade("capacity"))
@@ -56,7 +56,7 @@ func _ready() -> void:
 	route_select_panel.visible = true
 	GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
 	objective_label.text = "CHOOSE YOUR NAIROBI ROUTE • CLICK OR PRESS 1–4"
-	passenger_label.text = "WAIYAKI • THIKA • MOMBASA • NGONG"
+	passenger_label.text = "START: NGONG ROAD + MOMBASA ROAD • UNLOCK WAIYAKI + THIKA"
 	passenger_load_label.text = "PASSENGERS 0/%d" % _current_capacity()
 	navigation_label.text = "NAV • SELECT ROUTE"
 	timer_label.text = "00:00.00"
@@ -192,7 +192,7 @@ func _on_replay_pressed() -> void:
 	route_select_panel.visible = true
 	GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
 	objective_label.text = "CHOOSE YOUR NEXT ROUTE FROM CBD"
-	passenger_label.text = "CBD → WAIYAKI • THIKA • MOMBASA • NGONG"
+	passenger_label.text = "CBD HUB • EVERY RUN LEAVES CBD AND RETURNS TO CBD"
 	passenger_load_label.text = "PASSENGERS 0/%d" % _current_capacity()
 	navigation_label.text = "NAV • SELECT ROUTE"
 	_refresh_garage()
@@ -269,30 +269,29 @@ func _on_passenger_load_changed(onboard: int, capacity: int, boarded: int, aligh
 	passenger_load_label.text = "PASSENGERS %d/%d%s" % [onboard, capacity, movement]
 
 func _refresh_route_unlocks() -> void:
-	var unlocked := int(SaveManager.data.get("unlocked_corridors", 1))
+	var unlocked := maxi(int(SaveManager.data.get("unlocked_corridors", 2)), 2)
 	var buttons: Array[Button] = [
-		$RouteSelectPanel/VBox/Waiyaki,
-		$RouteSelectPanel/VBox/Thika,
+		$RouteSelectPanel/VBox/Ngong,
 		$RouteSelectPanel/VBox/Mombasa,
-		$RouteSelectPanel/VBox/Ngong
+		$RouteSelectPanel/VBox/Waiyaki,
+		$RouteSelectPanel/VBox/Thika
 	]
 	var base_texts := [
-		"WAIYAKI WAY  •  CBD → UTHIRU  •  KSh 9,000 BONUS",
-		"THIKA ROAD  •  CBD → KASARANI  •  KSh 11,000 BONUS",
-		"MOMBASA ROAD  •  CBD → IMARA DAIMA  •  KSh 12,000 BONUS",
-		"NGONG ROAD  •  CBD → JUNCTION  •  KSh 10,000 BONUS"
+		"NGONG ROAD • TIER 1 • CITY HUSTLE • TIGHT STAGES • KSh 10,000",
+		"MOMBASA ROAD • TIER 1 • INDUSTRIAL RUN • LONG STRAIGHTS • KSh 12,000",
+		"WAIYAKI WAY • TIER 2 • WESTLANDS EXPRESS • RIVAL PRESSURE • KSh 15,000",
+		"THIKA ROAD • TIER 3 • SUPERHIGHWAY • HIGH SPEED • KSh 18,000"
 	]
 	var best_times: Dictionary = SaveManager.data.get("corridor_best_times", {})
 	for i in range(buttons.size()):
 		var locked := i >= unlocked
 		buttons[i].disabled = locked
 		if locked:
-			buttons[i].text = "LOCKED • %s" % base_texts[i]
+			buttons[i].text = "🔒 COMPLETE CBD RUNS TO UNLOCK • %s" % base_texts[i]
 		else:
 			var best := float(best_times.get(str(i), 0.0))
-			var pb := "" if best <= 0.0 else "  •  PB %s" % _format_time(best)
+			var pb := "" if best <= 0.0 else " • PB %s" % _format_time(best)
 			buttons[i].text = "%s%s" % [base_texts[i], pb]
-
 
 func _on_navigation_changed(distance: float, turn_angle: float) -> void:
 	var degrees := rad_to_deg(turn_angle)
