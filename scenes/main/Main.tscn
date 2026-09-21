@@ -75,6 +75,7 @@ culture_manager_path = NodePath("../MatatuCulture")
 script = ExtResource("23_streetking")
 corridor_service_path = NodePath("../CorridorService")
 challenge_manager_path = NodePath("../DrivingChallenges")
+culture_manager_path = NodePath("../MatatuCulture")
 
 [node name="MatatuCulture" type="Node" parent="Gameplay"]
 script = ExtResource("14_culture")
