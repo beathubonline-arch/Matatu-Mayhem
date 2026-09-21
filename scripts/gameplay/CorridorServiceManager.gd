@@ -154,7 +154,7 @@ func _physics_process(delta: float) -> void:
 		maneuver_changed.emit("FOLLOW ROUTE • STAGE %dm" % int(distance))
 	if distance > 7.0:
 		dwell = 0.0
-		if distance < 18.0 and player.has_method("get_speed_kph"):
+		if distance < 18.0 and _stage_entry_speed <= 0.0 and player.has_method("get_speed_kph"):
 			_stage_entry_speed = float(player.call("get_speed_kph"))
 		if distance < 28.0:
 			service_progress.emit("STAGE AHEAD • %dm" % int(distance))
@@ -188,6 +188,14 @@ func _complete_stop() -> void:
 	var data: Dictionary = _active_corridor_data()
 	var stops: Array = data["stops"]
 	var is_terminal := stop_index >= stops.size() - 1
+	var event_won := _event_time > 0.0 and stop_index > 0
+	if event_won:
+		var event_bonus := 500 + corridor_index * 150
+		EconomyManager.add_money(event_bonus)
+		stage_grade.emit("NAIROBI PRESSURE WON", event_bonus)
+	_event_time = 0.0
+	_event_message = ""
+	event_changed.emit("", 0.0)
 	var rush_won := _stage_rush_time > 0.0 and stop_index > 0
 	if rush_won and _stage_rush_bonus > 0:
 		EconomyManager.add_money(_stage_rush_bonus)
