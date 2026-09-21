@@ -30,6 +30,8 @@ func _ready() -> void:
 func _on_corridor_completed(_name: String, reward: int, _balance: int, _elapsed: float, _best: float, new_best: bool, fares: int, passengers: int) -> void:
 	var idx := corridor_service.corridor_index if corridor_service != null else 0
 	SaveManager.data["shift_runs"] = int(SaveManager.data.get("shift_runs", 0)) + 1
+	SaveManager.data["total_routes_completed"] = int(SaveManager.data.get("total_routes_completed", 0)) + 1
+	SaveManager.data["total_passengers_carried"] = int(SaveManager.data.get("total_passengers_carried", 0)) + passengers
 	SaveManager.data["shift_passengers"] = int(SaveManager.data.get("shift_passengers", 0)) + passengers
 	SaveManager.data["shift_earnings"] = int(SaveManager.data.get("shift_earnings", 0)) + reward + fares
 	var passenger_totals: Dictionary = SaveManager.data.get("route_total_passengers", {})
@@ -47,6 +49,7 @@ func _on_rival_result(won: bool, _player_time: float, _rival_time: float, _rewar
 	if not won:
 		return
 	SaveManager.data["shift_rival_wins"] = int(SaveManager.data.get("shift_rival_wins", 0)) + 1
+	SaveManager.data["total_rival_wins"] = int(SaveManager.data.get("total_rival_wins", 0)) + 1
 	var idx := corridor_service.corridor_index if corridor_service != null else 0
 	var wins: Dictionary = SaveManager.data.get("route_rival_wins", {})
 	wins[str(idx)] = int(wins.get(str(idx), 0)) + 1
@@ -97,3 +100,16 @@ func get_route_mastery(idx: int) -> int:
 
 func _emit_shift() -> void:
 	shift_changed.emit(get_shift_summary())
+
+
+func get_driver_card() -> String:
+	var mastery: Dictionary = SaveManager.data.get("route_mastery", {})
+	var best_route := 0
+	var best_mastery := 1
+	for i in range(ROUTE_NAMES.size()):
+		var level := int(mastery.get(str(i), 1))
+		if level > best_mastery:
+			best_mastery = level
+			best_route = i
+	var nganya := String(SaveManager.data.get("selected_nganya", "Maverick")).to_upper()
+	return "MATATU MAYHEM • STREET KING\n%s • MASTERY %d/10\n%d ROUTES • %d PASSENGERS • %d RIVAL WINS\nNGANYA: %s\nCAN YOU BEAT MY NAIROBI RUN?" % [ROUTE_NAMES[best_route], best_mastery, int(SaveManager.data.get("total_routes_completed", 0)), int(SaveManager.data.get("total_passengers_carried", 0)), int(SaveManager.data.get("total_rival_wins", 0)), nganya]
