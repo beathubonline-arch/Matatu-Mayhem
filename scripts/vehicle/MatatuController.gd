@@ -135,6 +135,11 @@ func _apply_selected_nganya_profile() -> void:
 			stats.engine_force *= 1.08
 			stats.brake_force *= 1.05
 			stats.hard_max_speed_kph += 6.0
+		"KINDE SABA":
+			stats.engine_force *= 1.10
+			stats.hard_max_speed_kph += 8.0
+			stats.max_steer_degrees += 2.0
+			stats.front_grip *= 1.05
 		"MOXIE":
 			stats.max_steer_degrees += 3.0
 			stats.high_speed_steer_degrees += 2.0
