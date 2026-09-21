@@ -9,12 +9,13 @@ extends CanvasLayer
 
 @onready var speed_label: Label = $Margin/VBox/TopBar/Speed
 @onready var money_label: Label = $Margin/VBox/TopBar/Money
-@onready var objective_label: Label = $Margin/VBox/Objective
+@onready var objective_label: Label = $Margin/VBox/ObjectiveCard/Objective
 @onready var timer_label: Label = $Margin/VBox/Timer
 @onready var passenger_label: Label = $Margin/VBox/PassengerObjective
 @onready var passenger_load_label: Label = $Margin/VBox/PassengerLoad
 @onready var navigation_label: Label = $Margin/VBox/Navigation
-@onready var fare_notice: Label = $FareNotice
+@onready var message_card: PanelContainer = $MessageCard
+@onready var fare_notice: Label = $MessageCard/FareNotice
 @onready var controls_label: Label = $Margin/VBox/Controls
 @onready var hype_label: Label = $Margin/VBox/Hype
 @onready var radio_label: Label = $RadioPanel/RadioText
@@ -61,7 +62,7 @@ func _ready() -> void:
 	timer_label.text = "00:00.00"
 	EconomyManager.money_changed.connect(_on_money_changed)
 	_on_money_changed(EconomyManager.get_money())
-	fare_notice.visible = false
+	message_card.visible = false
 	if not culture_manager_path.is_empty():
 		culture_manager = get_node_or_null(culture_manager_path)
 	if culture_manager != null:
@@ -150,7 +151,7 @@ func _process(_delta: float) -> void:
 	if _fare_notice_time > 0.0:
 		_fare_notice_time -= _delta
 		if _fare_notice_time <= 0.0:
-			fare_notice.visible = false
+			message_card.visible = false
 
 func _on_money_changed(total: int) -> void:
 	money_label.text = "KSh %s" % _format_number(total)
@@ -167,8 +168,9 @@ func _on_passenger_status_changed(message: String) -> void:
 	passenger_label.text = message
 
 func _on_fare_awarded(amount: int, new_balance: int) -> void:
+	_message_style("reward")
 	fare_notice.text = "+ KSh %s  PASSENGER FARE\\nBALANCE: KSh %s" % [_format_number(amount), _format_number(new_balance)]
-	fare_notice.visible = true
+	_show_message_card()
 	_fare_notice_time = 4.0
 
 func _on_route_completed(elapsed: float, reward: int) -> void:
@@ -227,7 +229,7 @@ func _on_corridor_completed(name: String, reward: int, balance: int, elapsed: fl
 	GameManager.set_game_state(GameManager.GameState.ROUTE_COMPLETE)
 	objective_label.text = "ROUTE COMPLETE"
 	fare_notice.text = "%s COMPLETE  +KSh %s\\nBALANCE: KSh %s" % [name, _format_number(reward), _format_number(balance)]
-	fare_notice.visible = true
+	_show_message_card()
 	_fare_notice_time = 5.0
 	finish_panel.visible = true
 	finish_title.text = "%s COMPLETE" % name
@@ -240,7 +242,7 @@ func _on_corridor_completed(name: String, reward: int, balance: int, elapsed: fl
 func _select_corridor(index: int) -> void:
 	if corridor_service == null:
 		fare_notice.text = "ROUTE SYSTEM NOT READY"
-		fare_notice.visible = true
+		_show_message_card()
 		_fare_notice_time = 3.0
 		return
 	corridor_service.call("select_corridor", index)
@@ -315,13 +317,13 @@ func _buy_upgrade(kind: String) -> void:
 	var level: int = clampi(int(levels.get(kind, 0)), 0, 5)
 	if level >= 5:
 		fare_notice.text = "%s MAX LEVEL" % kind.to_upper()
-		fare_notice.visible = true
+		_show_message_card()
 		_fare_notice_time = 2.5
 		return
 	var cost := _upgrade_cost(kind)
 	if not EconomyManager.spend_money(cost):
 		fare_notice.text = "NEED KSh %s FOR %s" % [_format_number(cost), kind.to_upper()]
-		fare_notice.visible = true
+		_show_message_card()
 		_fare_notice_time = 2.5
 		return
 	levels[kind] = level + 1
@@ -333,7 +335,7 @@ func _buy_upgrade(kind: String) -> void:
 	if corridor_service != null and corridor_service.has_method("refresh_capacity_upgrade"):
 		corridor_service.call("refresh_capacity_upgrade")
 	fare_notice.text = "%s UPGRADED • LEVEL %d" % [kind.to_upper(), level + 1]
-	fare_notice.visible = true
+	_show_message_card()
 	_fare_notice_time = 2.5
 	_refresh_garage()
 
@@ -367,12 +369,12 @@ func _garage_action() -> void:
 			if vehicle != null and vehicle.has_method("refresh_selected_nganya"):
 				vehicle.call("refresh_selected_nganya")
 			fare_notice.text = "NEW NGANYA BOUGHT • %s • KSh %s" % [name.to_upper(), _format_number(price)]
-			fare_notice.visible = true
+			_show_message_card()
 			_fare_notice_time = 4.0
 			_refresh_nganya_selector()
 			return
 		fare_notice.text = "NEED KSh %s • %s" % [_format_number(price), name.to_upper()]
-		fare_notice.visible = true
+		_show_message_card()
 		_fare_notice_time = 3.0
 		_shop_index = (_shop_index + 1) % available.size()
 		_refresh_nganya_selector()
@@ -389,7 +391,7 @@ func _garage_action() -> void:
 		vehicle.call("refresh_selected_nganya")
 	_refresh_nganya_selector()
 	fare_notice.text = "NGANYA SELECTED • %s" % String(owned[index]).to_upper()
-	fare_notice.visible = true
+	_show_message_card()
 	_fare_notice_time = 3.0
 
 func _refresh_nganya_selector() -> void:
@@ -407,12 +409,13 @@ func _refresh_nganya_selector() -> void:
 func _on_challenge_changed(message: String, clean_streak: int) -> void:
 	var suffix := "" if clean_streak <= 0 else " • CLEAN x%d" % clean_streak
 	fare_notice.text = "%s%s" % [message, suffix]
-	fare_notice.visible = true
+	_show_message_card()
 	_fare_notice_time = 3.0
 
 func _on_penalty_applied(amount: int, balance: int, reason: String) -> void:
+	_message_style("danger")
 	fare_notice.text = "%s • -KSh %s\nBALANCE: KSh %s" % [reason, _format_number(amount), _format_number(balance)]
-	fare_notice.visible = true
+	_show_message_card()
 	_fare_notice_time = 3.0
 
 func _on_rival_result(won: bool, player_time: float, rival_time: float, reward: int) -> void:
@@ -420,7 +423,7 @@ func _on_rival_result(won: bool, player_time: float, rival_time: float, reward: 
 		fare_notice.text = "RIVAL BEATEN • +KSh %s\nYOU %s • RIVAL %s" % [_format_number(reward), _format_time(player_time), _format_time(rival_time)]
 	else:
 		fare_notice.text = "RIVAL WINS THIS RUN\nYOU %s • RIVAL %s • RUN IT AGAIN" % [_format_time(player_time), _format_time(rival_time)]
-	fare_notice.visible = true
+	_show_message_card()
 	_fare_notice_time = 5.0
 
 func _on_maneuver_changed(message: String) -> void:
@@ -444,13 +447,13 @@ func _on_career_changed(rank: int, rank_name: String, xp: int, next_xp: int, own
 
 func _on_nganya_unlocked(name: String) -> void:
 	fare_notice.text = "NEW NGANYA UNLOCKED • %s" % name
-	fare_notice.visible = true
+	_show_message_card()
 	_fare_notice_time = 5.0
 
 
 func _on_conductor_call(message: String) -> void:
 	fare_notice.text = "CONDUCTOR • %s" % message
-	fare_notice.visible = true
+	_show_message_card()
 	_fare_notice_time = 2.8
 
 
@@ -460,8 +463,9 @@ func _on_stage_rush_changed(seconds_left: float, bonus: int) -> void:
 
 
 func _on_stage_grade(message: String, reward: int) -> void:
+	_message_style("hype")
 	fare_notice.text = "%s • +KSh %s" % [message, _format_number(reward)]
-	fare_notice.visible = true
+	_show_message_card()
 	_fare_notice_time = 2.6
 
 
@@ -471,20 +475,21 @@ func _on_event_changed(message: String, seconds_left: float) -> void:
 
 
 func _on_route_unlocked(name: String) -> void:
+	_message_style("unlock")
 	fare_notice.text = "NEW ROUTE UNLOCKED • %s\nNAIROBI JUST GOT BIGGER" % name.to_upper()
-	fare_notice.visible = true
+	_show_message_card()
 	_fare_notice_time = 5.0
 
 
 func _on_rival_pressure(message: String) -> void:
 	fare_notice.text = "RIVAL • %s" % message
-	fare_notice.visible = true
+	_show_message_card()
 	_fare_notice_time = 2.5
 
 
 func _on_direction_changed(label: String) -> void:
 	fare_notice.text = "ROUTE DIRECTION • %s" % label
-	fare_notice.visible = true
+	_show_message_card()
 	_fare_notice_time = 2.5
 
 
@@ -502,6 +507,31 @@ func _render_live_objective() -> void:
 
 func _on_nganya_available(name: String, price: int) -> void:
 	fare_notice.text = "GARAGE STOCK UNLOCKED • %s • KSh %s" % [name.to_upper(), _format_number(price)]
-	fare_notice.visible = true
+	_show_message_card()
 	_fare_notice_time = 4.0
 	_refresh_nganya_selector()
+
+
+func _show_message_card() -> void:
+	message_card.visible = true
+	message_card.modulate = Color(1, 1, 1, 0)
+	message_card.scale = Vector2(0.78, 0.78)
+	message_card.pivot_offset = message_card.size * 0.5
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(message_card, "modulate", Color.WHITE, 0.14)
+	tween.tween_property(message_card, "scale", Vector2(1.06, 1.06), 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.chain().tween_property(message_card, "scale", Vector2.ONE, 0.10)
+
+func _message_style(kind: String) -> void:
+	match kind:
+		"reward":
+			fare_notice.modulate = Color("62ff82")
+		"danger":
+			fare_notice.modulate = Color("ff4d64")
+		"hype":
+			fare_notice.modulate = Color("ff5ca8")
+		"unlock":
+			fare_notice.modulate = Color("ffe15a")
+		_:
+			fare_notice.modulate = Color("5cecff")
