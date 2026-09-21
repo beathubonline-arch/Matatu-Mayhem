@@ -113,6 +113,7 @@ func _build_corridor(data: Dictionary, corridor_index: int) -> void:
 		_other_corridor_landmarks(data, corridor_index)
 	_corridor_gateway(data, corridor_index)
 	_add_route_furniture(data, corridor_index)
+	_add_corridor_identity(data, corridor_index)
 
 func _stage_visual_position(route_points: Array, service_point: Vector3) -> Vector3:
 	var best_index := 0
@@ -522,7 +523,7 @@ func _add_route_furniture(data: Dictionary, corridor_index: int) -> void:
 		# Route-number signs make the world readable without staring at HUD text.
 		if i % 2 == 0:
 			var sign := Label3D.new()
-			sign.text = "%s  •  %s" % [String(data["name"]), String(data["stops"][mini(i / 2, data["stops"].size() - 1)])]
+			sign.text = "%s  •  %s" % [String(data["name"]), String(data["stops"][mini(int(i / 2), data["stops"].size() - 1)])]
 			sign.position = mid + right * 10.8 + Vector3.UP * 3.8
 			sign.font_size = 24
 			sign.pixel_size = 0.006
@@ -531,7 +532,7 @@ func _add_route_furniture(data: Dictionary, corridor_index: int) -> void:
 			add_child(sign)
 		# Common Nairobi roadside clutter: barriers, kiosks and utility poles.
 		if i % 3 == 1:
-			_roadside_shop(mid - right * 12.5, String(data["stops"][mini(i / 3, data["stops"].size() - 1)]), i + corridor_index * 7)
+			_roadside_shop(mid - right * 12.5, String(data["stops"][mini(int(i / 3), data["stops"].size() - 1)]), i + corridor_index * 7)
 		for side in [-1.0, 1.0]:
 			var pole := MeshInstance3D.new()
 			var pole_mesh := CylinderMesh.new()
@@ -581,3 +582,53 @@ func _build_cbd_hub() -> void:
 		lane.outline_size = 7
 		lane.modulate = Color(String(data["color"]))
 		hub.add_child(lane)
+
+
+func _add_corridor_identity(data: Dictionary, corridor_index: int) -> void:
+	var service_points: Array = data["service_points"]
+	var stops: Array = data["stops"]
+	var accent := Color(String(data["color"]))
+	for i in range(service_points.size()):
+		var base: Vector3 = get_stage_waiting_position(corridor_index, i)
+		var direction: Vector3 = get_stage_direction(corridor_index, i)
+		var right := Vector3(direction.z, 0.0, -direction.x)
+		var marker := Label3D.new()
+		marker.text = "📍 %s" % String(stops[i]).to_upper()
+		marker.position = base + right * 3.2 + Vector3.UP * 6.2
+		marker.font_size = 32
+		marker.pixel_size = 0.006
+		marker.outline_size = 9
+		marker.modulate = accent
+		add_child(marker)
+	# Give each corridor a recognisable silhouette without expensive imported assets.
+	var mid_index: int = clampi(int(service_points.size() / 2), 0, service_points.size() - 1)
+	var centre: Vector3 = service_points[mid_index]
+	match corridor_index:
+		0:
+			_landmark_block(centre + Vector3(-18, 0, -10), Vector3(13, 26, 10), "WESTLANDS\nSKYLINE", accent)
+		1:
+			_landmark_block(centre + Vector3(18, 0, -8), Vector3(18, 8, 12), "THIKA SUPERHIGHWAY\nINTERCHANGE", accent)
+		2:
+			_landmark_block(centre + Vector3(17, 0, 12), Vector3(20, 11, 14), "INDUSTRIAL AREA\nMOMBASA ROAD", accent)
+		3:
+			_landmark_block(centre + Vector3(-16, 0, 12), Vector3(15, 10, 12), "NGONG ROAD\nCITY LIFE", accent)
+
+func _landmark_block(pos: Vector3, size: Vector3, title: String, accent: Color) -> void:
+	var block := MeshInstance3D.new()
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	block.mesh = mesh
+	block.position = pos + Vector3.UP * size.y * 0.5
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color("4a5058")
+	mat.roughness = 0.78
+	block.material_override = mat
+	add_child(block)
+	var label := Label3D.new()
+	label.text = title
+	label.position = pos + Vector3(0, size.y + 2.0, 0)
+	label.font_size = 34
+	label.pixel_size = 0.006
+	label.outline_size = 9
+	label.modulate = accent
+	add_child(label)
