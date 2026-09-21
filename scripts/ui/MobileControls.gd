@@ -9,6 +9,9 @@ var _held_actions: Dictionary = {}
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	controls.visible = OS.has_feature("mobile") or DisplayServer.is_touchscreen_available() or always_show_in_editor
+	# Web radio is intentionally parked for Public Beta while long-form audio is investigated.
+	# Do not expose dead radio buttons to phone players.
+	$Controls/Radio.visible = not OS.has_feature("web")
 	_bind_hold_button($Controls/Steering/Left, "steer_left")
 	_bind_hold_button($Controls/Steering/Right, "steer_right")
 	_bind_hold_button($Controls/Pedals/Brake, "brake")
