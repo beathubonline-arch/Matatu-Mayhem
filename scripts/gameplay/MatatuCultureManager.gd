@@ -94,3 +94,6 @@ func _on_rival_result(won: bool, _player_time: float, _rival_time: float, _rewar
 
 func _on_driving_skill(message: String, points: int) -> void:
 	_add_hype(points, message)
+
+func award_reputation(amount: int) -> void:
+	_add_reputation(maxi(amount, 0))
