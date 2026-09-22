@@ -71,7 +71,8 @@ func _ready() -> void:
 		SaveManager.save_game()
 		objective_label.text = "WELCOME TO NAIROBI • CARRY PASSENGERS • MAKE KSh • BEAT RIVALS • BECOME STREET KING"
 		passenger_label.text = "START WITH NGONG OR MOMBASA • STOP BRIEFLY AT STAGES • FOLLOW NAVIGATION"
-	passenger_label.text = "START: NGONG ROAD + MOMBASA ROAD • UNLOCK WAIYAKI + THIKA"
+	else:
+		passenger_label.text = "START: NGONG ROAD + MOMBASA ROAD • UNLOCK WAIYAKI + THIKA"
 	passenger_load_label.text = "PASSENGERS 0/%d" % _current_capacity()
 	navigation_label.text = "NAV • SELECT ROUTE"
 	timer_label.text = "00:00.00"
@@ -256,7 +257,8 @@ func _on_radio_catalog_changed(message: String) -> void:
 		print("HUD: " + message)
 
 func _on_corridor_changed(name: String, stop_name: String, current: int, total: int) -> void:
-	passenger_label.text = "%s  •  STAGE %d/%d  •  %s" % [name, current, total, stop_name]
+	var leg := "RETURN TO CBD" if corridor_service != null and bool(corridor_service.get("inbound")) else "OUTBOUND"
+	passenger_label.text = "%s  •  %s  •  STAGE %d/%d  •  %s" % [name, leg, current, total, stop_name]
 
 func _on_corridor_completed(name: String, reward: int, balance: int, elapsed: float, best: float, new_best: bool, fares: int, passengers: int) -> void:
 	GameManager.set_game_state(GameManager.GameState.ROUTE_COMPLETE)
@@ -265,11 +267,15 @@ func _on_corridor_completed(name: String, reward: int, balance: int, elapsed: fl
 	_show_message_card()
 	_fare_notice_time = 5.0
 	finish_panel.visible = true
-	finish_title.text = "%s COMPLETE" % name
+	var returned_to_cbd := corridor_service != null and bool(corridor_service.get("inbound"))
+	finish_title.text = "BACK IN CBD • ROUND TRIP COMPLETE" if returned_to_cbd else "%s • OUTBOUND COMPLETE" % name
 	var record_text := "NEW PERSONAL BEST!" if new_best else "Best: %s" % _format_time(best)
-	finish_summary.text = "Time: %s\\n%s\\nPassengers: %d  •  Fares: KSh %s\\nRoute bonus: KSh %s\\nTotal: KSh %s\\nMASTERY %d/10 • %s\\n\\nSTOP AT TERMINUS • NO MANUAL U-TURN NEEDED" % [_format_time(elapsed), record_text, passengers, _format_number(fares), _format_number(reward), _format_number(balance), _route_mastery(int(corridor_service.get("corridor_index"))), street_king_manager.call("get_shift_summary") if street_king_manager != null else "STREET KING SHIFT"]
+	var journey_line := "RETURN LEG READY • TAKE PASSENGERS BACK TO CBD"
+	if returned_to_cbd:
+		journey_line = "ROUND TRIP: %d PASSENGERS • KSh %s EARNED" % [int(SaveManager.data.get("last_round_trip_passengers", passengers)), _format_number(int(SaveManager.data.get("last_round_trip_earnings", reward + fares)))]
+	finish_summary.text = "Time: %s\\n%s\\nPassengers this leg: %d  •  Fares: KSh %s\\nRoute bonus: KSh %s\\nBalance: KSh %s\\n%s\\nMASTERY %d/10 • %s" % [_format_time(elapsed), record_text, passengers, _format_number(fares), _format_number(reward), _format_number(balance), journey_line, _route_mastery(int(corridor_service.get("corridor_index"))), street_king_manager.call("get_shift_summary") if street_king_manager != null else "STREET KING SHIFT"]
 	_last_completed_corridor = int(corridor_service.get("corridor_index")) if corridor_service != null else -1
-	replay_button.text = "START RETURN TRIP TO CBD" if corridor_service != null and not bool(corridor_service.get("inbound")) else "BACK AT CBD • CHOOSE NEXT ROUTE"
+	replay_button.text = "START RETURN TRIP TO CBD" if not returned_to_cbd else "BACK AT CBD • CHOOSE NEXT ROUTE"
 	_refresh_route_unlocks()
 
 func _select_corridor(index: int) -> void:
