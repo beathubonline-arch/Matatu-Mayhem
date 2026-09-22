@@ -44,6 +44,12 @@
 - The countdown changes to an overtime warning when the target is missed.
 - The finish state clearly compares player and rival times.
 
+## Passenger loading repair
+- Boarding creates visible passenger silhouettes inside the matatu.
+- Cabin occupancy follows the authoritative passenger counter.
+- Alighting animates passengers from the door into the destination stage.
+- Boarding confirmation reports seats filled immediately.
+
 ## Runtime acceptance test (must be performed on the actual exported build)
 1. Fresh save: choose Ngong or Mombasa and understand the objective without external explanation.
 2. Complete outbound service, board/alight passengers, receive fares and route reward.
