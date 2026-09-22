@@ -303,12 +303,14 @@ theme_override_styles/normal = SubResource("ButtonStyle")
 text = "NGONG ROAD  •  COMMUNITY → JUNCTION  •  KSh 10,000 BONUS"
 
 
-[node name="GarageTitle" type="Label" parent="RouteSelectPanel/VBox"]
+[node name="GarageTitle" type="Button" parent="RouteSelectPanel/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.3, 0.92, 1, 1)
 theme_override_font_sizes/font_size = 19
-text = "MAVERICK GARAGE"
-horizontal_alignment = 1
+text = "MAVERICK GARAGE • LIVERY: NAIROBI NEON"
+alignment = 1
+flat = true
+tooltip_text = "Change your nganya paint and neon identity"
 
 [node name="NganyaSelect" type="Button" parent="RouteSelectPanel/VBox"]
 custom_minimum_size = Vector2(0, 42)
