@@ -7,6 +7,7 @@ extends Node3D
 
 var network: NairobiRouteNetwork
 var _rng := RandomNumberGenerator.new()
+var _vehicle_limit := 999
 
 const STREET_NAMES := ["ONYX","MOXIE","KINDE SABA","RAPTOR","MATRIX","MOOD","BABA YAGA","AMBUSH"]
 
@@ -90,10 +91,16 @@ func _spawn_vehicle(data: Dictionary, index: int) -> void:
 
 func _physics_process(_delta: float) -> void:
 	var player := GameManager.get_player_vehicle() as Node3D
+	var vehicle_index := 0
 	for child in get_children():
 		var vehicle := child as CharacterBody3D
 		if vehicle == null:
 			continue
+		vehicle.visible = vehicle_index < _vehicle_limit
+		if vehicle_index >= _vehicle_limit:
+			vehicle_index += 1
+			continue
+		vehicle_index += 1
 		var points: Array = vehicle.get_meta("points", [])
 		if points.size() < 2:
 			continue
@@ -150,3 +157,6 @@ func _physics_process(_delta: float) -> void:
 			var target_yaw: float = atan2(-direction.x, -direction.z)
 			vehicle.rotation.y = lerp_angle(vehicle.rotation.y, target_yaw, clampf(_delta * 5.0, 0.0, 1.0))
 		vehicle.move_and_slide()
+
+func set_vehicle_limit(limit: int) -> void:
+	_vehicle_limit = maxi(limit, 4)
