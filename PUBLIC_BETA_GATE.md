@@ -74,6 +74,12 @@
 - Paint selection persists across reloads and applies to every owned nganya.
 - The garage header acts as the livery control without crowding the route menu.
 
+## Milestone 12 — Nairobi Time, Weather and Night Shift
+- Nairobi cycles through daylight, golden hour and night conditions.
+- Short-rain windows add lightweight vehicle-following rain and denser haze.
+- Nganya headlight beams switch on automatically for darkness and rain.
+- The HUD reports live road conditions without obscuring route information.
+
 ## Runtime acceptance test (must be performed on the actual exported build)
 1. Fresh save: choose Ngong or Mombasa and understand the objective without external explanation.
 2. Complete outbound service, board/alight passengers, receive fares and route reward.
