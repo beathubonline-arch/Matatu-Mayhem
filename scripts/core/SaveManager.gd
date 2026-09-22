@@ -40,6 +40,11 @@ var data := {
 	"total_routes_completed": 0,
 	"total_passengers_carried": 0,
 	"total_rival_wins": 0,
+	"round_trips_completed": 0,
+	"current_round_trip_earnings": 0,
+	"current_round_trip_passengers": 0,
+	"last_round_trip_earnings": 0,
+	"last_round_trip_passengers": 0,
 	"rival_win_streak": 0,
 	"best_rival_win_streak": 0
 }
