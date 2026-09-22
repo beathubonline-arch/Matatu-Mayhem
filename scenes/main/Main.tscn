@@ -129,3 +129,4 @@ performance_manager_path = NodePath("../PerformanceManager")
 corridor_service_path = NodePath("../Gameplay/CorridorService")
 performance_manager_path = NodePath("../PerformanceManager")
 [node name="MobileControls" parent="." instance=ExtResource("8_mobile")]
+camera_path = NodePath("../ChaseCamera")
