@@ -32,6 +32,12 @@
 - Save schema includes all Street King progression fields.
 - Web export preset remains the release target.
 
+## Milestone 6 — Replayable Nairobi Shift v1
+- Outbound and return legs form one complete CBD round trip.
+- Round-trip passenger and earnings totals persist.
+- New routes unlock only after the matatu returns to CBD.
+- The HUD distinguishes OUTBOUND from RETURN TO CBD.
+
 ## Runtime acceptance test (must be performed on the actual exported build)
 1. Fresh save: choose Ngong or Mombasa and understand the objective without external explanation.
 2. Complete outbound service, board/alight passengers, receive fares and route reward.
