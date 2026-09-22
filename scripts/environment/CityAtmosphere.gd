@@ -87,3 +87,9 @@ func _set_vehicle_lights(active: bool) -> void:
 	var visuals := _player.get_node_or_null("NganyaVisuals")
 	if visuals != null and visuals.has_method("set_environment_lights"):
 		visuals.call("set_environment_lights", active)
+
+func set_quality_level(level: String) -> void:
+	if _rain != null:
+		_rain.amount = 45 if level == "PERFORMANCE" else 110
+	if _sun != null:
+		_sun.shadow_enabled = level != "PERFORMANCE"
