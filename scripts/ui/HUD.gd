@@ -170,7 +170,7 @@ func _ready() -> void:
 	if OS.has_feature("mobile") or DisplayServer.is_touchscreen_available():
 		controls_label.visible = false
 	else:
-		controls_label.text = "W/S Accelerate & Brake   A/D Steer   SPACE Handbrake   C Camera   R Reset   ESC Pause"
+		controls_label.text = "W/S Drive  A/D Steer  SPACE Handbrake  C Camera  5 Chase  6 Wide  7 Driver  R Reset"
 
 func _input(event: InputEvent) -> void:
 	if not route_select_panel.visible:
@@ -569,7 +569,7 @@ func _on_career_changed(rank: int, rank_name: String, xp: int, next_xp: int, own
 		controls_label.visible = false
 	else:
 		controls_label.visible = true
-		controls_label.text = "W/S DRIVE • A/D STEER • SPACE HANDBRAKE • C CAMERA • R RESET  |  CAREER R%d %s • %s • %d NGANYAS" % [rank, rank_name, progress, owned.size()]
+		controls_label.text = "W/S DRIVE • A/D STEER • C CYCLE • 5 CHASE • 6 WIDE • 7 DRIVER • R RESET  |  CAREER R%d %s • %s • %d NGANYAS" % [rank, rank_name, progress, owned.size()]
 
 func _on_nganya_unlocked(name: String) -> void:
 	fare_notice.text = "NEW NGANYA UNLOCKED • %s" % name
