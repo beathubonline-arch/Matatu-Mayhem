@@ -8,9 +8,11 @@ extends CanvasLayer
 @export var rival_manager_path: NodePath
 @export var street_king_manager_path: NodePath
 @export var camera_path: NodePath
+@export var atmosphere_path: NodePath
 
 @onready var speed_label: Label = $Margin/VBox/TopBar/Speed
 @onready var money_label: Label = $Margin/VBox/TopBar/Money
+@onready var conditions_label: Label = $Margin/VBox/TopBar/Conditions
 @onready var objective_label: Label = $Margin/VBox/ObjectiveCard/Objective
 @onready var timer_label: Label = $Margin/VBox/Timer
 @onready var rival_label: Label = $Margin/VBox/Rival
@@ -36,6 +38,7 @@ var career_manager: Node
 var rival_manager: Node
 var street_king_manager: Node
 var chase_camera: Node
+var atmosphere: Node
 var _fare_notice_time: float = 0.0
 var _corridor_time: float = 0.0
 var _last_completed_corridor := -1
@@ -138,6 +141,10 @@ func _ready() -> void:
 		chase_camera = get_node_or_null(camera_path)
 	if chase_camera != null and chase_camera.has_signal("camera_mode_changed"):
 		chase_camera.camera_mode_changed.connect(_on_camera_mode_changed)
+	if not atmosphere_path.is_empty():
+		atmosphere = get_node_or_null(atmosphere_path)
+	if atmosphere != null and atmosphere.has_signal("conditions_changed"):
+		atmosphere.conditions_changed.connect(_on_conditions_changed)
 	if not career_manager_path.is_empty():
 		career_manager = get_node_or_null(career_manager_path)
 	if career_manager != null:
@@ -567,6 +574,10 @@ func _on_camera_mode_changed(mode_name: String) -> void:
 	fare_notice.text = "CAMERA • %s VIEW" % mode_name
 	_show_message_card()
 	_fare_notice_time = 1.8
+
+func _on_conditions_changed(label: String, is_night: bool, raining: bool) -> void:
+	conditions_label.text = ("RAIN • " if raining else ("NIGHT • " if is_night else "")) + label
+	conditions_label.modulate = Color("7dd3fc") if raining else (Color("c4b5fd") if is_night else Color("ffe08a"))
 
 
 func _on_stage_rush_changed(seconds_left: float, bonus: int) -> void:
