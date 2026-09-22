@@ -16,7 +16,8 @@ signal camera_mode_changed(mode_name: String)
 const CAMERA_MODE_NAMES := ["CHASE", "WIDE", "DRIVER"]
 
 var target: Node3D
-var _camera_mode := 0
+# Start every run in the elevated wide view preferred for driving.
+var _camera_mode := 1
 var _camera_key_was_down := false
 var _initialized := false
 
