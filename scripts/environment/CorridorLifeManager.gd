@@ -11,6 +11,7 @@ extends Node3D
 var network: NairobiRouteNetwork
 var _movers: Array[CharacterBody3D] = []
 var _stage_people: Dictionary = {}
+var _vehicle_passenger_seats: Dictionary = {}
 
 func _ready() -> void:
 	network = get_node_or_null(network_path) as NairobiRouteNetwork
@@ -310,7 +311,10 @@ func alight_passengers(corridor_index: int, stop_index: int, count: int, vehicle
 	for person in people:
 		if moved >= count:
 			break
-		if person is Node3D and not person.visible:
+		# Destination passengers begin at their stage and are visible. Move a
+		# matching number from the matatu door back into that waiting crowd.
+		# The previous hidden-only condition meant alighting never animated.
+		if person is Node3D:
 			var passenger := person as Node3D
 			var home: Vector3 = passenger.get_meta("stage_home", passenger.global_position)
 			if vehicle != null:
@@ -323,6 +327,10 @@ func alight_passengers(corridor_index: int, stop_index: int, count: int, vehicle
 func set_vehicle_passenger_load(vehicle: Node3D, onboard: int) -> void:
 	if vehicle == null:
 		return
+	var seats := _ensure_vehicle_passenger_seats(vehicle)
+	for i in range(seats.size()):
+		var passenger := seats[i] as Node3D
+		passenger.visible = i < onboard
 	var label := vehicle.get_node_or_null("PassengerLoad") as Label3D
 	if label == null:
 		label = Label3D.new()
@@ -334,6 +342,49 @@ func set_vehicle_passenger_load(vehicle: Node3D, onboard: int) -> void:
 		vehicle.add_child(label)
 	label.text = "%d PASSENGERS" % onboard
 	label.modulate = Color("ffe15a")
+
+func _ensure_vehicle_passenger_seats(vehicle: Node3D) -> Array:
+	var vehicle_id := vehicle.get_instance_id()
+	if _vehicle_passenger_seats.has(vehicle_id):
+		return _vehicle_passenger_seats[vehicle_id]
+	var cabin := Node3D.new()
+	cabin.name = "VisiblePassengers"
+	vehicle.add_child(cabin)
+	var seats: Array[Node3D] = []
+	var colors: Array[Color] = [Color("e07a5f"), Color("457b9d"), Color("f2cc8f"), Color("6a994e"), Color("9b5de5"), Color("f28482")]
+	for i in range(14):
+		var passenger := Node3D.new()
+		passenger.name = "Passenger_%02d" % (i + 1)
+		var side := -1.0 if i % 2 == 0 else 1.0
+		var row := floori(float(i) / 2.0)
+		passenger.position = Vector3(side * 1.04, 1.82, -1.32 + float(row) * 0.47)
+		var torso := MeshInstance3D.new()
+		var torso_mesh := CapsuleMesh.new()
+		torso_mesh.radius = 0.16
+		torso_mesh.height = 0.5
+		torso.mesh = torso_mesh
+		torso.position = Vector3(0.0, -0.18, 0.0)
+		var material := StandardMaterial3D.new()
+		material.albedo_color = colors[i % colors.size()]
+		material.roughness = 0.8
+		torso.material_override = material
+		passenger.add_child(torso)
+		var head := MeshInstance3D.new()
+		var head_mesh := SphereMesh.new()
+		head_mesh.radius = 0.13
+		head_mesh.height = 0.26
+		head.mesh = head_mesh
+		head.position = Vector3(0.0, 0.18, 0.0)
+		var skin := StandardMaterial3D.new()
+		skin.albedo_color = [Color("4a2c20"), Color("6b3f2a"), Color("8a5638"), Color("3a2118")][i % 4]
+		skin.roughness = 0.9
+		head.material_override = skin
+		passenger.add_child(head)
+		passenger.visible = false
+		cabin.add_child(passenger)
+		seats.append(passenger)
+	_vehicle_passenger_seats[vehicle_id] = seats
+	return seats
 
 
 func refresh_stage_passengers(corridor_index: int, stop_index: int) -> void:
