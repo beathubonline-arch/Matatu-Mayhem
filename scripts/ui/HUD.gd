@@ -31,6 +31,7 @@ extends CanvasLayer
 @onready var finish_summary: Label = $FinishPanel/VBox/Summary
 @onready var replay_button: Button = $FinishPanel/VBox/Replay
 @onready var route_select_panel: PanelContainer = $RouteSelectPanel
+@onready var camera_button: Button = $CameraButton
 
 var culture_manager: Node
 var radio: Node
@@ -75,6 +76,7 @@ func _ready() -> void:
 	$RouteSelectPanel/VBox/NganyaSelect.pressed.connect(_cycle_owned_nganya)
 	$RouteSelectPanel/VBox/NganyaBuy.pressed.connect(_buy_market_nganya)
 	$RouteSelectPanel/VBox/GarageTitle.pressed.connect(_cycle_livery)
+	camera_button.pressed.connect(_cycle_camera_button)
 	route_select_panel.visible = true
 	GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
 	objective_label.text = "CHOOSE YOUR NAIROBI ROUTE • CLICK OR PRESS 1–4"
@@ -578,9 +580,14 @@ func _on_conductor_call(message: String) -> void:
 	_fare_notice_time = 2.8
 
 func _on_camera_mode_changed(mode_name: String) -> void:
+	camera_button.text = "CAMERA • %s" % mode_name
 	fare_notice.text = "CAMERA • %s VIEW" % mode_name
 	_show_message_card()
 	_fare_notice_time = 1.8
+
+func _cycle_camera_button() -> void:
+	if chase_camera != null and chase_camera.has_method("cycle_camera"):
+		chase_camera.call("cycle_camera")
 
 func _on_conditions_changed(label: String, is_night: bool, raining: bool) -> void:
 	conditions_label.text = ("RAIN • " if raining else ("NIGHT • " if is_night else "")) + label
