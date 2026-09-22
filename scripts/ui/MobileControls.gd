@@ -18,6 +18,7 @@ func _ready() -> void:
 	_bind_hold_button($Controls/Pedals/Accelerate, "accelerate")
 	_bind_hold_button($Controls/Handbrake, "handbrake")
 	$Controls/Reset.pressed.connect(_pulse_action.bind("reset_vehicle"))
+	$Controls/Camera.pressed.connect(_pulse_action.bind("camera_cycle"))
 	$Controls/Pause.pressed.connect(_pulse_action.bind("pause"))
 	$Controls/Radio/Toggle.pressed.connect(_pulse_action.bind("radio_toggle"))
 	$Controls/Radio/Next.pressed.connect(_pulse_action.bind("radio_next"))
