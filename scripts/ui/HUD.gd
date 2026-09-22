@@ -7,6 +7,7 @@ extends CanvasLayer
 @export var career_manager_path: NodePath
 @export var rival_manager_path: NodePath
 @export var street_king_manager_path: NodePath
+@export var camera_path: NodePath
 
 @onready var speed_label: Label = $Margin/VBox/TopBar/Speed
 @onready var money_label: Label = $Margin/VBox/TopBar/Money
@@ -34,6 +35,7 @@ var challenge_manager: Node
 var career_manager: Node
 var rival_manager: Node
 var street_king_manager: Node
+var chase_camera: Node
 var _fare_notice_time: float = 0.0
 var _corridor_time: float = 0.0
 var _last_completed_corridor := -1
@@ -129,6 +131,10 @@ func _ready() -> void:
 		rival_manager = get_node_or_null(rival_manager_path)
 	if rival_manager != null and rival_manager.has_signal("rival_pressure"):
 		rival_manager.rival_pressure.connect(_on_rival_pressure)
+	if not camera_path.is_empty():
+		chase_camera = get_node_or_null(camera_path)
+	if chase_camera != null and chase_camera.has_signal("camera_mode_changed"):
+		chase_camera.camera_mode_changed.connect(_on_camera_mode_changed)
 	if not career_manager_path.is_empty():
 		career_manager = get_node_or_null(career_manager_path)
 	if career_manager != null:
@@ -142,7 +148,7 @@ func _ready() -> void:
 	if OS.has_feature("mobile") or DisplayServer.is_touchscreen_available():
 		controls_label.visible = false
 	else:
-		controls_label.text = "W/S Accelerate & Brake   A/D Steer   SPACE Handbrake   R Reset   ESC Pause"
+		controls_label.text = "W/S Accelerate & Brake   A/D Steer   SPACE Handbrake   C Camera   R Reset   ESC Pause"
 
 func _input(event: InputEvent) -> void:
 	if not route_select_panel.visible:
@@ -524,7 +530,7 @@ func _on_career_changed(rank: int, rank_name: String, xp: int, next_xp: int, own
 		controls_label.visible = false
 	else:
 		controls_label.visible = true
-		controls_label.text = "W/S DRIVE • A/D STEER • SPACE HANDBRAKE • R RESET  |  CAREER R%d %s • %s • %d NGANYAS" % [rank, rank_name, progress, owned.size()]
+		controls_label.text = "W/S DRIVE • A/D STEER • SPACE HANDBRAKE • C CAMERA • R RESET  |  CAREER R%d %s • %s • %d NGANYAS" % [rank, rank_name, progress, owned.size()]
 
 func _on_nganya_unlocked(name: String) -> void:
 	fare_notice.text = "NEW NGANYA UNLOCKED • %s" % name
@@ -536,6 +542,11 @@ func _on_conductor_call(message: String) -> void:
 	fare_notice.text = "CONDUCTOR • %s" % message
 	_show_message_card()
 	_fare_notice_time = 2.8
+
+func _on_camera_mode_changed(mode_name: String) -> void:
+	fare_notice.text = "CAMERA • %s VIEW" % mode_name
+	_show_message_card()
+	_fare_notice_time = 1.8
 
 
 func _on_stage_rush_changed(seconds_left: float, bonus: int) -> void:
