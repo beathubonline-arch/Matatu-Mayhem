@@ -4,6 +4,7 @@ extends Node
 signal challenge_changed(message: String, clean_streak: int)
 signal penalty_applied(amount: int, balance: int, reason: String)
 signal rival_result(won: bool, player_time: float, rival_time: float, reward: int)
+signal rival_pace_changed(rival_name: String, target_time: float, time_remaining: float)
 signal driving_skill(message: String, points: int)
 
 @export var player_path: NodePath
@@ -31,6 +32,7 @@ var _drift_time := 0.0
 var _speed_hold := 0.0
 var _last_speed_reward := 0.0
 var _proximity_cooldown := 0.0
+var _rival_pace_emit_cooldown := 0.0
 
 func _ready() -> void:
 	player = get_node_or_null(player_path) as VehicleBody3D
@@ -52,6 +54,7 @@ func _physics_process(delta: float) -> void:
 	if GameManager.current_state != GameManager.GameState.PLAYING:
 		_last_velocity = player.linear_velocity
 		return
+	_update_rival_pace(delta)
 	var velocity_change := (player.linear_velocity - _last_velocity).length()
 	_last_velocity = player.linear_velocity
 	if _impact_cooldown <= 0.0 and velocity_change > 7.5 and player.linear_velocity.length() > 1.5:
@@ -75,6 +78,7 @@ func _on_corridor_changed(_name: String, _stop_name: String, current: int, _tota
 	if current == 1:
 		_last_stop_index = 0
 		_run_collisions = 0
+		_rival_pace_emit_cooldown = 0.0
 		return
 	if current > _last_stop_index + 1:
 		clean_streak += 1
@@ -108,6 +112,18 @@ func _on_corridor_completed(_name: String, _reward: int, _balance: int, elapsed:
 	var rival_name := RIVAL_NAMES[clampi(corridor_idx, 0, RIVAL_NAMES.size() - 1)]
 	challenge_changed.emit(("%s DEFEATED • OWN THE STAGE" if won else "%s GOT THERE FIRST • RUN IT BACK") % rival_name, clean_streak)
 	rival_result.emit(won, elapsed, rival_time, reward)
+
+func _update_rival_pace(delta: float) -> void:
+	if corridor_service == null or not corridor_service.active:
+		return
+	_rival_pace_emit_cooldown = maxf(_rival_pace_emit_cooldown - delta, 0.0)
+	if _rival_pace_emit_cooldown > 0.0:
+		return
+	_rival_pace_emit_cooldown = 0.1
+	var corridor_idx := clampi(corridor_service.corridor_index, 0, RIVAL_BASE_TIMES.size() - 1)
+	var target_time := RIVAL_BASE_TIMES[corridor_idx]
+	var rival_name := RIVAL_NAMES[corridor_idx]
+	rival_pace_changed.emit(rival_name, target_time, target_time - corridor_service.elapsed_seconds)
 
 
 func _update_driving_skills(delta: float) -> void:
