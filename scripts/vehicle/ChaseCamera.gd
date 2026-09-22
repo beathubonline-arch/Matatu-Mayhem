@@ -44,9 +44,12 @@ func _ready() -> void:
 		global_rotation = Vector3.ZERO
 	_apply_camera_mode()
 
-func _physics_process(delta: float) -> void:
-	if Input.is_action_just_pressed("camera_cycle"):
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("camera_cycle") or (event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_C):
 		cycle_camera()
+		get_viewport().set_input_as_handled()
+
+func _physics_process(delta: float) -> void:
 	if target == null or not is_instance_valid(target):
 		target = GameManager.get_player_vehicle() as Node3D
 		return
