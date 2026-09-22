@@ -29,6 +29,14 @@ jobs:
         run: |
           mkdir -p build/web
           godot --headless --path . --export-release "Web" build/web/index.html
+      - name: Install native Web radio
+        run: |
+          mkdir -p build/web/radio
+          cp audio/radio/*.ogg build/web/radio/
+          cp web/radio.js build/web/radio.js
+          sed -i 's#</body>#<script src="radio.js"></script></body>#' build/web/index.html
+          test "$(find build/web/radio -maxdepth 1 -name '*.ogg' | wc -l)" -eq 4
+          grep -q 'radio.js' build/web/index.html
       - name: Disable Jekyll
         run: touch build/web/.nojekyll
       - uses: actions/upload-pages-artifact@v3
