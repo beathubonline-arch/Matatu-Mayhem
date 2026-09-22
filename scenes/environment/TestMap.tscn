@@ -34,4 +34,5 @@ directional_shadow_max_distance = 95.0
 script = ExtResource("2_atmosphere")
 sun_path = NodePath("../Sun")
 environment_path = NodePath("../WorldEnvironment")
+player_path = NodePath("../../../../Gameplay/Vehicles/Maverick")
 cycle_seconds = 180.0
