@@ -23,7 +23,7 @@ var _current_index := 0
 var _last_index := -1
 var _rng := RandomNumberGenerator.new()
 var _player: AudioStreamPlayer
-var _web_audio_unlocked := false
+var _web_audio_started := false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -52,7 +52,7 @@ func _ready() -> void:
 		_emit_metadata()
 
 func _input(event: InputEvent) -> void:
-	if not OS.has_feature("web") or _web_audio_unlocked or _tracks.is_empty():
+	if not OS.has_feature("web") or _tracks.is_empty():
 		return
 	var user_gesture := false
 	if event is InputEventKey:
@@ -62,14 +62,17 @@ func _input(event: InputEvent) -> void:
 	elif event is InputEventScreenTouch:
 		user_gesture = event.pressed
 	if user_gesture:
-		_web_audio_unlocked = true
 		print("RADIO: WebAudio user interaction received")
 		# N/M are handled by _unhandled_input(). Avoid starting one track here
 		# and immediately replacing or stopping it in the same input event.
 		if event.is_action_pressed("radio_next") or event.is_action_pressed("radio_toggle"):
 			return
 		# Browsers require WebAudio playback to begin inside a user gesture.
-		_play_current()
+		# Retry on later gestures if the browser did not start playback.
+		if not _web_audio_started or not _player.playing:
+			_play_current()
+			_web_audio_started = _player.playing
+			print("RADIO: WebAudio started=%s" % str(_web_audio_started))
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("radio_next"):
@@ -130,6 +133,8 @@ func _play_current() -> void:
 	print("RADIO: attempting %s - %s" % [str(track["artist"]), str(track["title"])])
 	_player.stream = track["stream"]
 	_player.play()
+	if OS.has_feature("web"):
+		_web_audio_started = _player.playing
 	print("RADIO: play() called; playing=%s" % str(_player.playing))
 	_emit_metadata()
 	playback_state_changed.emit(true)
