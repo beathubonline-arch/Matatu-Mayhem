@@ -21,6 +21,7 @@ var data := {
 	"perfect_runs": 0,
 	"owned_nganyas": ["Maverick"],
 	"selected_nganya": "Maverick",
+	"selected_livery": "Nairobi Neon",
 	"career_rank": 1,
 	"career_xp": 0,
 	"career_earnings": 0,
