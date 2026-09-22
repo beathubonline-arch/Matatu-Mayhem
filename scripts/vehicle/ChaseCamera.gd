@@ -15,6 +15,7 @@ extends Node3D
 @export var lateral_smoothness := 4.0
 @export var acceleration_kick := 0.22
 @export var turn_roll_degrees := 2.4
+@export var shoulder_offset := 0.72
 
 @onready var spring_arm: SpringArm3D = $SpringArm3D
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
@@ -43,7 +44,12 @@ func _physics_process(delta: float) -> void:
 		speed_kph = float(target.call("get_speed_kph"))
 	var speed_ratio: float = clampf(speed_kph / max_speed_reference, 0.0, 1.0)
 
-	var desired_pos := target.global_position + Vector3.UP * height
+	var target_right := target.global_basis.x
+	target_right.y = 0.0
+	target_right = target_right.normalized()
+	# A slight three-quarter view reveals the passenger door, driver and cabin.
+	# It recentres progressively at speed so high-speed driving stays readable.
+	var desired_pos := target.global_position + Vector3.UP * height + target_right * shoulder_offset * (1.0 - speed_ratio * 0.45)
 	global_position = global_position.lerp(desired_pos, 1.0 - exp(-follow_smoothness * delta))
 
 	var forward := -target.global_basis.z
@@ -71,4 +77,3 @@ func _physics_process(delta: float) -> void:
 	_camera_roll = lerpf(_camera_roll, deg_to_rad(-steer_input * turn_roll_degrees * speed_ratio), 1.0 - exp(-5.0 * delta))
 	camera.rotation.z = _camera_roll
 	camera.fov = lerp(base_fov, max_fov, speed_ratio)
-
