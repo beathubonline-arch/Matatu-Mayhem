@@ -12,6 +12,10 @@ var network: NairobiRouteNetwork
 var _movers: Array[CharacterBody3D] = []
 var _stage_people: Dictionary = {}
 var _vehicle_passenger_seats: Dictionary = {}
+var _active_stage_beacon: Node3D
+var _active_stage_label: Label3D
+var _active_stage_people_key := ""
+var _life_time := 0.0
 
 func _ready() -> void:
 	network = get_node_or_null(network_path) as NairobiRouteNetwork
@@ -23,6 +27,7 @@ func _ready() -> void:
 	_spawn_other_corridor_minibuses()
 	_spawn_stage_conductors()
 	_index_stage_people()
+	_create_active_stage_beacon()
 
 func _spawn_waiyaki_people() -> void:
 	var data := network.get_corridor(0)
@@ -98,6 +103,7 @@ func _spawn_bodas() -> void:
 		_movers.append(boda)
 
 func _physics_process(_delta: float) -> void:
+	_life_time += _delta
 	for mover in _movers:
 		var points: Array = mover.get_meta("points", [])
 		if points.size() < 2:
@@ -138,6 +144,63 @@ func _physics_process(_delta: float) -> void:
 			var target_yaw: float = atan2(-direction.x, -direction.z)
 			mover.rotation.y = lerp_angle(mover.rotation.y, target_yaw, clampf(_delta * 4.5, 0.0, 1.0))
 		mover.move_and_slide()
+	_animate_active_stage()
+
+func _create_active_stage_beacon() -> void:
+	_active_stage_beacon = Node3D.new()
+	_active_stage_beacon.name = "ActiveStageBeacon"
+	var disc := MeshInstance3D.new()
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = 3.8
+	mesh.bottom_radius = 3.8
+	mesh.height = 0.08
+	mesh.radial_segments = 32
+	disc.mesh = mesh
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Color("18d9ff")
+	material.emission_enabled = true
+	material.emission = Color("00bfea")
+	material.emission_energy_multiplier = 2.2
+	disc.material_override = material
+	disc.position.y = 0.08
+	_active_stage_beacon.add_child(disc)
+	_active_stage_label = Label3D.new()
+	_active_stage_label.position = Vector3(0.0, 3.1, 0.0)
+	_active_stage_label.font_size = 38
+	_active_stage_label.pixel_size = 0.007
+	_active_stage_label.outline_size = 10
+	_active_stage_label.modulate = Color("ffe15a")
+	_active_stage_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_active_stage_beacon.add_child(_active_stage_label)
+	_active_stage_beacon.visible = false
+	add_child(_active_stage_beacon)
+
+func set_active_stage(corridor_index: int, visual_stop_index: int, bay_position: Vector3, stop_name: String, inbound: bool) -> void:
+	if _active_stage_beacon == null:
+		return
+	_active_stage_beacon.global_position = bay_position
+	_active_stage_beacon.visible = true
+	_active_stage_people_key = "%d:%d" % [corridor_index, visual_stop_index]
+	var direction_text := "RETURN TO CBD" if inbound else "OUTBOUND"
+	_active_stage_label.text = "%s • %s\nPULL IN • BELOW 10 km/h" % [stop_name.to_upper(), direction_text]
+
+func clear_active_stage() -> void:
+	_active_stage_people_key = ""
+	if _active_stage_beacon != null:
+		_active_stage_beacon.visible = false
+
+func _animate_active_stage() -> void:
+	if _active_stage_beacon == null or not _active_stage_beacon.visible:
+		return
+	var pulse := 1.0 + sin(_life_time * 4.0) * 0.08
+	_active_stage_beacon.scale = Vector3(pulse, 1.0, pulse)
+	_active_stage_label.position.y = 3.1 + sin(_life_time * 2.5) * 0.18
+	var people: Array = _stage_people.get(_active_stage_people_key, [])
+	for i in range(people.size()):
+		var person := people[i] as Node3D
+		if person != null and person.visible:
+			var home: Vector3 = person.get_meta("stage_home", person.global_position)
+			person.global_position.y = home.y + sin(_life_time * 2.2 + float(i) * 0.7) * 0.06
 
 func _spawn_route_minibuses() -> void:
 	var data := network.get_corridor(0)
