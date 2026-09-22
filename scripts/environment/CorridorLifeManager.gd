@@ -16,6 +16,7 @@ var _active_stage_beacon: Node3D
 var _active_stage_label: Label3D
 var _active_stage_people_key := ""
 var _life_time := 0.0
+var _mover_limit := 999
 
 func _ready() -> void:
 	network = get_node_or_null(network_path) as NairobiRouteNetwork
@@ -104,7 +105,11 @@ func _spawn_bodas() -> void:
 
 func _physics_process(_delta: float) -> void:
 	_life_time += _delta
-	for mover in _movers:
+	for mover_index in range(_movers.size()):
+		var mover: CharacterBody3D = _movers[mover_index]
+		mover.visible = mover_index < _mover_limit
+		if mover_index >= _mover_limit:
+			continue
 		var points: Array = mover.get_meta("points", [])
 		if points.size() < 2:
 			continue
@@ -145,6 +150,9 @@ func _physics_process(_delta: float) -> void:
 			mover.rotation.y = lerp_angle(mover.rotation.y, target_yaw, clampf(_delta * 4.5, 0.0, 1.0))
 		mover.move_and_slide()
 	_animate_active_stage()
+
+func set_mover_limit(limit: int) -> void:
+	_mover_limit = maxi(limit, 3)
 
 func _create_active_stage_beacon() -> void:
 	_active_stage_beacon = Node3D.new()
