@@ -105,10 +105,39 @@ func select_corridor(index: int, return_to_cbd: bool = false) -> void:
 		player.call("set_route_spawn", spawn_transform)
 	if player.has_method("reset_to_spawn"):
 		player.call("reset_to_spawn")
+	_board_origin_passengers()
 	_emit_status()
 	_update_active_stage_visual()
 	direction_changed.emit("TO CBD" if inbound else "CBD → %s • %s" % [String(data["stops"][data["stops"].size() - 1]).to_upper(), String(data.get("feel", "NAIROBI RUN"))])
 	conductor_call.emit("WATU WA %s! PANDA PANDA!" % String(data["stops"][data["stops"].size() - 1]).to_upper())
+
+func _board_origin_passengers() -> void:
+	# A selected route begins at an active CBD stage. Board that waiting queue
+	# immediately so a new run never leaves the terminus showing 0 passengers.
+	var data: Dictionary = _active_corridor_data()
+	var stops: Array = data["stops"]
+	if stops.size() < 2:
+		return
+	var visual_stop_index := stops.size() - 1 if inbound else 0
+	var waiting: int = mini(7 + corridor_index, passenger_capacity)
+	passengers_onboard = waiting
+	total_passengers_this_run = waiting
+	var fare := EconomyManager.PASSENGER_FARE * waiting
+	EconomyManager.add_passenger_fare(fare)
+	total_fares_this_run = fare
+	SaveManager.data["passenger_trips_completed"] = int(SaveManager.data.get("passenger_trips_completed", 0)) + waiting
+	if corridor_life != null:
+		if corridor_life.has_method("board_passengers"):
+			corridor_life.call("board_passengers", corridor_index, visual_stop_index, waiting, player)
+		if corridor_life.has_method("set_vehicle_passenger_load"):
+			corridor_life.call("set_vehicle_passenger_load", player, passengers_onboard)
+	passenger_load_changed.emit(passengers_onboard, passenger_capacity, waiting, 0)
+	fare_awarded.emit(fare, EconomyManager.get_money())
+	service_progress.emit("CBD BOARDING COMPLETE • %d/%d SEATS • TWENDE!" % [passengers_onboard, passenger_capacity])
+	conductor_call.emit("%d WAMEPANDA CBD • TWENDE!" % waiting)
+	SaveManager.save_game()
+	stop_index = 1
+	next_stage_route_index = _find_route_index_for_service(stop_index)
 
 func _physics_process(delta: float) -> void:
 	if not active or player == null or network == null:
