@@ -80,6 +80,12 @@
 - Nganya headlight beams switch on automatically for darkness and rain.
 - The HUD reports live road conditions without obscuring route information.
 
+## Milestone 13 — Android Playable Build
+- Android export targets arm64 phones in forced landscape orientation.
+- Native touch driving, camera, reset and pause controls ship in the APK.
+- CI produces a versioned APK artifact and a stable direct-download copy.
+- Web deployment remains in the same validated pipeline.
+
 ## Runtime acceptance test (must be performed on the actual exported build)
 1. Fresh save: choose Ngong or Mombasa and understand the objective without external explanation.
 2. Complete outbound service, board/alight passengers, receive fares and route reward.
