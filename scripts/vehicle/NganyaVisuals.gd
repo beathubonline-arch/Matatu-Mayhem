@@ -11,6 +11,7 @@ const CHROME := Color("8c98a8")
 var _driver: Node3D
 var _conductor: Node3D
 var _crew_time := 0.0
+var _headlight_beams: Array[SpotLight3D] = []
 
 func _ready() -> void:
 	_build_body()
@@ -137,10 +138,24 @@ func _build_lighting() -> void:
 	for x_value in [-0.72, 0.72]:
 		_box("Headlight", Vector3(0.48, 0.22, 0.08), Vector3(float(x_value), 1.12, -2.84), white_light)
 		_box("TailLight", Vector3(0.4, 0.24, 0.07), Vector3(float(x_value), 1.05, 2.47), red_light)
+		var beam := SpotLight3D.new()
+		beam.name = "HeadlightBeam"
+		beam.position = Vector3(float(x_value), 1.12, -2.88)
+		beam.light_color = Color("e8f7ff")
+		beam.light_energy = 0.0
+		beam.spot_range = 32.0
+		beam.spot_angle = 28.0
+		beam.shadow_enabled = false
+		add_child(beam)
+		_headlight_beams.append(beam)
 	for x_value in [-0.74, -0.25, 0.25, 0.74]:
 		_cylinder("RoofLamp", 0.12, 0.13, Vector3(float(x_value), 2.78, -1.45), Vector3(90.0, 0.0, 0.0), cyan_light if float(x_value) < 0.0 else magenta_light)
 	_box("LeftUnderGlow", Vector3(0.06, 0.06, 3.7), Vector3(-1.08, 0.42, 0.15), cyan_light)
 	_box("RightUnderGlow", Vector3(0.06, 0.06, 3.7), Vector3(1.08, 0.42, 0.15), magenta_light)
+
+func set_environment_lights(active: bool) -> void:
+	for beam in _headlight_beams:
+		beam.light_energy = 4.2 if active else 0.0
 
 func _build_trim() -> void:
 	var chrome_mat := _mat(CHROME, Color.TRANSPARENT, 0.85, 0.18)
