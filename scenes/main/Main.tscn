@@ -115,6 +115,7 @@ challenge_manager_path = NodePath("../Gameplay/DrivingChallenges")
 career_manager_path = NodePath("../Gameplay/Career")
 street_king_manager_path = NodePath("../Gameplay/StreetKing")
 rival_manager_path = NodePath("../Gameplay/RivalNganyas")
+camera_path = NodePath("../ChaseCamera")
 [node name="PauseMenu" parent="." instance=ExtResource("7_pause")]
 corridor_service_path = NodePath("../Gameplay/CorridorService")
 [node name="MobileControls" parent="." instance=ExtResource("8_mobile")]
