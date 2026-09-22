@@ -21,6 +21,10 @@ general/default_playback_type.web=0
 config/name="Matatu Mayhem"
 run/main_scene="res://scenes/main/Main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://assets/branding/matatu_mayhem_icon.svg"
+boot_splash/image="res://assets/branding/matatu_mayhem_splash.svg"
+boot_splash/bg_color=Color(0.027, 0.043, 0.094, 1)
+boot_splash/fullsize=true
 
 [autoload]
 
