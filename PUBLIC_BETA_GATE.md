@@ -92,6 +92,12 @@
 - Android launcher branding uses the same recognizable 254 identity.
 - The launch artwork is vector-based, crisp at every phone and browser resolution.
 
+## Milestone 15 — Release-Candidate Performance and Mobile Hardening
+- AUTO mode monitors live FPS and protects low-end phones after sustained frame drops.
+- PERFORMANCE mode reduces background traffic, moving street life, rain particles and dynamic shadows.
+- QUALITY mode preserves the full Nairobi scene; the chosen setting persists across reloads.
+- The pause menu exposes quality controls and the HUD reports live FPS.
+
 ## Runtime acceptance test (must be performed on the actual exported build)
 1. Fresh save: choose Ngong or Mombasa and understand the objective without external explanation.
 2. Complete outbound service, board/alight passengers, receive fares and route reward.
