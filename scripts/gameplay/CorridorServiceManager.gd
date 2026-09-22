@@ -106,6 +106,7 @@ func select_corridor(index: int, return_to_cbd: bool = false) -> void:
 	if player.has_method("reset_to_spawn"):
 		player.call("reset_to_spawn")
 	_emit_status()
+	_update_active_stage_visual()
 	direction_changed.emit("TO CBD" if inbound else "CBD → %s • %s" % [String(data["stops"][data["stops"].size() - 1]).to_upper(), String(data.get("feel", "NAIROBI RUN"))])
 	conductor_call.emit("WATU WA %s! PANDA PANDA!" % String(data["stops"][data["stops"].size() - 1]).to_upper())
 
@@ -244,7 +245,10 @@ func _complete_stop() -> void:
 	if not is_terminal:
 		next_stage_route_index = _find_route_index_for_service(stop_index)
 		route_point_index = mini(route_point_index + 1, next_stage_route_index)
+		_update_active_stage_visual()
 	if is_terminal:
+		if corridor_life != null and corridor_life.has_method("clear_active_stage"):
+			corridor_life.call("clear_active_stage")
 		conductor_call.emit("MWISHO! WOTE SHUKA • SIMAMA HAPA • RETURN TO CBD NEXT!")
 		if corridor_life != null and corridor_life.has_method("refresh_stage_passengers"):
 			for physical_stop in range(stops.size()):
@@ -289,6 +293,14 @@ func _emit_status() -> void:
 	var data: Dictionary = _active_corridor_data()
 	var stops: Array = data["stops"]
 	corridor_changed.emit(String(data["name"]), String(stops[stop_index]), stop_index + 1, stops.size())
+
+func _update_active_stage_visual() -> void:
+	if corridor_life == null or not corridor_life.has_method("set_active_stage"):
+		return
+	var data: Dictionary = _active_corridor_data()
+	var stops: Array = data["stops"]
+	var visual_stop_index := stops.size() - 1 - stop_index if inbound else stop_index
+	corridor_life.call("set_active_stage", corridor_index, visual_stop_index, _active_stage_bay(stop_index), String(stops[stop_index]), inbound)
 
 func _find_route_index_for_service(service_index: int) -> int:
 	var data: Dictionary = _active_corridor_data()
