@@ -56,6 +56,12 @@
 - Waiting passengers move subtly instead of appearing frozen.
 - The beacon advances after boarding and clears at the terminus.
 
+## Milestone 9 — Nganya Interior, Driver and Camera Presence
+- The matatu has a visible right-hand-drive Kenyan cabin layout.
+- Driver and conductor models animate subtly during play.
+- Tinted windows reveal the cabin and loaded passenger silhouettes.
+- The chase camera uses a speed-aware three-quarter framing.
+
 ## Runtime acceptance test (must be performed on the actual exported build)
 1. Fresh save: choose Ngong or Mombasa and understand the objective without external explanation.
 2. Complete outbound service, board/alight passengers, receive fares and route reward.
