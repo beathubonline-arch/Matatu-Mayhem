@@ -73,6 +73,10 @@ func select_corridor(index: int, return_to_cbd: bool = false) -> void:
 		return
 	corridor_index = requested
 	inbound = return_to_cbd
+	if not inbound:
+		# One Nairobi job is CBD -> terminus -> CBD. Aggregate both legs.
+		SaveManager.data["current_round_trip_earnings"] = 0
+		SaveManager.data["current_round_trip_passengers"] = 0
 	stop_index = 0
 	dwell = 0.0
 	elapsed_seconds = 0.0
@@ -246,13 +250,20 @@ func _complete_stop() -> void:
 				corridor_life.call("refresh_stage_passengers", corridor_index, physical_stop)
 		var reward: int = int(data["reward"])
 		EconomyManager.add_money(reward)
+		SaveManager.data["current_round_trip_earnings"] = int(SaveManager.data.get("current_round_trip_earnings", 0)) + reward + total_fares_this_run
+		SaveManager.data["current_round_trip_passengers"] = int(SaveManager.data.get("current_round_trip_passengers", 0)) + total_passengers_this_run
 		SaveManager.data["routes_completed"] = int(SaveManager.data.get("routes_completed", 0)) + 1
 		SaveManager.data["last_corridor"] = corridor_index
 		var unlocked := maxi(int(SaveManager.data.get("unlocked_corridors", 2)), 2)
-		if corridor_index + 1 >= unlocked and unlocked < network.corridor_count():
+		# Progression is earned after returning to CBD, not at the far terminus.
+		if inbound and corridor_index + 1 >= unlocked and unlocked < network.corridor_count():
 			SaveManager.data["unlocked_corridors"] = unlocked + 1
 			var unlocked_data: Dictionary = network.get_corridor(unlocked)
 			route_unlocked.emit(String(unlocked_data["name"]))
+		if inbound:
+			SaveManager.data["round_trips_completed"] = int(SaveManager.data.get("round_trips_completed", 0)) + 1
+			SaveManager.data["last_round_trip_earnings"] = int(SaveManager.data.get("current_round_trip_earnings", 0))
+			SaveManager.data["last_round_trip_passengers"] = int(SaveManager.data.get("current_round_trip_passengers", 0))
 		var best_times: Dictionary = SaveManager.data.get("corridor_best_times", {})
 		var key := str(corridor_index)
 		var previous_best := float(best_times.get(key, 0.0))
