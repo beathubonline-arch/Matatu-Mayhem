@@ -29,6 +29,12 @@ jobs:
         run: |
           mkdir -p build/web
           godot --headless --path . --export-release "Web" build/web/index.html
+      - name: Export Android debug APK
+        run: |
+          mkdir -p build/android build/web/downloads
+          godot --headless --path . --export-debug "Android" build/android/MatatuMayhem-v0.13.apk
+          cp build/android/MatatuMayhem-v0.13.apk build/web/downloads/MatatuMayhem-Android.apk
+          test -s build/web/downloads/MatatuMayhem-Android.apk
       - name: Install native Web radio
         run: |
           mkdir -p build/web/radio
@@ -42,6 +48,12 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
+      - name: Upload Android APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MatatuMayhem-Android-v0.13
+          path: build/android/MatatuMayhem-v0.13.apk
+          if-no-files-found: error
 
   deploy:
     environment:
