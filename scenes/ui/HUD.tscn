@@ -258,6 +258,21 @@ text = "♫ 254 STREET RADIO\nMATATU MAYHEM × BEATHUB\n[M] RADIO  [N] NEXT"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="CameraButton" type="Button" parent="."]
+z_index = 25
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -174.0
+offset_top = 122.0
+offset_right = -20.0
+offset_bottom = 172.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0.3, 0.92, 1, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/normal = SubResource("TopStyle")
+text = "CAMERA • CHASE"
+
 [node name="RouteSelectPanel" type="PanelContainer" parent="."]
 z_index = 20
 anchors_preset = 8
