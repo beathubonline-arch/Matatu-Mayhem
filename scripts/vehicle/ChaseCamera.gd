@@ -1,58 +1,53 @@
-﻿class_name ChaseCamera
+class_name ChaseCamera
 extends Node3D
 
 signal camera_mode_changed(mode_name: String)
 
 @export var target_path: NodePath
-@export var height := 2.6
-@export var base_distance := 6.5
-@export var max_distance := 9.0
-@export var follow_smoothness := 6.0
-@export var rotation_smoothness := 5.0
-@export var look_ahead_distance := 3.5
+@export var follow_smoothness := 8.0
+@export var rotation_smoothness := 9.0
 @export var base_fov := 68.0
-@export var max_fov := 82.0
+@export var max_fov := 80.0
 @export var max_speed_reference := 145.0
-@export var lateral_look_strength := 1.6
-@export var lateral_smoothness := 4.0
-@export var acceleration_kick := 0.22
-@export var turn_roll_degrees := 2.4
-@export var shoulder_offset := 0.72
 
 @onready var spring_arm: SpringArm3D = $SpringArm3D
 @onready var camera: Camera3D = $SpringArm3D/Camera3D
 
-var target: Node3D
-var _lateral_look := 0.0
-var _last_speed_kph := 0.0
-var _camera_roll := 0.0
-var _camera_mode := 0
-var _mode_height := 2.6
-var _mode_distance_scale := 1.0
-var _mode_shoulder := 0.72
-var _mode_fov_offset := 0.0
-var _camera_key_was_down := false
+const CAMERA_MODE_NAMES := ["CHASE", "WIDE", "DRIVER"]
 
-const CAMERA_MODE_NAMES := ["CHASE", "WIDE", "CABIN"]
+var target: Node3D
+var _camera_mode := 0
+var _camera_key_was_down := false
+var _initialized := false
 
 func _ready() -> void:
-	if not target_path.is_empty():
-		target = get_node_or_null(target_path) as Node3D
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	target = get_node_or_null(target_path) as Node3D if not target_path.is_empty() else null
 	if target == null:
 		target = GameManager.get_player_vehicle() as Node3D
-	if target != null:
-		global_position = target.global_position + Vector3.UP * height
-		global_rotation = Vector3.ZERO
-		# The vehicle and dense city geometry could collapse the spring arm to
-		# almost zero, leaving the camera at road level. Camera modes use safe,
-		# deterministic offsets instead of collision compression.
-		spring_arm.collision_mask = 0
-	_apply_camera_mode()
 
-func _physics_process(delta: float) -> void:
-	# Web canvases and focused Control nodes do not always forward C through
-	# _unhandled_input. Poll the physical key with an edge guard so it works
-	# regardless of which HUD control currently owns focus.
+	# The old SpringArm3D could collapse against the matatu or road and trap the
+	# view at ground level. Keep it only as a scene container; the Camera3D now
+	# follows explicit world-space positions that cannot be collision-compressed.
+	spring_arm.spring_length = 0.0
+	spring_arm.collision_mask = 0
+	camera.top_level = true
+	camera.current = true
+	_snap_to_mode()
+
+func _input(event: InputEvent) -> void:
+	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	match event.physical_keycode:
+		KEY_5:
+			set_camera_mode(0)
+		KEY_6:
+			set_camera_mode(1)
+		KEY_7:
+			set_camera_mode(2)
+
+func _process(delta: float) -> void:
+	# Direct polling survives browser canvas focus and focused HUD controls.
 	var camera_key_down := Input.is_physical_key_pressed(KEY_C)
 	if camera_key_down and not _camera_key_was_down:
 		cycle_camera()
@@ -60,70 +55,67 @@ func _physics_process(delta: float) -> void:
 
 	if target == null or not is_instance_valid(target):
 		target = GameManager.get_player_vehicle() as Node3D
+		_initialized = false
 		return
+	_update_camera(delta)
+
+func _update_camera(delta: float) -> void:
+	var forward := -target.global_basis.z
+	forward.y = 0.0
+	if forward.length_squared() < 0.001:
+		forward = Vector3.FORWARD
+	forward = forward.normalized()
+	var right := forward.cross(Vector3.UP).normalized()
+
+	var desired_position: Vector3
+	var look_target: Vector3
+	var mode_fov := base_fov
+	match _camera_mode:
+		1: # Wide cinematic view.
+			desired_position = target.global_position + Vector3.UP * 6.2 - forward * 12.5 + right * 0.4
+			look_target = target.global_position + Vector3.UP * 1.3 + forward * 4.0
+			mode_fov = 74.0
+		2: # Stable driver/bonnet view; never intersects the vehicle collider.
+			desired_position = target.global_position + Vector3.UP * 2.55 + forward * 1.15 - right * 0.28
+			look_target = desired_position + forward * 14.0 - Vector3.UP * 0.25
+			mode_fov = 76.0
+		_: # Classic chase view.
+			desired_position = target.global_position + Vector3.UP * 3.4 - forward * 7.4 + right * 0.8
+			look_target = target.global_position + Vector3.UP * 1.35 + forward * 2.6
 
 	var speed_kph := 0.0
 	if target.has_method("get_speed_kph"):
 		speed_kph = float(target.call("get_speed_kph"))
-	var speed_ratio: float = clampf(speed_kph / max_speed_reference, 0.0, 1.0)
+	var speed_ratio := clampf(speed_kph / max_speed_reference, 0.0, 1.0)
+	var desired_fov := mode_fov + (max_fov - base_fov) * speed_ratio * 0.55
 
-	var target_right := target.global_basis.x
-	target_right.y = 0.0
-	target_right = target_right.normalized()
-	# A slight three-quarter view reveals the passenger door, driver and cabin.
-	# It recentres progressively at speed so high-speed driving stays readable.
-	var desired_pos := target.global_position + Vector3.UP * _mode_height + target_right * _mode_shoulder * (1.0 - speed_ratio * 0.45)
-	global_position = global_position.lerp(desired_pos, 1.0 - exp(-follow_smoothness * delta))
+	if not _initialized:
+		camera.global_position = desired_position
+		camera.look_at(look_target, Vector3.UP)
+		camera.fov = desired_fov
+		_initialized = true
+		return
 
-	var forward := -target.global_basis.z
-	forward.y = 0.0
-	if forward.length_squared() < 0.01:
-		forward = Vector3.FORWARD
-	forward = forward.normalized()
-	# Keep a horizontal look offset even at rest so the look direction can never
-	# become colinear with Vector3.UP and destabilize the camera basis.
-	var camera_forward_distance: float = maxf(1.5, look_ahead_distance * speed_ratio)
-	var steer_input := Input.get_action_strength("steer_right") - Input.get_action_strength("steer_left")
-	_lateral_look = lerpf(_lateral_look, steer_input * lateral_look_strength * speed_ratio, 1.0 - exp(-lateral_smoothness * delta))
-	var right := target.global_basis.x
-	right.y = 0.0
-	right = right.normalized()
-	var look_target: Vector3 = target.global_position + Vector3.UP + forward * camera_forward_distance + right * _lateral_look
-	var desired_basis := global_transform.looking_at(look_target, Vector3.UP).basis
-	global_basis = global_basis.slerp(desired_basis, 1.0 - exp(-rotation_smoothness * delta))
-
-	var mode_distance := lerp(base_distance, max_distance, speed_ratio) * _mode_distance_scale
-	spring_arm.spring_length = lerpf(spring_arm.spring_length, mode_distance, 1.0 - exp(-5.0 * delta))
-	var acceleration := (speed_kph - _last_speed_kph) / maxf(delta, 0.001)
-	_last_speed_kph = speed_kph
-	var kick := clampf(acceleration / 90.0, -1.0, 1.0) * acceleration_kick
-	spring_arm.position.z = lerpf(spring_arm.position.z, kick, 1.0 - exp(-5.0 * delta))
-	_camera_roll = lerpf(_camera_roll, deg_to_rad(-steer_input * turn_roll_degrees * speed_ratio), 1.0 - exp(-5.0 * delta))
-	camera.rotation.z = _camera_roll
-	camera.fov = lerpf(camera.fov, lerp(base_fov, max_fov, speed_ratio) + _mode_fov_offset, 1.0 - exp(-5.0 * delta))
+	var position_weight := 1.0 - exp(-follow_smoothness * delta)
+	var rotation_weight := 1.0 - exp(-rotation_smoothness * delta)
+	camera.global_position = camera.global_position.lerp(desired_position, position_weight)
+	var desired_basis := Transform3D.IDENTITY.looking_at(look_target - camera.global_position, Vector3.UP).basis
+	camera.global_basis = camera.global_basis.slerp(desired_basis, rotation_weight).orthonormalized()
+	camera.fov = lerpf(camera.fov, desired_fov, position_weight)
 
 func cycle_camera() -> void:
-	_camera_mode = (_camera_mode + 1) % CAMERA_MODE_NAMES.size()
-	_apply_camera_mode()
+	set_camera_mode((_camera_mode + 1) % CAMERA_MODE_NAMES.size())
+
+func set_camera_mode(mode: int) -> void:
+	_camera_mode = clampi(mode, 0, CAMERA_MODE_NAMES.size() - 1)
+	_initialized = false
+	_snap_to_mode()
 	camera_mode_changed.emit(CAMERA_MODE_NAMES[_camera_mode])
 
 func get_camera_mode_name() -> String:
 	return CAMERA_MODE_NAMES[_camera_mode]
 
-func _apply_camera_mode() -> void:
-	match _camera_mode:
-		1:
-			_mode_height = height + 1.25
-			_mode_distance_scale = 1.42
-			_mode_shoulder = 0.30
-			_mode_fov_offset = 4.0
-		2:
-			_mode_height = height - 0.35
-			_mode_distance_scale = 0.16
-			_mode_shoulder = 0.42
-			_mode_fov_offset = 6.0
-		_:
-			_mode_height = height
-			_mode_distance_scale = 1.0
-			_mode_shoulder = shoulder_offset
-			_mode_fov_offset = 0.0
+func _snap_to_mode() -> void:
+	if camera == null or target == null or not is_instance_valid(target):
+		return
+	_update_camera(1.0)
