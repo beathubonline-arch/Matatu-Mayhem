@@ -31,6 +31,7 @@ var _mode_height := 2.6
 var _mode_distance_scale := 1.0
 var _mode_shoulder := 0.72
 var _mode_fov_offset := 0.0
+var _camera_key_was_down := false
 
 const CAMERA_MODE_NAMES := ["CHASE", "WIDE", "CABIN"]
 
@@ -42,14 +43,21 @@ func _ready() -> void:
 	if target != null:
 		global_position = target.global_position + Vector3.UP * height
 		global_rotation = Vector3.ZERO
+		# The vehicle and dense city geometry could collapse the spring arm to
+		# almost zero, leaving the camera at road level. Camera modes use safe,
+		# deterministic offsets instead of collision compression.
+		spring_arm.collision_mask = 0
 	_apply_camera_mode()
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("camera_cycle") or (event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_C):
-		cycle_camera()
-		get_viewport().set_input_as_handled()
-
 func _physics_process(delta: float) -> void:
+	# Web canvases and focused Control nodes do not always forward C through
+	# _unhandled_input. Poll the physical key with an edge guard so it works
+	# regardless of which HUD control currently owns focus.
+	var camera_key_down := Input.is_physical_key_pressed(KEY_C)
+	if camera_key_down and not _camera_key_was_down:
+		cycle_camera()
+	_camera_key_was_down = camera_key_down
+
 	if target == null or not is_instance_valid(target):
 		target = GameManager.get_player_vehicle() as Node3D
 		return
@@ -98,6 +106,9 @@ func cycle_camera() -> void:
 	_camera_mode = (_camera_mode + 1) % CAMERA_MODE_NAMES.size()
 	_apply_camera_mode()
 	camera_mode_changed.emit(CAMERA_MODE_NAMES[_camera_mode])
+
+func get_camera_mode_name() -> String:
+	return CAMERA_MODE_NAMES[_camera_mode]
 
 func _apply_camera_mode() -> void:
 	match _camera_mode:
