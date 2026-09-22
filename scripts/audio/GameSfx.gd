@@ -7,6 +7,7 @@ extends Node
 var _player: AudioStreamPlayer
 var _engine: AudioStreamPlayer
 var _phase := 0.0
+var _web_audio_started := false
 
 func _ready() -> void:
 	_player = AudioStreamPlayer.new()
@@ -25,7 +26,25 @@ func _ready() -> void:
 			service.passenger_load_changed.connect(_on_passenger_load_changed)
 		if service.has_signal("corridor_completed"):
 			service.corridor_completed.connect(_on_corridor_completed)
-	_play_engine_loop()
+	if OS.has_feature("web"):
+		print("SFX: waiting for WebAudio user interaction")
+	else:
+		_play_engine_loop()
+
+func _input(event: InputEvent) -> void:
+	if not OS.has_feature("web"):
+		return
+	var user_gesture := false
+	if event is InputEventKey:
+		user_gesture = event.pressed and not event.echo
+	elif event is InputEventMouseButton:
+		user_gesture = event.pressed
+	elif event is InputEventScreenTouch:
+		user_gesture = event.pressed
+	if user_gesture and (not _web_audio_started or not _engine.playing):
+		_play_engine_loop()
+		_web_audio_started = _engine.playing
+		print("SFX: WebAudio engine started=%s" % str(_web_audio_started))
 
 func _process(_delta: float) -> void:
 	var vehicle := get_node_or_null(player_path)
@@ -62,6 +81,8 @@ func _play_engine_loop() -> void:
 	wav.loop_end = int(0.8 * wav.mix_rate)
 	_engine.stream = wav
 	_engine.play()
+	if OS.has_feature("web"):
+		_web_audio_started = _engine.playing
 
 func _on_passenger_load_changed(_onboard: int, _capacity: int, boarded: int, alighted: int) -> void:
 	if boarded > 0:
