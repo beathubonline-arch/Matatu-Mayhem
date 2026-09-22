@@ -235,6 +235,7 @@ func _add_label(name_text: String, label_text: String, position_value: Vector3, 
 
 func _apply_selected_nganya() -> void:
 	var selected := String(SaveManager.data.get("selected_nganya", "Maverick")).to_upper()
+	var livery := String(SaveManager.data.get("selected_livery", "Nairobi Neon"))
 	var palettes := {
 		"MAVERICK": [Color("00d9ff"), Color("ff2e88")],
 		"ONYX": [Color("a855f7"), Color("22d3ee")],
@@ -249,17 +250,34 @@ func _apply_selected_nganya() -> void:
 		"STREET LEGEND": [Color("f7ff00"), Color("ff2e88")]
 	}
 	var palette: Array = palettes.get(selected, palettes["MAVERICK"])
+	var livery_specs := {
+		"Nairobi Neon": [Color("11131c"), palette[0], palette[1]],
+		"Matatu Gold": [Color("1b160b"), Color("facc15"), Color("ff8a00")],
+		"Kenya Pride": [Color("111612"), Color("16a34a"), Color("ef233c")],
+		"Midnight Purple": [Color("160d24"), Color("a855f7"), Color("ff2e88")]
+	}
+	var spec: Array = livery_specs.get(livery, livery_specs["Nairobi Neon"])
+	var body_color: Color = spec[0]
+	var primary: Color = spec[1]
+	var secondary: Color = spec[2]
 	for child in get_children():
-		if child is MeshInstance3D and (child.name.contains("UnderGlow") or child.name.contains("ElectricBelt")):
-			var material := _mat(palette[0], palette[0], 0.25, 0.22)
-			child.material_override = material
+		if not child is MeshInstance3D:
+			continue
+		if child.name in ["LowerBody", "UpperBody", "FrontNose", "PassengerDoor"]:
+			child.material_override = _mat(body_color, Color.TRANSPARENT, 0.55, 0.28)
+		elif child.name.contains("UnderGlow") or child.name.contains("ElectricBelt"):
+			child.material_override = _mat(primary, primary, 0.25, 0.22)
+		elif child.name.contains("GraffitiSlashA"):
+			child.material_override = _mat(secondary, secondary, 0.2, 0.3)
+		elif child.name.contains("GraffitiSlashB"):
+			child.material_override = _mat(primary, primary, 0.2, 0.3)
 	var rear := get_node_or_null("RearName") as Label3D
 	if rear != null:
 		rear.text = selected
-		rear.modulate = palette[0]
+		rear.modulate = primary
 	var front := get_node_or_null("FrontRoute") as Label3D
 	if front != null:
-		front.modulate = palette[1]
+		front.modulate = secondary
 		front.text = "107 • RUAKA" if selected == "KINDE SABA" else "NAIROBI EXPRESS"
 	var left := get_node_or_null("LeftTag") as Label3D
 	var right := get_node_or_null("RightTag") as Label3D
