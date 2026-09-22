@@ -86,6 +86,12 @@
 - CI produces a versioned APK artifact and a stable direct-download copy.
 - Web deployment remains in the same validated pipeline.
 
+## Milestone 14 — Launch Identity and First-Run Polish
+- Matatu Mayhem has a dedicated neon nganya app icon instead of engine defaults.
+- Web and Android builds open with a Nairobi Street King loading splash.
+- Android launcher branding uses the same recognizable 254 identity.
+- The launch artwork is vector-based, crisp at every phone and browser resolution.
+
 ## Runtime acceptance test (must be performed on the actual exported build)
 1. Fresh save: choose Ngong or Mombasa and understand the objective without external explanation.
 2. Complete outbound service, board/alight passengers, receive fares and route reward.
