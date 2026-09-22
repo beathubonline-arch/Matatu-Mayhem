@@ -146,6 +146,9 @@ func _ready() -> void:
 		chase_camera = get_node_or_null(camera_path)
 	if chase_camera != null and chase_camera.has_signal("camera_mode_changed"):
 		chase_camera.camera_mode_changed.connect(_on_camera_mode_changed)
+	if chase_camera != null and chase_camera.has_method("get_camera_mode_name"):
+		camera_button.text = "CAMERA • %s" % str(chase_camera.call("get_camera_mode_name"))
+	camera_button.tooltip_text = "Switch camera view (C)"
 	if not atmosphere_path.is_empty():
 		atmosphere = get_node_or_null(atmosphere_path)
 	if atmosphere != null and atmosphere.has_signal("conditions_changed"):
