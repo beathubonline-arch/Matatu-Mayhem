@@ -228,6 +228,7 @@ func _complete_stop() -> void:
 		_stage_rush_time = 24.0 + float(corridor_index * 2)
 		_stage_rush_bonus = 900 + corridor_index * 250
 		stage_rush_changed.emit(_stage_rush_time, _stage_rush_bonus)
+		service_progress.emit("%d ABOARD • %d/%d SEATS FILLED • TWENDE!" % [boarded, passengers_onboard, passenger_capacity])
 	if corridor_life != null:
 		var visual_stop_index: int = stops.size() - 1 - stop_index if inbound else stop_index
 		if alighted > 0 and corridor_life.has_method("alight_passengers"):
