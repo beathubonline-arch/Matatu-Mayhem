@@ -62,6 +62,12 @@
 - Tinted windows reveal the cabin and loaded passenger silhouettes.
 - The chase camera uses a speed-aware three-quarter framing.
 
+## Milestone 10 — Camera Modes and Mobile Driving Polish
+- Desktop players cycle cameras with C.
+- Mobile players have a dedicated CAMERA button.
+- CHASE frames the full nganya, WIDE improves route visibility, and CABIN puts the player close to the crew and dashboard.
+- Every mode keeps speed-aware FOV, steering look and collision-safe spring-arm behavior.
+
 ## Runtime acceptance test (must be performed on the actual exported build)
 1. Fresh save: choose Ngong or Mombasa and understand the objective without external explanation.
 2. Complete outbound service, board/alight passengers, receive fares and route reward.
