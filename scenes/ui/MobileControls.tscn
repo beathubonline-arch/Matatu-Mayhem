@@ -127,6 +127,17 @@ theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("DriveButton")
 text = "RESET"
 
+[node name="Camera" type="Button" parent="Controls"]
+layout_mode = 0
+offset_left = 144.0
+offset_top = 118.0
+offset_right = 270.0
+offset_bottom = 174.0
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("DriveButton")
+theme_override_styles/pressed = SubResource("ActionButton")
+text = "CAMERA"
+
 [node name="Pause" type="Button" parent="Controls"]
 layout_mode = 1
 anchors_preset = 1
