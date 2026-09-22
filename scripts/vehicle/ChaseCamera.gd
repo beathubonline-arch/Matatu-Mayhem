@@ -1,6 +1,8 @@
 ﻿class_name ChaseCamera
 extends Node3D
 
+signal camera_mode_changed(mode_name: String)
+
 @export var target_path: NodePath
 @export var height := 2.6
 @export var base_distance := 6.5
@@ -24,6 +26,13 @@ var target: Node3D
 var _lateral_look := 0.0
 var _last_speed_kph := 0.0
 var _camera_roll := 0.0
+var _camera_mode := 0
+var _mode_height := 2.6
+var _mode_distance_scale := 1.0
+var _mode_shoulder := 0.72
+var _mode_fov_offset := 0.0
+
+const CAMERA_MODE_NAMES := ["CHASE", "WIDE", "CABIN"]
 
 func _ready() -> void:
 	if not target_path.is_empty():
@@ -33,8 +42,11 @@ func _ready() -> void:
 	if target != null:
 		global_position = target.global_position + Vector3.UP * height
 		global_rotation = Vector3.ZERO
+	_apply_camera_mode()
 
 func _physics_process(delta: float) -> void:
+	if Input.is_action_just_pressed("camera_cycle"):
+		cycle_camera()
 	if target == null or not is_instance_valid(target):
 		target = GameManager.get_player_vehicle() as Node3D
 		return
@@ -49,7 +61,7 @@ func _physics_process(delta: float) -> void:
 	target_right = target_right.normalized()
 	# A slight three-quarter view reveals the passenger door, driver and cabin.
 	# It recentres progressively at speed so high-speed driving stays readable.
-	var desired_pos := target.global_position + Vector3.UP * height + target_right * shoulder_offset * (1.0 - speed_ratio * 0.45)
+	var desired_pos := target.global_position + Vector3.UP * _mode_height + target_right * _mode_shoulder * (1.0 - speed_ratio * 0.45)
 	global_position = global_position.lerp(desired_pos, 1.0 - exp(-follow_smoothness * delta))
 
 	var forward := -target.global_basis.z
@@ -69,11 +81,35 @@ func _physics_process(delta: float) -> void:
 	var desired_basis := global_transform.looking_at(look_target, Vector3.UP).basis
 	global_basis = global_basis.slerp(desired_basis, 1.0 - exp(-rotation_smoothness * delta))
 
-	spring_arm.spring_length = lerp(base_distance, max_distance, speed_ratio)
+	var mode_distance := lerp(base_distance, max_distance, speed_ratio) * _mode_distance_scale
+	spring_arm.spring_length = lerpf(spring_arm.spring_length, mode_distance, 1.0 - exp(-5.0 * delta))
 	var acceleration := (speed_kph - _last_speed_kph) / maxf(delta, 0.001)
 	_last_speed_kph = speed_kph
 	var kick := clampf(acceleration / 90.0, -1.0, 1.0) * acceleration_kick
 	spring_arm.position.z = lerpf(spring_arm.position.z, kick, 1.0 - exp(-5.0 * delta))
 	_camera_roll = lerpf(_camera_roll, deg_to_rad(-steer_input * turn_roll_degrees * speed_ratio), 1.0 - exp(-5.0 * delta))
 	camera.rotation.z = _camera_roll
-	camera.fov = lerp(base_fov, max_fov, speed_ratio)
+	camera.fov = lerpf(camera.fov, lerp(base_fov, max_fov, speed_ratio) + _mode_fov_offset, 1.0 - exp(-5.0 * delta))
+
+func cycle_camera() -> void:
+	_camera_mode = (_camera_mode + 1) % CAMERA_MODE_NAMES.size()
+	_apply_camera_mode()
+	camera_mode_changed.emit(CAMERA_MODE_NAMES[_camera_mode])
+
+func _apply_camera_mode() -> void:
+	match _camera_mode:
+		1:
+			_mode_height = height + 1.25
+			_mode_distance_scale = 1.42
+			_mode_shoulder = 0.30
+			_mode_fov_offset = 4.0
+		2:
+			_mode_height = height - 0.35
+			_mode_distance_scale = 0.16
+			_mode_shoulder = 0.42
+			_mode_fov_offset = 6.0
+		_:
+			_mode_height = height
+			_mode_distance_scale = 1.0
+			_mode_shoulder = shoulder_offset
+			_mode_fov_offset = 0.0
