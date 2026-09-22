@@ -50,6 +50,12 @@
 - Alighting animates passengers from the door into the destination stage.
 - Boarding confirmation reports seats filled immediately.
 
+## Milestone 8 — Nairobi Street Life and Stage Polish
+- The active passenger stage has a pulsing Web-safe 3D pull-in beacon.
+- Stage signage shows the stop, travel direction and required stopping speed.
+- Waiting passengers move subtly instead of appearing frozen.
+- The beacon advances after boarding and clears at the terminus.
+
 ## Runtime acceptance test (must be performed on the actual exported build)
 1. Fresh save: choose Ngong or Mombasa and understand the objective without external explanation.
 2. Complete outbound service, board/alight passengers, receive fares and route reward.
