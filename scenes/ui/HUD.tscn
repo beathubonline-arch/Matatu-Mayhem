@@ -97,6 +97,12 @@ theme_override_colors/font_color = Color(1, 0.78, 0.15, 1)
 theme_override_font_sizes/font_size = 24
 text = "KSh 0"
 
+[node name="Conditions" type="Label" parent="Margin/VBox/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.88, 1, 1)
+theme_override_font_sizes/font_size = 19
+text = "NAIROBI DAY"
+
 [node name="ObjectiveCard" type="PanelContainer" parent="Margin/VBox"]
 layout_mode = 2
 theme_override_styles/panel = SubResource("ObjectiveStyle")
