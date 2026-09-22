@@ -12,6 +12,7 @@ extends CanvasLayer
 @onready var money_label: Label = $Margin/VBox/TopBar/Money
 @onready var objective_label: Label = $Margin/VBox/ObjectiveCard/Objective
 @onready var timer_label: Label = $Margin/VBox/Timer
+@onready var rival_label: Label = $Margin/VBox/Rival
 @onready var passenger_label: Label = $Margin/VBox/PassengerObjective
 @onready var passenger_load_label: Label = $Margin/VBox/PassengerLoad
 @onready var navigation_label: Label = $Margin/VBox/Navigation
@@ -76,6 +77,7 @@ func _ready() -> void:
 	passenger_load_label.text = "PASSENGERS 0/%d" % _current_capacity()
 	navigation_label.text = "NAV • SELECT ROUTE"
 	timer_label.text = "00:00.00"
+	rival_label.visible = false
 	EconomyManager.money_changed.connect(_on_money_changed)
 	_on_money_changed(EconomyManager.get_money())
 	message_card.visible = false
@@ -115,6 +117,7 @@ func _ready() -> void:
 		challenge_manager.challenge_changed.connect(_on_challenge_changed)
 		challenge_manager.penalty_applied.connect(_on_penalty_applied)
 		challenge_manager.rival_result.connect(_on_rival_result)
+		challenge_manager.rival_pace_changed.connect(_on_rival_pace_changed)
 	if not street_king_manager_path.is_empty():
 		street_king_manager = get_node_or_null(street_king_manager_path)
 	if street_king_manager != null:
@@ -217,6 +220,7 @@ func _on_replay_pressed() -> void:
 		return
 	route_select_panel.visible = true
 	GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
+	rival_label.visible = false
 	objective_label.text = "CHOOSE YOUR NEXT ROUTE FROM CBD"
 	passenger_label.text = "CBD HUB • EVERY RUN LEAVES CBD AND RETURNS TO CBD"
 	passenger_load_label.text = "PASSENGERS 0/%d" % _current_capacity()
@@ -297,6 +301,7 @@ func _select_corridor(index: int) -> void:
 	_corridor_time = 0.0
 	route_select_panel.visible = false
 	finish_panel.visible = false
+	rival_label.visible = true
 
 func _on_service_progress(message: String) -> void:
 	_service_objective = message
@@ -482,6 +487,9 @@ func _on_penalty_applied(amount: int, balance: int, reason: String) -> void:
 	_fare_notice_time = 3.0
 
 func _on_rival_result(won: bool, player_time: float, rival_time: float, reward: int) -> void:
+	rival_label.visible = true
+	rival_label.text = ("RIVAL BEATEN • YOU %s • TARGET %s" if won else "RIVAL WON • YOU %s • TARGET %s") % [_format_time(player_time), _format_time(rival_time)]
+	rival_label.modulate = Color("62ff82") if won else Color("ff4d64")
 	if won:
 		var streak := int(SaveManager.data.get("rival_win_streak", 0))
 		fare_notice.text = "RIVAL BEATEN • +KSh %s • STREAK x%d\nYOU %s • RIVAL %s" % [_format_number(reward), streak, _format_time(player_time), _format_time(rival_time)]
@@ -489,6 +497,15 @@ func _on_rival_result(won: bool, player_time: float, rival_time: float, reward: 
 		fare_notice.text = "RIVAL WINS THIS RUN\nYOU %s • RIVAL %s • STREAK ENDED • RUN IT AGAIN" % [_format_time(player_time), _format_time(rival_time)]
 	_show_message_card()
 	_fare_notice_time = 5.0
+
+func _on_rival_pace_changed(rival_name: String, target_time: float, time_remaining: float) -> void:
+	rival_label.visible = true
+	if time_remaining >= 0.0:
+		rival_label.text = "RIVAL %s • TARGET %s • %.1fs LEFT" % [rival_name, _format_time(target_time), time_remaining]
+		rival_label.modulate = Color("ff5ca8") if time_remaining < 12.0 else Color("ffe15a")
+	else:
+		rival_label.text = "RIVAL %s • OVERTIME +%.1fs • FINISH NOW!" % [rival_name, absf(time_remaining)]
+		rival_label.modulate = Color("ff4d64")
 
 func _on_maneuver_changed(message: String) -> void:
 	navigation_label.text = "NAV • %s" % message
