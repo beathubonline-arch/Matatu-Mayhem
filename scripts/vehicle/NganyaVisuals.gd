@@ -8,9 +8,14 @@ const ORANGE := Color("ff8a00")
 const GLASS := Color("071525")
 const CHROME := Color("8c98a8")
 
+var _driver: Node3D
+var _conductor: Node3D
+var _crew_time := 0.0
+
 func _ready() -> void:
 	_build_body()
 	_build_windows()
+	_build_interior_and_crew()
 	_build_lighting()
 	_build_trim()
 	_build_identity()
@@ -68,6 +73,8 @@ func _build_body() -> void:
 
 func _build_windows() -> void:
 	var glass_mat := _mat(GLASS, Color("03101d"), 0.15, 0.08)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.albedo_color.a = 0.62
 	_box("Windshield", Vector3(1.78, 0.82, 0.07), Vector3(0.0, 2.0, -2.12), glass_mat, Vector3(-11.0, 0.0, 0.0))
 	_box("RearWindow", Vector3(1.72, 0.72, 0.06), Vector3(0.0, 2.0, 2.25), glass_mat)
 	for side_index in 2:
@@ -75,6 +82,52 @@ func _build_windows() -> void:
 		for window_index in 4:
 			var z_value: float = -1.25 + float(window_index) * 0.85
 			_box("SideWindow_%d_%d" % [side_index, window_index], Vector3(0.055, 0.7, 0.68), Vector3(side * 1.025, 2.02, z_value), glass_mat)
+
+func _build_interior_and_crew() -> void:
+	var cabin := _mat(Color("151821"), Color.TRANSPARENT, 0.05, 0.88)
+	var seat_mat := _mat(Color("38233f"), Color.TRANSPARENT, 0.1, 0.78)
+	_box("CabinFloor", Vector3(1.82, 0.12, 3.65), Vector3(0.0, 1.18, 0.22), cabin)
+	_box("Dashboard", Vector3(1.72, 0.34, 0.42), Vector3(0.0, 1.48, -1.78), cabin, Vector3(-8.0, 0.0, 0.0))
+	for z_value in [-1.05, -0.25, 0.55, 1.35]:
+		_box("CabinSeat", Vector3(1.62, 0.52, 0.38), Vector3(0.0, 1.35, float(z_value)), seat_mat)
+	_driver = _crew_member("Driver", Vector3(0.57, 1.83, -1.48), Color("00bcd4"), Color("5c3424"))
+	_conductor = _crew_member("Conductor", Vector3(0.78, 1.78, -0.48), Color("f59e0b"), Color("6b3f2a"))
+	# Kenya uses right-hand drive. Keep the wheel and driver visibly on the right.
+	var steering := _cylinder("SteeringWheel", 0.24, 0.055, Vector3(0.57, 1.62, -1.78), Vector3(90.0, 0.0, 0.0), _mat(Color("08090b"), Color.TRANSPARENT, 0.25, 0.65))
+	steering.rotation_degrees.x = 68.0
+
+func _crew_member(member_name: String, member_position: Vector3, shirt_color: Color, skin_color: Color) -> Node3D:
+	var root := Node3D.new()
+	root.name = member_name
+	root.position = member_position
+	var torso := MeshInstance3D.new()
+	var torso_mesh := CapsuleMesh.new()
+	torso_mesh.radius = 0.25
+	torso_mesh.height = 0.78
+	torso.mesh = torso_mesh
+	torso.position.y = -0.24
+	torso.material_override = _mat(shirt_color, Color.TRANSPARENT, 0.0, 0.82)
+	root.add_child(torso)
+	var head := MeshInstance3D.new()
+	var head_mesh := SphereMesh.new()
+	head_mesh.radius = 0.19
+	head_mesh.height = 0.38
+	head.mesh = head_mesh
+	head.position.y = 0.24
+	head.material_override = _mat(skin_color, Color.TRANSPARENT, 0.0, 0.9)
+	root.add_child(head)
+	add_child(root)
+	return root
+
+func _process(delta: float) -> void:
+	_crew_time += delta
+	if _driver == null or _conductor == null:
+		return
+	var steer := Input.get_action_strength("steer_right") - Input.get_action_strength("steer_left")
+	_driver.rotation.z = lerpf(_driver.rotation.z, deg_to_rad(-steer * 7.0), 1.0 - exp(-6.0 * delta))
+	var moving := GameManager.current_state == GameManager.GameState.PLAYING
+	_conductor.position.y = 1.78 + (sin(_crew_time * 5.0) * 0.025 if moving else 0.0)
+	_conductor.rotation.z = deg_to_rad(-5.0 + sin(_crew_time * 2.2) * 2.0)
 
 func _build_lighting() -> void:
 	var white_light := _mat(Color.WHITE, Color("e8f7ff"), 0.1, 0.12)
