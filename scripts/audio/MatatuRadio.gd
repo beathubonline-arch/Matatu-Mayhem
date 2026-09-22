@@ -27,6 +27,7 @@ var _web_audio_started := false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	set_process_input(true)
 	_rng.randomize()
 	_player = AudioStreamPlayer.new()
 	_player.name = "RadioPlayer"
@@ -70,9 +71,17 @@ func _input(event: InputEvent) -> void:
 		# Browsers require WebAudio playback to begin inside a user gesture.
 		# Retry on later gestures if the browser did not start playback.
 		if not _web_audio_started or not _player.playing:
-			_play_current()
-			_web_audio_started = _player.playing
-			print("RADIO: WebAudio started=%s" % str(_web_audio_started))
+			start_radio_from_user_gesture()
+
+func start_radio_from_user_gesture() -> bool:
+	if _tracks.is_empty():
+		print("RADIO: cannot start; catalog is empty")
+		playback_state_changed.emit(false)
+		return false
+	_play_current()
+	_web_audio_started = _player.playing
+	print("RADIO: WebAudio started=%s" % str(_web_audio_started))
+	return _web_audio_started
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("radio_next"):
@@ -131,13 +140,16 @@ func _play_current() -> void:
 	_current_index = wrapi(_current_index, 0, _tracks.size())
 	var track: Dictionary = _tracks[_current_index]
 	print("RADIO: attempting %s - %s" % [str(track["artist"]), str(track["title"])])
+	_player.bus = &"Master"
+	_player.volume_db = volume_db
+	_player.stream_paused = false
 	_player.stream = track["stream"]
 	_player.play()
 	if OS.has_feature("web"):
 		_web_audio_started = _player.playing
 	print("RADIO: play() called; playing=%s" % str(_player.playing))
 	_emit_metadata()
-	playback_state_changed.emit(true)
+	playback_state_changed.emit(_player.playing)
 
 func _play_next() -> void:
 	if _tracks.is_empty():
@@ -164,7 +176,7 @@ func toggle_radio() -> void:
 		_player.stop()
 		playback_state_changed.emit(false)
 	else:
-		_play_current()
+		start_radio_from_user_gesture()
 
 func get_current_track() -> Dictionary:
 	if _tracks.is_empty():
