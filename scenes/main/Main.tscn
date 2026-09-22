@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/environment/TestMap.tscn" id="1_map"]
 [ext_resource type="PackedScene" path="res://scenes/vehicle/Matatu.tscn" id="2_car"]
@@ -17,6 +17,7 @@
 [ext_resource type="Script" path="res://scripts/gameplay/MatatuCareerManager.gd" id="22_career"]
 [ext_resource type="Script" path="res://scripts/gameplay/StreetKingManager.gd" id="23_streetking"]
 [ext_resource type="Script" path="res://scripts/audio/GameSfx.gd" id="24_sfx"]
+[ext_resource type="Script" path="res://scripts/core/PerformanceManager.gd" id="25_performance"]
 
 [sub_resource type="SphereShape3D" id="CameraShape"]
 radius = 0.35
@@ -93,6 +94,12 @@ script = ExtResource("24_sfx")
 corridor_service_path = NodePath("../Gameplay/CorridorService")
 player_path = NodePath("../Gameplay/Vehicles/Maverick")
 
+[node name="PerformanceManager" type="Node" parent="."]
+script = ExtResource("25_performance")
+traffic_path = NodePath("../Gameplay/CorridorTraffic")
+life_path = NodePath("../Gameplay/CorridorLife")
+atmosphere_path = NodePath("../World/Environment/TestMap/Atmosphere")
+
 [node name="ChaseCamera" type="Node3D" parent="."]
 script = ExtResource("3_camera")
 target_path = NodePath("../Gameplay/Vehicles/Maverick")
@@ -117,6 +124,8 @@ street_king_manager_path = NodePath("../Gameplay/StreetKing")
 rival_manager_path = NodePath("../Gameplay/RivalNganyas")
 camera_path = NodePath("../ChaseCamera")
 atmosphere_path = NodePath("../World/Environment/TestMap/Atmosphere")
+performance_manager_path = NodePath("../PerformanceManager")
 [node name="PauseMenu" parent="." instance=ExtResource("7_pause")]
 corridor_service_path = NodePath("../Gameplay/CorridorService")
+performance_manager_path = NodePath("../PerformanceManager")
 [node name="MobileControls" parent="." instance=ExtResource("8_mobile")]
