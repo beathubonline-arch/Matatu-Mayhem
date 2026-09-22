@@ -31,20 +31,11 @@ func _ready() -> void:
 	else:
 		_play_engine_loop()
 
-func _input(event: InputEvent) -> void:
-	if not OS.has_feature("web"):
+func _input(_event: InputEvent) -> void:
+	# The generated 82 Hz loop sounds like a fault on Web and can mask music.
+	# Web music is supplied by the native browser radio; keep this loop desktop-only.
+	if OS.has_feature("web"):
 		return
-	var user_gesture := false
-	if event is InputEventKey:
-		user_gesture = event.pressed and not event.echo
-	elif event is InputEventMouseButton:
-		user_gesture = event.pressed
-	elif event is InputEventScreenTouch:
-		user_gesture = event.pressed
-	if user_gesture and (not _web_audio_started or not _engine.playing):
-		_play_engine_loop()
-		_web_audio_started = _engine.playing
-		print("SFX: WebAudio engine started=%s" % str(_web_audio_started))
 
 func _process(_delta: float) -> void:
 	var vehicle := get_node_or_null(player_path)
