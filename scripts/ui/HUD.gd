@@ -46,6 +46,8 @@ var _rush_bonus := 0
 var _shop_index := 0
 var _service_objective := "FOLLOW ROUTE"
 
+const LIVERIES := ["Nairobi Neon", "Matatu Gold", "Kenya Pride", "Midnight Purple"]
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	finish_panel.visible = false
@@ -66,6 +68,7 @@ func _ready() -> void:
 	$RouteSelectPanel/VBox/CapacityUpgrade.pressed.connect(func(): _buy_upgrade("capacity"))
 	$RouteSelectPanel/VBox/NganyaSelect.pressed.connect(_cycle_owned_nganya)
 	$RouteSelectPanel/VBox/NganyaBuy.pressed.connect(_buy_market_nganya)
+	$RouteSelectPanel/VBox/GarageTitle.pressed.connect(_cycle_livery)
 	route_select_panel.visible = true
 	GameManager.set_game_state(GameManager.GameState.ROUTE_SELECT)
 	objective_label.text = "CHOOSE YOUR NAIROBI ROUTE • CLICK OR PRESS 1–4"
@@ -429,6 +432,21 @@ func _cycle_owned_nganya() -> void:
 	_show_message_card()
 	_fare_notice_time = 2.5
 
+func _cycle_livery() -> void:
+	var selected := String(SaveManager.data.get("selected_livery", LIVERIES[0]))
+	var index := LIVERIES.find(selected)
+	index = 0 if index < 0 else (index + 1) % LIVERIES.size()
+	SaveManager.data["selected_livery"] = LIVERIES[index]
+	SaveManager.save_game()
+	var vehicle = GameManager.get_player_vehicle()
+	if vehicle != null and vehicle.has_method("refresh_selected_nganya"):
+		vehicle.call("refresh_selected_nganya")
+	_refresh_nganya_selector()
+	_message_style("unlock")
+	fare_notice.text = "CUSTOM LIVERY • %s\nYOUR NGANYA, YOUR IDENTITY" % LIVERIES[index].to_upper()
+	_show_message_card()
+	_fare_notice_time = 2.8
+
 func _buy_market_nganya() -> void:
 	var available: Array = career_manager.call("get_available_nganyas") if career_manager != null else []
 	if available.is_empty():
@@ -462,8 +480,10 @@ func _buy_market_nganya() -> void:
 func _refresh_nganya_selector() -> void:
 	var owned: Array = SaveManager.data.get("owned_nganyas", ["Maverick"])
 	var selected := String(SaveManager.data.get("selected_nganya", "Maverick")).to_upper()
+	var livery := String(SaveManager.data.get("selected_livery", LIVERIES[0])).to_upper()
 	var balance := EconomyManager.get_money()
-	$RouteSelectPanel/VBox/GarageTitle.text = "%s GARAGE • %d OWNED • KSh %s" % [selected, owned.size(), _format_number(balance)]
+	$RouteSelectPanel/VBox/GarageTitle.text = "%s GARAGE • %s LIVERY • CLICK TO PAINT" % [selected, livery]
+	$RouteSelectPanel/VBox/GarageTitle.tooltip_text = "%d NGANYAS OWNED • KSh %s • CLICK TO CHANGE LIVERY" % [owned.size(), _format_number(balance)]
 	$RouteSelectPanel/VBox/NganyaSelect.text = "DRIVE • %s • CLICK TO SWITCH OWNED" % selected
 	var available: Array = career_manager.call("get_available_nganyas") if career_manager != null else []
 	if available.is_empty():
