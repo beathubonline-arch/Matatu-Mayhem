@@ -44,6 +44,10 @@ This package is a playable Godot 4.x desktop and Android prototype/vertical slic
 
 On Android, use the labelled on-screen controls. The game is designed for landscape orientation.
 
+### Android APK
+
+Every successful `main` build now produces a signed debug APK for arm64 Android phones. The latest APK is also published with the Web build at `/downloads/MatatuMayhem-Android.apk` for direct device testing.
+
 ## Goal
 
 Drive through the glowing checkpoints while respecting traffic. Stop inside the active passenger stage at 4 km/h or less for 1.5 seconds, then drive to the active drop-off. Every successful passenger trip pays KSh 5,000 into the persistent balance. The money is reserved for performance upgrades and new nganya purchases in the Garage milestone.
