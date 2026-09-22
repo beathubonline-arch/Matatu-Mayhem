@@ -300,10 +300,23 @@ func _spawn_stage_conductors() -> void:
 		var stops: Array = data["stops"]
 		for stop_index in range(stops.size()):
 			var root := Node3D.new()
+			root.name = "StageStaff_%d_%d" % [corridor_index, stop_index]
 			var direction: Vector3 = network.get_stage_direction(corridor_index, stop_index)
 			var right := Vector3(direction.z, 0.0, -direction.x)
 			root.position = network.get_stage_waiting_position(corridor_index, stop_index) + right * 2.4
 			root.rotation.y = atan2(direction.x, direction.z)
+			var podium := MeshInstance3D.new()
+			var podium_mesh := CylinderMesh.new()
+			podium_mesh.top_radius = 0.58
+			podium_mesh.bottom_radius = 0.68
+			podium_mesh.height = 0.16
+			podium.mesh = podium_mesh
+			podium.position.y = 0.08
+			var podium_mat := StandardMaterial3D.new()
+			podium_mat.albedo_color = Color("10151b")
+			podium_mat.metallic = 0.35
+			podium.material_override = podium_mat
+			root.add_child(podium)
 			var body := MeshInstance3D.new()
 			var mesh := CapsuleMesh.new()
 			mesh.radius = 0.28
@@ -314,13 +327,26 @@ func _spawn_stage_conductors() -> void:
 			mat.albedo_color = Color("f59e0b") if (stop_index + corridor_index) % 2 == 0 else Color("22c55e")
 			body.material_override = mat
 			root.add_child(body)
+			var head := MeshInstance3D.new()
+			var head_mesh := SphereMesh.new()
+			head_mesh.radius = 0.24
+			head_mesh.height = 0.48
+			head.mesh = head_mesh
+			head.position.y = 1.82
+			var skin := StandardMaterial3D.new()
+			skin.albedo_color = [Color("4a2c20"), Color("6b3f2a"), Color("8a5638")][(corridor_index + stop_index) % 3]
+			head.material_override = skin
+			root.add_child(head)
+			var staff_badge := _stage_sign("STAGE STAFF", Color("18d9ff"), Vector3(0, 2.72, 0))
+			root.add_child(staff_badge)
 			var call := Label3D.new()
-			call.text = "%s! PANDA!" % String(stops[-1])
-			call.position = Vector3(0, 2.25, 0)
-			call.font_size = 22
-			call.pixel_size = 0.005
-			call.outline_size = 6
+			call.text = "%s • PANDA!" % String(stops[-1]).to_upper()
+			call.position = Vector3(0, 2.28, 0)
+			call.font_size = 28
+			call.pixel_size = 0.0045
+			call.outline_size = 10
 			call.modulate = Color("ffe15a")
+			call.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 			root.add_child(call)
 			add_child(root)
 
@@ -334,7 +360,10 @@ func _index_stage_people() -> void:
 			var centre: Vector3 = network.get_stage_waiting_position(corridor_index, stop_index)
 			var direction: Vector3 = network.get_stage_direction(corridor_index, stop_index)
 			var right := Vector3(direction.z, 0.0, -direction.x)
-			for i in range(6):
+			var passenger_sign := _stage_sign("PASSENGERS", Color("ffe15a"), Vector3.ZERO)
+			passenger_sign.position = centre + right * -3.8 + direction * 0.8 + Vector3.UP * 2.55
+			add_child(passenger_sign)
+			for i in range(10):
 				var person := MeshInstance3D.new()
 				var mesh := CapsuleMesh.new()
 				mesh.radius = 0.23
@@ -349,6 +378,44 @@ func _index_stage_people() -> void:
 				person.set_meta("stage_home", person.global_position)
 				people.append(person)
 			_stage_people[key] = people
+
+func _stage_sign(title: String, accent: Color, local_position: Vector3) -> Node3D:
+	var sign := Node3D.new()
+	sign.position = local_position
+	var board := MeshInstance3D.new()
+	var board_mesh := BoxMesh.new()
+	board_mesh.size = Vector3(2.75, 0.66, 0.10)
+	board.mesh = board_mesh
+	var board_mat := StandardMaterial3D.new()
+	board_mat.albedo_color = Color("0a0e14")
+	board_mat.metallic = 0.25
+	board_mat.roughness = 0.34
+	board_mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	board.material_override = board_mat
+	sign.add_child(board)
+	var glow := MeshInstance3D.new()
+	var glow_mesh := BoxMesh.new()
+	glow_mesh.size = Vector3(2.82, 0.08, 0.13)
+	glow.mesh = glow_mesh
+	glow.position.y = -0.29
+	var glow_mat := StandardMaterial3D.new()
+	glow_mat.albedo_color = accent
+	glow_mat.emission_enabled = true
+	glow_mat.emission = accent
+	glow_mat.emission_energy_multiplier = 2.0
+	glow_mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	glow.material_override = glow_mat
+	sign.add_child(glow)
+	var label := Label3D.new()
+	label.text = title
+	label.font_size = 42
+	label.pixel_size = 0.006
+	label.outline_size = 12
+	label.modulate = Color.WHITE
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.position.z = 0.07
+	sign.add_child(label)
+	return sign
 
 func board_passengers(corridor_index: int, stop_index: int, count: int, vehicle: Node3D) -> void:
 	var key := "%d:%d" % [corridor_index, stop_index]
@@ -394,16 +461,32 @@ func set_vehicle_passenger_load(vehicle: Node3D, onboard: int) -> void:
 	for i in range(seats.size()):
 		var passenger := seats[i] as Node3D
 		passenger.visible = i < onboard
-	var label := vehicle.get_node_or_null("PassengerLoad") as Label3D
+	var label := vehicle.get_node_or_null("PassengerLoadBadge/PassengerLoad") as Label3D
 	if label == null:
+		var badge := Node3D.new()
+		badge.name = "PassengerLoadBadge"
+		badge.position = Vector3(0, 3.0, 0.65)
+		vehicle.add_child(badge)
+		var plate := MeshInstance3D.new()
+		var plate_mesh := BoxMesh.new()
+		plate_mesh.size = Vector3(2.5, 0.62, 0.08)
+		plate.mesh = plate_mesh
+		var plate_mat := StandardMaterial3D.new()
+		plate_mat.albedo_color = Color("080c12")
+		plate_mat.metallic = 0.3
+		plate_mat.roughness = 0.3
+		plate_mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+		plate.material_override = plate_mat
+		badge.add_child(plate)
 		label = Label3D.new()
 		label.name = "PassengerLoad"
-		label.position = Vector3(0, 2.9, 0.5)
-		label.font_size = 24
-		label.pixel_size = 0.005
-		label.outline_size = 6
-		vehicle.add_child(label)
-	label.text = "%d PASSENGERS" % onboard
+		label.position = Vector3(0, 0, 0.06)
+		label.font_size = 34
+		label.pixel_size = 0.0055
+		label.outline_size = 10
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		badge.add_child(label)
+	label.text = "PASSENGERS  •  %d ON BOARD" % onboard
 	label.modulate = Color("ffe15a")
 
 func _ensure_vehicle_passenger_seats(vehicle: Node3D) -> Array:
