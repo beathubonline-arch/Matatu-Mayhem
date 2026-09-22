@@ -38,6 +38,12 @@
 - New routes unlock only after the matatu returns to CBD.
 - The HUD distinguishes OUTBOUND from RETURN TO CBD.
 
+## Milestone 7 — Rival Heat HUD
+- Every corridor has a named rival and visible target time.
+- The HUD shows a live rival countdown during the route.
+- The countdown changes to an overtime warning when the target is missed.
+- The finish state clearly compares player and rival times.
+
 ## Runtime acceptance test (must be performed on the actual exported build)
 1. Fresh save: choose Ngong or Mombasa and understand the objective without external explanation.
 2. Complete outbound service, board/alight passengers, receive fares and route reward.
