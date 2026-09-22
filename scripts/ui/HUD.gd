@@ -47,7 +47,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	finish_panel.visible = false
 	if OS.has_feature("web"):
-		$RadioPanel.visible = false
+		$RadioPanel.visible = true
+		radio_label.text = "♫ 254 STREET RADIO\\nCLICK A ROUTE TO ENABLE MUSIC"
 	if DisplayServer.is_touchscreen_available():
 		route_select_panel.scale = Vector2(0.88, 0.88)
 		route_select_panel.pivot_offset = route_select_panel.size * 0.5
@@ -86,6 +87,8 @@ func _ready() -> void:
 		radio = get_node_or_null(radio_path)
 	if radio != null:
 		radio.station_changed.connect(_on_radio_changed)
+		radio.playback_state_changed.connect(_on_radio_playback_state_changed)
+		radio.radio_catalog_changed.connect(_on_radio_catalog_changed)
 	if not corridor_service_path.is_empty():
 		corridor_service = get_node_or_null(corridor_service_path)
 	if corridor_service != null:
@@ -244,6 +247,14 @@ func _on_reputation_awarded(_amount: int, total: int) -> void:
 func _on_radio_changed(station: String, track: String, artist: String) -> void:
 	radio_label.text = "♫ %s\\n%s — %s\\n[M] RADIO  [N] NEXT" % [station, artist, track]
 
+func _on_radio_playback_state_changed(is_playing: bool) -> void:
+	if OS.has_feature("web") and not is_playing:
+		radio_label.text += "\\nAUDIO BLOCKED • CLICK GAME THEN PRESS M"
+
+func _on_radio_catalog_changed(message: String) -> void:
+	if OS.has_feature("web"):
+		print("HUD: " + message)
+
 func _on_corridor_changed(name: String, stop_name: String, current: int, total: int) -> void:
 	passenger_label.text = "%s  •  STAGE %d/%d  •  %s" % [name, current, total, stop_name]
 
@@ -262,6 +273,10 @@ func _on_corridor_completed(name: String, reward: int, balance: int, elapsed: fl
 	_refresh_route_unlocks()
 
 func _select_corridor(index: int) -> void:
+	# Route buttons are genuine browser gestures, so use them to start WebAudio
+	# directly instead of relying only on global input propagation.
+	if OS.has_feature("web") and radio != null and radio.has_method("start_radio_from_user_gesture"):
+		radio.call("start_radio_from_user_gesture")
 	if street_king_manager != null:
 		street_king_manager.call("begin_next_shift_if_needed")
 	if corridor_service == null:
