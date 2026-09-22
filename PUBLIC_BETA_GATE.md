@@ -68,6 +68,12 @@
 - CHASE frames the full nganya, WIDE improves route visibility, and CABIN puts the player close to the crew and dashboard.
 - Every mode keeps speed-aware FOV, steering look and collision-safe spring-arm behavior.
 
+## Milestone 11 — Nganya Identity and Customization
+- The garage cycles four persistent liveries: Nairobi Neon, Matatu Gold, Kenya Pride and Midnight Purple.
+- Livery choice repaints the body, electric belt, underglow, graffiti accents and identity typography.
+- Paint selection persists across reloads and applies to every owned nganya.
+- The garage header acts as the livery control without crowding the route menu.
+
 ## Runtime acceptance test (must be performed on the actual exported build)
 1. Fresh save: choose Ngong or Mombasa and understand the objective without external explanation.
 2. Complete outbound service, board/alight passengers, receive fares and route reward.
